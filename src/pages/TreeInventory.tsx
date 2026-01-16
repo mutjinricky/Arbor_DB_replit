@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Map, { NavigationControl } from "react-map-gl";
+import { MAPBOX_TOKEN } from "@/lib/mapbox";
 
 // Tree data type definition
 interface TreeData {
@@ -33,7 +34,7 @@ interface TreeData {
   species: string;
 }
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
+
 
 export default function TreeInventory() {
   const [view, setView] = useState<"map" | "list">("map");
