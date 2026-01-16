@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TreeDeciduous, Map as MapIcon, List, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MAPBOX_TOKEN } from "@/lib/mapbox";
 import { TreeProfileModal } from "./TreeProfileModal";
 import TreeLayer from "./TreeLayer";
 import Map, { NavigationControl } from "react-map-gl";
@@ -27,7 +28,7 @@ interface TreeData {
   species: string;
 }
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
+
 
 interface TreeSelectorProps {
   selectedTrees: string[];

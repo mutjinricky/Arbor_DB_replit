@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TreeDeciduous, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MAPBOX_TOKEN } from "@/lib/mapbox";
 import { TreeProfileModal } from "./TreeProfileModal";
 import { WorkOrderDialog } from "./WorkOrderDialog";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -92,8 +93,6 @@ export function TreeMap({ onTreeSelect }: TreeMapProps) {
     }
   };
 
-  // Mapbox access token - you should set this as an environment variable in production
-  const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
 
   return (
     <Card className="col-span-full">

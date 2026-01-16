@@ -7,11 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, FileText, MapPin, TreeDeciduous, Filter, Image } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MAPBOX_TOKEN } from "@/lib/mapbox";
 import Map, { NavigationControl } from "react-map-gl";
 import TreeLayer from "@/components/TreeLayer";
 import "mapbox-gl/dist/mapbox-gl.css";
-
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
 
 interface TreeData {
   id: string;
