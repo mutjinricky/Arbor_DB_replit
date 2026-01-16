@@ -1,0 +1,125 @@
+@import "mapbox-gl/dist/mapbox-gl.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 150 8% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 8% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 8% 15%;
+
+    --primary: 152 45% 25%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 150 20% 95%;
+    --secondary-foreground: 150 8% 15%;
+
+    --muted: 150 15% 96%;
+    --muted-foreground: 150 8% 45%;
+
+    --accent: 160 65% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 150 15% 88%;
+    --input: 150 15% 88%;
+    --ring: 152 45% 25%;
+
+    --radius: 0.75rem;
+
+    --chart-1: 152 45% 25%;
+    --chart-2: 160 65% 45%;
+    --chart-3: 142 76% 36%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 0 70% 50%;
+
+    --sidebar-background: 150 20% 98%;
+    --sidebar-foreground: 150 8% 25%;
+    --sidebar-primary: 152 45% 25%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 150 20% 92%;
+    --sidebar-accent-foreground: 150 8% 25%;
+    --sidebar-border: 150 15% 88%;
+    --sidebar-ring: 160 65% 45%;
+  }
+
+  .dark {
+    --background: 150 8% 8%;
+    --foreground: 0 0% 95%;
+
+    --card: 150 8% 10%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 150 8% 10%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 160 65% 45%;
+    --primary-foreground: 150 8% 8%;
+
+    --secondary: 150 8% 15%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 150 8% 15%;
+    --muted-foreground: 150 8% 65%;
+
+    --accent: 160 65% 50%;
+    --accent-foreground: 150 8% 8%;
+
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 95%;
+
+    --warning: 38 92% 45%;
+    --warning-foreground: 0 0% 95%;
+
+    --success: 142 76% 40%;
+    --success-foreground: 0 0% 95%;
+
+    --border: 150 8% 20%;
+    --input: 150 8% 20%;
+    --ring: 160 65% 50%;
+
+    --chart-1: 160 65% 45%;
+    --chart-2: 160 65% 60%;
+    --chart-3: 142 76% 40%;
+    --chart-4: 38 92% 45%;
+    --chart-5: 0 70% 45%;
+
+    --sidebar-background: 150 8% 10%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 160 65% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 150 8% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 150 8% 20%;
+    --sidebar-ring: 160 65% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
