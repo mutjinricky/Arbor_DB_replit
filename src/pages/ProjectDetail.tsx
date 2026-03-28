@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Calendar, DollarSign, MapPin, Users, CheckCircle, Clock, Circle, User } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, MapPin, Users, CheckCircle, Clock, Circle, User, TreePine, Plus, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { TreeProfileModal } from "@/components/TreeProfileModal";
 
 interface ProjectPhase {
   title: string;
@@ -185,6 +188,11 @@ export default function ProjectDetail() {
         return "text-muted-foreground";
     }
   };
+
+  const [selectedTreeId, setSelectedTreeId] = useState<string | null>(null);
+  const [treeModalOpen, setTreeModalOpen] = useState(false);
+  const [addTreeInput, setAddTreeInput] = useState("");
+  const [extraTrees, setExtraTrees] = useState<string[]>([]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -388,7 +396,111 @@ export default function ProjectDetail() {
               </CardContent>
             </Card>
 
-            {/* C-06: Assigned Contractors */}
+            {/* C-06b: Connected Trees */}
+          {(() => {
+            const allTreeIds = [
+              ...project.locations.map((l) => l.treeId),
+              ...extraTrees,
+            ];
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TreePine className="h-5 w-5" />
+                    연결 수목 ({allTreeIds.length}그루)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {allTreeIds.map((treeId, idx) => {
+                      const loc = project.locations.find((l) => l.treeId === treeId);
+                      return (
+                        <div
+                          key={`${treeId}-${idx}`}
+                          className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                          data-testid={`row-tree-${treeId}`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <TreePine className="h-4 w-4 text-primary flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="font-mono text-sm font-medium truncate">{treeId}</p>
+                              {loc && (
+                                <p className="text-xs text-muted-foreground">
+                                  {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs"
+                              data-testid={`button-view-tree-${treeId}`}
+                              onClick={() => {
+                                const numericId = treeId.replace(/\D/g, "");
+                                setSelectedTreeId(numericId || treeId);
+                                setTreeModalOpen(true);
+                              }}
+                            >
+                              프로필
+                            </Button>
+                            {!project.locations.find((l) => l.treeId === treeId) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                                data-testid={`button-remove-tree-${treeId}`}
+                                onClick={() => setExtraTrees((prev) => prev.filter((t) => t !== treeId))}
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <Input
+                      placeholder="수목 ID 입력 (예: TREE-2001)"
+                      value={addTreeInput}
+                      onChange={(e) => setAddTreeInput(e.target.value)}
+                      className="h-8 text-sm"
+                      data-testid="input-add-tree"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && addTreeInput.trim()) {
+                          const id = addTreeInput.trim().toUpperCase();
+                          if (!allTreeIds.includes(id)) {
+                            setExtraTrees((prev) => [...prev, id]);
+                          }
+                          setAddTreeInput("");
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1 flex-shrink-0"
+                      data-testid="button-add-tree"
+                      onClick={() => {
+                        const id = addTreeInput.trim().toUpperCase();
+                        if (id && !allTreeIds.includes(id)) {
+                          setExtraTrees((prev) => [...prev, id]);
+                        }
+                        setAddTreeInput("");
+                      }}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      추가
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
+
+          {/* C-06: Assigned Contractors */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -417,6 +529,12 @@ export default function ProjectDetail() {
           </div>
         </div>
       </div>
+
+      <TreeProfileModal
+        treeId={selectedTreeId}
+        isOpen={treeModalOpen}
+        onClose={() => { setTreeModalOpen(false); setSelectedTreeId(null); }}
+      />
     </div>
   );
 }

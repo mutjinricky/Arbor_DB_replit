@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { title: "대시보드", url: "/" },
   { title: "수목 재고", url: "/tree-inventory" },
+  { title: "방제 달력", url: "/pest-calendar" },
   { title: "프로젝트", url: "/projects" },
 ];
 

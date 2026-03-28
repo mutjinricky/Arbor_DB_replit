@@ -8,6 +8,8 @@ import { RecentActivityFeed } from "@/components/RecentActivityFeed";
 import { TreeProfileModal } from "@/components/TreeProfileModal";
 import { WorkOrderDialog } from "@/components/WorkOrderDialog";
 import { WorkNotifications } from "@/components/WorkNotifications";
+import { SoilSummaryCard } from "@/components/SoilSummaryCard";
+import { PestAlertBanner } from "@/components/PestAlertBanner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pie, PieChart, Cell, ResponsiveContainer, Tooltip, Text } from "recharts";
 
@@ -49,6 +51,9 @@ export default function Dashboard() {
   return (
     <div className="flex-1 bg-background">
       <main className="container mx-auto px-6 py-8">
+        {/* 해충 방제 알림 배너 */}
+        <PestAlertBanner />
+
         {/* Row 1: KPI Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
           <KPICard
@@ -143,7 +148,12 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Row 3: Work Notifications */}
+        {/* Row 3: Soil Summary */}
+        <div className="grid gap-6 lg:grid-cols-2 mb-8">
+          <SoilSummaryCard />
+        </div>
+
+        {/* Row 4: Work Notifications */}
         <div className="grid gap-6 lg:grid-cols-2 mb-8">
           <WorkNotifications role="official" />
           <WorkNotifications role="worker" />

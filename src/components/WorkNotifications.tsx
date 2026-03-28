@@ -20,6 +20,7 @@ import {
   User,
   ClipboardList,
   AlertCircle,
+  Download,
 } from "lucide-react";
 
 export interface WorkEvent {
@@ -183,6 +184,28 @@ export function WorkNotifications({ role = "official" }: WorkNotificationsProps)
 
   const unconfirmedCount = events.filter((e) => !e.confirmed).length;
 
+  const downloadCSV = () => {
+    const header = ["ID", "유형", "시각", "프로젝트", "작업자", "메모", "확인여부", "확인시각"];
+    const rows = events.map((e) => [
+      e.id,
+      e.type === "start" ? "시작" : e.type === "end" ? "종료" : "자동종료",
+      new Date(e.timestamp).toLocaleString("ko-KR"),
+      e.projectName,
+      e.workerName,
+      e.memo || "",
+      e.confirmed ? "확인" : "미확인",
+      e.confirmedAt ? new Date(e.confirmedAt).toLocaleString("ko-KR") : "",
+    ]);
+    const csv = [header, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `work-log-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const eventIcon = (type: WorkEvent["type"]) => {
     if (type === "start") return <PlayCircle className="h-4 w-4 text-success" />;
     if (type === "end") return <StopCircle className="h-4 w-4 text-destructive" />;
@@ -212,6 +235,18 @@ export function WorkNotifications({ role = "official" }: WorkNotificationsProps)
             <Badge variant="destructive" className="ml-1 text-xs">
               미확인 {unconfirmedCount}
             </Badge>
+          )}
+          {role === "official" && events.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto h-7 gap-1 text-xs text-muted-foreground hover:text-foreground"
+              onClick={downloadCSV}
+              data-testid="button-export-csv"
+            >
+              <Download className="h-3.5 w-3.5" />
+              CSV
+            </Button>
           )}
         </CardTitle>
       </CardHeader>

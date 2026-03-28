@@ -18,7 +18,13 @@ import {
   Wrench,
   Eye,
   MessageSquareWarning,
+  Pencil,
+  Save,
+  RotateCcw,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { getComplaintCount } from "@/lib/riskCalculations";
 
@@ -46,6 +52,17 @@ interface TreeProfileModalProps {
   onCreateWorkOrder?: (treeId: string) => void;
 }
 
+interface EditOverride {
+  height?: number;
+  diameter?: number;
+  damage_area?: number;
+  cavity_depth?: number;
+  ice_damage?: boolean;
+  need_nutrient?: boolean;
+}
+
+const OVERRIDE_KEY = (id: string) => `tree_override_${id}`;
+
 export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }: TreeProfileModalProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const [historyFilter, setHistoryFilter] = useState<"all" | "management" | "observation">("all");
@@ -53,17 +70,28 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
   const [loading, setLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  // Edit form state
+  const [editValues, setEditValues] = useState<EditOverride>({});
+  const [editSaved, setEditSaved] = useState(false);
+
   // Fetch tree data when treeId changes
   useEffect(() => {
     if (treeId && isOpen) {
       setLoading(true);
-      setImageError(false); // Reset image error state when tree changes
+      setImageError(false);
+      setEditSaved(false);
       fetch('/data/trees.json')
         .then(response => response.json())
         .then((data: Record<string, TreeData>) => {
-          // trees.json is an object with tree IDs as keys, not an array
           const tree = data[treeId];
           setTreeData(tree || null);
+          // Load existing overrides from localStorage
+          try {
+            const stored = localStorage.getItem(OVERRIDE_KEY(treeId));
+            setEditValues(stored ? JSON.parse(stored) : {});
+          } catch {
+            setEditValues({});
+          }
         })
         .catch(error => {
           console.error('Error loading tree data:', error);
@@ -248,7 +276,7 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
           {/* Right Column - Detailed Information */}
           <div className="md:col-span-2">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="overview">개요</TabsTrigger>
                 <TabsTrigger value="history">이력</TabsTrigger>
                 <TabsTrigger value="complaints" className="relative">
@@ -261,6 +289,9 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                 </TabsTrigger>
                 <TabsTrigger value="costs">비용</TabsTrigger>
                 <TabsTrigger value="photos">사진</TabsTrigger>
+                <TabsTrigger value="edit" data-testid="tab-edit">
+                  <Pencil className="h-3.5 w-3.5 mr-1" />편집
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-4 mt-4">
@@ -509,6 +540,139 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                     </div>
                     <p className="text-sm text-muted-foreground text-center mt-4">
                       점검 및 유지보수 작업 사진
+                    </p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Edit Tab */}
+              <TabsContent value="edit" className="mt-4 space-y-4">
+                <Card>
+                  <CardContent className="p-4 space-y-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Pencil className="h-4 w-4 text-primary" />
+                      <h3 className="font-semibold">현장 데이터 편집</h3>
+                      <span className="text-xs text-muted-foreground ml-auto">로컬 저장 (덮어쓰기)</span>
+                    </div>
+
+                    {/* Numeric fields */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="edit-height" className="text-xs">수고 (m)</Label>
+                        <Input
+                          id="edit-height"
+                          type="number"
+                          min={0}
+                          step={0.1}
+                          placeholder={String(treeData.height ?? "")}
+                          value={editValues.height ?? ""}
+                          onChange={(e) => setEditValues((v) => ({ ...v, height: e.target.value === "" ? undefined : parseFloat(e.target.value) }))}
+                          className="h-8 text-sm"
+                          data-testid="input-edit-height"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="edit-diameter" className="text-xs">흉고 직경 (cm)</Label>
+                        <Input
+                          id="edit-diameter"
+                          type="number"
+                          min={0}
+                          step={0.1}
+                          placeholder={String(treeData.diameter ?? "")}
+                          value={editValues.diameter ?? ""}
+                          onChange={(e) => setEditValues((v) => ({ ...v, diameter: e.target.value === "" ? undefined : parseFloat(e.target.value) }))}
+                          className="h-8 text-sm"
+                          data-testid="input-edit-diameter"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="edit-damage" className="text-xs">상처 면적 (cm²)</Label>
+                        <Input
+                          id="edit-damage"
+                          type="number"
+                          min={0}
+                          step={1}
+                          placeholder={String(treeData.damage_area ?? "")}
+                          value={editValues.damage_area ?? ""}
+                          onChange={(e) => setEditValues((v) => ({ ...v, damage_area: e.target.value === "" ? undefined : parseFloat(e.target.value) }))}
+                          className="h-8 text-sm"
+                          data-testid="input-edit-damage-area"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="edit-cavity" className="text-xs">공동 깊이 (cm)</Label>
+                        <Input
+                          id="edit-cavity"
+                          type="number"
+                          min={0}
+                          step={0.5}
+                          placeholder={String(treeData.cavity_depth ?? "")}
+                          value={editValues.cavity_depth ?? ""}
+                          onChange={(e) => setEditValues((v) => ({ ...v, cavity_depth: e.target.value === "" ? undefined : parseFloat(e.target.value) }))}
+                          className="h-8 text-sm"
+                          data-testid="input-edit-cavity-depth"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Boolean toggles */}
+                    <div className="space-y-3 pt-1">
+                      <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50">
+                        <div>
+                          <Label className="text-sm font-medium">설해 피해</Label>
+                          <p className="text-xs text-muted-foreground">동절기 눈·빙판 피해 여부</p>
+                        </div>
+                        <Switch
+                          checked={editValues.ice_damage ?? treeData.ice_damage}
+                          onCheckedChange={(val) => setEditValues((v) => ({ ...v, ice_damage: val }))}
+                          data-testid="switch-ice-damage"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50">
+                        <div>
+                          <Label className="text-sm font-medium">영양 공급 필요</Label>
+                          <p className="text-xs text-muted-foreground">토양 영양 부족 판정 여부</p>
+                        </div>
+                        <Switch
+                          checked={editValues.need_nutrient ?? treeData.need_nutrient}
+                          onCheckedChange={(val) => setEditValues((v) => ({ ...v, need_nutrient: val }))}
+                          data-testid="switch-need-nutrient"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Save / Reset */}
+                    <div className="flex gap-2 pt-1">
+                      <Button
+                        className="flex-1 gap-2"
+                        onClick={() => {
+                          try {
+                            localStorage.setItem(OVERRIDE_KEY(treeId), JSON.stringify(editValues));
+                            setEditSaved(true);
+                            setTimeout(() => setEditSaved(false), 2000);
+                          } catch { /* ignore */ }
+                        }}
+                        data-testid="button-save-edit"
+                      >
+                        <Save className="h-4 w-4" />
+                        {editSaved ? "저장 완료 ✓" : "저장"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => {
+                          localStorage.removeItem(OVERRIDE_KEY(treeId));
+                          setEditValues({});
+                        }}
+                        data-testid="button-reset-edit"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                        초기화
+                      </Button>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground text-center">
+                      편집 내용은 이 기기의 브라우저에 저장됩니다. K-UTSI 재계산에 반영되지 않습니다.
                     </p>
                   </CardContent>
                 </Card>
