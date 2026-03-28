@@ -17,8 +17,10 @@ import {
   Image as ImageIcon,
   Wrench,
   Eye,
+  MessageSquareWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getComplaintCount } from "@/lib/riskCalculations";
 
 interface TreeData {
   id: string;
@@ -246,9 +248,17 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
           {/* Right Column - Detailed Information */}
           <div className="md:col-span-2">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="overview">개요</TabsTrigger>
                 <TabsTrigger value="history">이력</TabsTrigger>
+                <TabsTrigger value="complaints" className="relative">
+                  민원
+                  {getComplaintCount(treeId) > 0 && (
+                    <span className="ml-1 inline-flex items-center justify-center h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                      {getComplaintCount(treeId)}
+                    </span>
+                  )}
+                </TabsTrigger>
                 <TabsTrigger value="costs">비용</TabsTrigger>
                 <TabsTrigger value="photos">사진</TabsTrigger>
               </TabsList>
@@ -365,6 +375,58 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                           </div>
                         ))}
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="complaints" className="mt-4">
+                <Card>
+                  <CardContent className="p-4">
+                    {(() => {
+                      const count = getComplaintCount(treeId);
+                      const mockComplaints = Array.from({ length: count }, (_, i) => {
+                        const days = i * 18 + 5;
+                        const date = new Date(2025, 8, 27);
+                        date.setDate(date.getDate() - days);
+                        const types = ["나뭇가지 낙하 위험", "병해충 발생", "보행 방해", "뿌리 도로 파손", "가로등 차단", "낙엽 민원", "나무 기울어짐"];
+                        return {
+                          date: date.toISOString().slice(0, 10),
+                          type: types[i % types.length],
+                          status: i < 2 ? "처리중" : "완료",
+                        };
+                      });
+
+                      return (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                            <MessageSquareWarning className="h-6 w-6 text-destructive shrink-0" />
+                            <div>
+                              <p className="font-semibold text-sm">민원 {count}건</p>
+                              <p className="text-xs text-muted-foreground">이 수목에 접수된 시민 민원 내역입니다</p>
+                            </div>
+                          </div>
+
+                          {count === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-6">접수된 민원이 없습니다.</p>
+                          ) : (
+                            <div className="space-y-3">
+                              {mockComplaints.map((c, i) => (
+                                <div key={i} className="flex items-center justify-between border rounded-lg p-3 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                    <span className="text-muted-foreground">{c.date}</span>
+                                    <span className="font-medium">{c.type}</span>
+                                  </div>
+                                  <Badge variant={c.status === "처리중" ? "warning" : "success"} className="text-xs shrink-0">
+                                    {c.status}
+                                  </Badge>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               </TabsContent>
