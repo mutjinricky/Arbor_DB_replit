@@ -7,6 +7,14 @@ export default defineConfig(({ mode }) => ({
     host: "0.0.0.0",
     port: 5000,
     allowedHosts: true,
+    proxy: {
+      "/api/kma": {
+        target: "https://apis.data.go.kr",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/kma/, ""),
+        secure: true,
+      },
+    },
   },
   plugins: [react()],
   resolve: {

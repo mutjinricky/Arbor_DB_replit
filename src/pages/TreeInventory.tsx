@@ -39,6 +39,7 @@ import {
   type SoilGrade,
   type TreeFullData,
 } from "@/lib/riskCalculations";
+import { useWeatherData } from "@/hooks/useWeatherData";
 
 type MapMode = "risk" | "pest" | "soil";
 
@@ -74,8 +75,8 @@ export default function TreeInventory() {
     zoom: 14,
   });
   const [rawGeoJson, setRawGeoJson] = useState<any>(null);
-  const [enrichedGeoJson, setEnrichedGeoJson] = useState<any>(null);
-  const [treesListData, setTreesListData] = useState<EnrichedTreeData[]>([]);
+  const [rawTreesJson, setRawTreesJson] = useState<Record<string, TreeFullData> | null>(null);
+  const { pestDDs, isRealData: weatherIsReal, isLoading: weatherLoading } = useWeatherData();
   const [cursor, setCursor] = useState<string>("grab");
   const [hoveredTree, setHoveredTree] = useState<{
     id: string;
@@ -104,64 +105,67 @@ export default function TreeInventory() {
     ])
       .then(([geojson, treesJson]: [any, Record<string, TreeFullData>]) => {
         setRawGeoJson(geojson);
-
-        const enrichedFeatures = geojson.features.map((feature: any) => {
-          const props = feature.properties || {};
-          const id = props.id || "";
-          const fullData = treesJson[id];
-
-          const iqtri = fullData
-            ? calculateIQTRI(fullData)
-            : { score: 0, grade: "low" as RiskGrade };
-          const pest = calculatePestControl(id);
-          const soil = calculateSoilScore(id);
-
-          return {
-            ...feature,
-            properties: {
-              ...props,
-              iqtriScore: iqtri.score,
-              iqtriGrade: iqtri.grade,
-              pestGrade: pest.grade,
-              pestName: pest.pestName,
-              pestDays: pest.daysUntilControl,
-              soilScore: soil.score,
-              soilGrade: soil.grade,
-            },
-          };
-        });
-
-        const enriched = { ...geojson, features: enrichedFeatures };
-        setEnrichedGeoJson(enriched);
-
-        const list: EnrichedTreeData[] = enrichedFeatures
-          .filter((f: any) => f.properties && f.geometry)
-          .map((f: any) => {
-            const p = f.properties;
-            const coords = f.geometry.coordinates || [0, 0];
-            return {
-              id: p.id || "",
-              height: p.height || 0,
-              lat: coords[1] || 0,
-              lng: coords[0] || 0,
-              district: p.district || "",
-              risk: p.risk || "low",
-              inspection: p.inspection || "",
-              species: p.species || "",
-              iqtriScore: p.iqtriScore,
-              iqtriGrade: p.iqtriGrade,
-              pestGrade: p.pestGrade,
-              pestName: p.pestName,
-              pestDays: p.pestDays,
-              soilScore: p.soilScore,
-              soilGrade: p.soilGrade,
-            };
-          });
-
-        setTreesListData(list);
+        setRawTreesJson(treesJson);
       })
       .catch((err) => console.error("Error loading tree data:", err));
   }, []);
+
+  const enrichedGeoJson = useMemo(() => {
+    if (!rawGeoJson || !rawTreesJson) return null;
+    const enrichedFeatures = rawGeoJson.features.map((feature: any) => {
+      const props = feature.properties || {};
+      const id = props.id || "";
+      const fullData = rawTreesJson[id];
+
+      const iqtri = fullData
+        ? calculateIQTRI(fullData)
+        : { score: 0, grade: "low" as RiskGrade };
+      const pest = calculatePestControl(id, pestDDs as any);
+      const soil = calculateSoilScore(id, fullData);
+
+      return {
+        ...feature,
+        properties: {
+          ...props,
+          iqtriScore: iqtri.score,
+          iqtriGrade: iqtri.grade,
+          pestGrade: pest.grade,
+          pestName: pest.pestName,
+          pestDays: pest.daysUntilControl,
+          soilScore: soil.score,
+          soilGrade: soil.grade,
+        },
+      };
+    });
+    return { ...rawGeoJson, features: enrichedFeatures };
+  }, [rawGeoJson, rawTreesJson, pestDDs]);
+
+  const treesListData = useMemo<EnrichedTreeData[]>(() => {
+    if (!enrichedGeoJson) return [];
+    return enrichedGeoJson.features
+      .filter((f: any) => f.properties && f.geometry)
+      .map((f: any) => {
+        const p = f.properties;
+        const coords = f.geometry.coordinates || [0, 0];
+        return {
+          id: p.id || "",
+          height: p.height || 0,
+          lat: coords[1] || 0,
+          lng: coords[0] || 0,
+          district: p.district || "",
+          risk: p.risk || "low",
+          inspection: p.inspection || "",
+          species: p.species || "",
+          iqtriScore: p.iqtriScore,
+          iqtriGrade: p.iqtriGrade,
+          pestGrade: p.pestGrade,
+          pestName: p.pestName,
+          pestDays: p.pestDays,
+          soilScore: p.soilScore,
+          soilGrade: p.soilGrade,
+        };
+      });
+  }, [enrichedGeoJson]);
 
   const allSpecies = useMemo(() => {
     const s = new Set(treesListData.map((t) => t.species).filter(Boolean));
@@ -473,28 +477,43 @@ export default function TreeInventory() {
                   <TreeDeciduous className="h-5 w-5 text-primary" />
                   인터랙티브 수목 지도
                 </CardTitle>
-                {/* Map Mode Selector */}
-                <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-                  {(Object.entries(mapModeConfig) as [MapMode, typeof mapModeConfig.risk][]).map(
-                    ([mode, cfg]) => {
-                      const Icon = cfg.icon;
-                      return (
-                        <button
-                          key={mode}
-                          onClick={() => setMapMode(mode)}
-                          data-testid={`button-map-mode-${mode}`}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                            mapMode === mode
-                              ? "bg-background shadow-sm text-foreground"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                          {cfg.label}
-                        </button>
-                      );
-                    }
-                  )}
+                <div className="flex items-center gap-2">
+                  {/* Map Mode Selector */}
+                  <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+                    {(Object.entries(mapModeConfig) as [MapMode, typeof mapModeConfig.risk][]).map(
+                      ([mode, cfg]) => {
+                        const Icon = cfg.icon;
+                        return (
+                          <button
+                            key={mode}
+                            onClick={() => setMapMode(mode)}
+                            data-testid={`button-map-mode-${mode}`}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                              mapMode === mode
+                                ? "bg-background shadow-sm text-foreground"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            {cfg.label}
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
+                  {/* 기상 데이터 상태 */}
+                  <span
+                    data-testid="status-weather-source"
+                    className={`text-xs px-2 py-1 rounded-full font-medium ${
+                      weatherLoading
+                        ? "bg-muted text-muted-foreground"
+                        : weatherIsReal
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+                    }`}
+                  >
+                    {weatherLoading ? "기상 로딩 중…" : weatherIsReal ? "기상청 실측 ●" : "평년값 시뮬레이션"}
+                  </span>
                 </div>
               </div>
             </CardHeader>
