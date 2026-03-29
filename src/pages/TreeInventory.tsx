@@ -174,7 +174,7 @@ export default function TreeInventory() {
 
   const filteredTrees = useMemo(() => {
     return treesListData.filter((t) => {
-      if (searchId.trim() && !t.id.toLowerCase().includes(searchId.toLowerCase())) return false;
+      if (searchId.trim() && t.id !== searchId.trim()) return false;
       if (filterSpecies !== ALL_VALUE && t.species !== filterSpecies) return false;
       if (filterRiskGrade !== ALL_VALUE && t.iqtriGrade !== filterRiskGrade) return false;
       if (filterPestGrade !== ALL_VALUE && t.pestGrade !== filterPestGrade) return false;
