@@ -1,8 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import {
-  ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ReferenceLine, ReferenceArea, ResponsiveContainer,
-} from "recharts";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bug, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
@@ -23,10 +19,8 @@ const PEST_COLOR: Record<string, string> = {
   갈색날개매미충: "#8b5cf6",
 };
 
-// 복숭아순나방 다세대 목표 누적 DD (PDF 7항)
 const PEACH_GENERATIONS = [214, 660, 1380, 1950];
 
-// PDF 8항 — 월별 방제 시기표
 type MarkType = "primary" | "secondary" | "observe" | "none";
 const MONTHLY_SCHEDULE: Record<string, MarkType[]> = {
   복숭아순나방: ["none","none","none","none","primary","primary","secondary","primary","secondary","none","none","none"],
@@ -48,8 +42,41 @@ const STATUS_STYLE: Record<PestStatus, { badge: string; bar: string; label: stri
   실행: { badge: "bg-red-100 text-red-700 border-red-200",   bar: "#ef4444", label: "방제 실행 권고" },
 };
 
+// ─── 막대바 타임라인 상수 ──────────────────────────────────────────────────────
+const TL_MONTH_START = 2; // March
+const TL_MONTH_END   = 10; // November
+const TL_DAY_START   = MONTH_START_DAY[TL_MONTH_START];
+const TL_DAY_END     = MONTH_START_DAY[TL_MONTH_END];
+const TL_DAYS_TOTAL  = TL_DAY_END - TL_DAY_START;
+
+function dayOfYearToPct(doy: number): number {
+  return Math.max(0, Math.min(100, (doy - TL_DAY_START) / TL_DAYS_TOTAL * 100));
+}
+
+function ddToDayOfYear(baseTemp: number, targetDD: number): number {
+  let cum = 0;
+  for (let m = 0; m < 12; m++) {
+    const dailyDD = Math.max(0, ICHEON_MONTHLY_AVG[m] - baseTemp);
+    const monthDD = dailyDD * MONTH_DAYS[m];
+    if (cum + monthDD >= targetDD && dailyDD > 0) {
+      const day = Math.min(Math.ceil((targetDD - cum) / dailyDD), MONTH_DAYS[m]);
+      return MONTH_START_DAY[m] + day - 1;
+    }
+    cum += monthDD;
+  }
+  return 365;
+}
+
+function doyToLabel(doy: number): string {
+  for (let m = 0; m < 12; m++) {
+    const end = MONTH_START_DAY[m] + MONTH_DAYS[m];
+    if (doy < end) return `${m + 1}월 ${doy - MONTH_START_DAY[m] + 1}일`;
+  }
+  return "";
+}
+
 // ─── 유틸 ────────────────────────────────────────────────────────────────────
-function buildMonthlyDD(baseTemp: number) {
+function buildMonthlyDD(baseTemp: number): number[] {
   let cum = 0;
   return ICHEON_MONTHLY_AVG.map((avg, i) => {
     cum += Math.max(0, avg - baseTemp) * MONTH_DAYS[i];
@@ -57,50 +84,8 @@ function buildMonthlyDD(baseTemp: number) {
   });
 }
 
-function buildDailyDD(baseTemp: number) {
-  const points: { label: string; dayOfMonth: number; monthIdx: number; cumulative: number }[] = [];
-  let cum = 0;
-  for (let m = 0; m < 12; m++) {
-    const dailyDD = Math.max(0, ICHEON_MONTHLY_AVG[m] - baseTemp);
-    for (let d = 0; d < MONTH_DAYS[m]; d++) {
-      cum += dailyDD;
-      points.push({ label: `${d + 1}일`, dayOfMonth: d + 1, monthIdx: m, cumulative: Math.round(cum) });
-    }
-  }
-  return points;
-}
-
 function estimateDateForDD(baseTemp: number, targetDD: number): string {
-  let cum = 0;
-  for (let m = 0; m < 12; m++) {
-    const monthDD = Math.max(0, ICHEON_MONTHLY_AVG[m] - baseTemp) * MONTH_DAYS[m];
-    if (cum + monthDD >= targetDD) {
-      const dailyDD = Math.max(0, ICHEON_MONTHLY_AVG[m] - baseTemp);
-      const day = dailyDD > 0 ? Math.min(Math.ceil((targetDD - cum) / dailyDD), MONTH_DAYS[m]) : MONTH_DAYS[m];
-      return `${m + 1}월 ${day}일`;
-    }
-    cum += monthDD;
-  }
-  return "—";
-}
-
-function estimateMonthForDD(baseTemp: number, targetDD: number): number {
-  let cum = 0;
-  for (let m = 0; m < 12; m++) {
-    cum += Math.max(0, ICHEON_MONTHLY_AVG[m] - baseTemp) * MONTH_DAYS[m];
-    if (cum >= targetDD) return m;
-  }
-  return 11;
-}
-
-function getMilestones(targetDD: number) {
-  return {
-    surveyStart:  Math.round(targetDD * 0.70),
-    intenseStart: Math.round(targetDD * 0.85),
-    controlStart: Math.round(targetDD * 0.90),
-    controlBest:  targetDD,
-    controlEnd:   Math.round(targetDD * 1.075),
-  };
+  return doyToLabel(ddToDayOfYear(baseTemp, targetDD));
 }
 
 function getClosestPeachGenIdx(currentDD: number): number {
@@ -110,99 +95,40 @@ function getClosestPeachGenIdx(currentDD: number): number {
   return PEACH_GENERATIONS.length - 1;
 }
 
+function getMilestoneDates(baseTemp: number, target: number) {
+  const p70  = ddToDayOfYear(baseTemp, target * 0.70);
+  const p85  = ddToDayOfYear(baseTemp, target * 0.85);
+  const p90  = ddToDayOfYear(baseTemp, target * 0.90);
+  const p100 = ddToDayOfYear(baseTemp, target);
+  const p107 = ddToDayOfYear(baseTemp, target * 1.075);
+  return { p70, p85, p90, p100, p107 };
+}
+
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 export default function PestCalendar() {
   const { pestDDs, isRealData, isLoading } = useWeatherData();
   const nowMonth = new Date().getMonth();
 
-  // 카드 선택 / 세대 상태
   const [selectedPest, setSelectedPest] = useState("복숭아순나방");
-  const [peachCardGenIdx, setPeachCardGenIdx] = useState<number>(() => {
-    return 0; // 실제 값은 pestDDs 로드 후 설정
-  });
+  const [peachCardGenIdx, setPeachCardGenIdx] = useState(0);
+  const [graphOpen, setGraphOpen] = useState(false);
+  const [barSelectedGens, setBarSelectedGens] = useState<boolean[]>([true, true, true, true]);
+  const [barPest, setBarPest] = useState("복숭아순나방");
 
-  // pestDDs 로드되면 가장 근접한 세대 설정
   useEffect(() => {
     const currentDD = pestDDs["복숭아순나방"]?.currentDD ?? 0;
     setPeachCardGenIdx(getClosestPeachGenIdx(currentDD));
   }, [pestDDs]);
 
-  // 그래프 상태
-  const [graphOpen, setGraphOpen] = useState(false);
-  const [zoomMonths, setZoomMonths] = useState<number>(3);
-  const [panStart, setPanStart] = useState<number>(Math.max(0, nowMonth - 1));
-  const [peachGraphGenIdx, setPeachGraphGenIdx] = useState(0);
-
-  // refs for stable event handlers
-  const zoomRef = useRef(zoomMonths);
-  const panRef  = useRef(panStart);
-  useEffect(() => { zoomRef.current = zoomMonths; }, [zoomMonths]);
-  useEffect(() => { panRef.current = panStart; }, [panStart]);
-
-  const chartContainerRef = useRef<HTMLDivElement>(null);
-
-  // Scroll → zoom, Drag → pan
-  useEffect(() => {
-    const el = chartContainerRef.current;
-    if (!el || !graphOpen) return;
-
-    const ZOOM_STEPS = [1, 3, 6, 12];
-
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      setZoomMonths(prev => {
-        const idx = ZOOM_STEPS.indexOf(prev);
-        if (e.deltaY < 0) return ZOOM_STEPS[Math.max(0, idx - 1)];
-        return ZOOM_STEPS[Math.min(ZOOM_STEPS.length - 1, idx + 1)];
-      });
-    };
-
-    let dragStartX = 0;
-    let dragStartPan = 0;
-    let dragging = false;
-
-    const onMouseDown = (e: MouseEvent) => {
-      dragging = true;
-      dragStartX = e.clientX;
-      dragStartPan = panRef.current;
-      el.style.cursor = "grabbing";
-    };
-    const onMouseMove = (e: MouseEvent) => {
-      if (!dragging) return;
-      const w = el.offsetWidth;
-      const pxPerUnit = w / zoomRef.current;
-      const delta = Math.round((dragStartX - e.clientX) / pxPerUnit);
-      const max = zoomRef.current === 1 ? 11 : 12 - zoomRef.current;
-      setPanStart(Math.max(0, Math.min(max, dragStartPan + delta)));
-    };
-    const onMouseUp = () => {
-      dragging = false;
-      el.style.cursor = "grab";
-    };
-
-    el.style.cursor = "grab";
-    el.addEventListener("wheel", onWheel, { passive: false });
-    el.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    return () => {
-      el.removeEventListener("wheel", onWheel);
-      el.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-      el.style.cursor = "";
-    };
-  }, [graphOpen]);
-
-  // 세대 탭 클릭 → 해당 세대 방제 시기로 pan 이동
-  const handleGraphGenChange = useCallback((idx: number) => {
-    setPeachGraphGenIdx(idx);
-    const target = PEACH_GENERATIONS[idx];
-    const pestBase = PEST_TARGETS.find(p => p.name === "복숭아순나방")!;
-    const controlMonth = estimateMonthForDD(pestBase.baseTemp, target);
-    const newStart = Math.max(0, Math.min(12 - zoomRef.current, controlMonth - 1));
-    setPanStart(newStart);
-  }, []);
+  const toggleGen = (idx: number) => {
+    setBarSelectedGens(prev => {
+      const next = [...prev];
+      const willAllBeOff = next.filter((v, i) => i !== idx && v).length === 0 && next[idx];
+      if (willAllBeOff) return prev;
+      next[idx] = !next[idx];
+      return next;
+    });
+  };
 
   // ── 카드 데이터 ──
   const pestCards = useMemo(() => {
@@ -226,11 +152,10 @@ export default function PestCalendar() {
     });
   }, [pestDDs]);
 
-  // 복숭아순나방 세대별 데이터
   const peachGenData = useMemo(() => {
     const pest = PEST_TARGETS.find(p => p.name === "복숭아순나방")!;
     const currentDD = pestDDs["복숭아순나방"]?.currentDD ?? 0;
-    return PEACH_GENERATIONS.map((target, idx) => {
+    return PEACH_GENERATIONS.map((target) => {
       const pct = Math.min(110, Math.round((currentDD / target) * 100));
       const status = getPestStatus(pct);
       const remaining = Math.max(0, target - currentDD);
@@ -243,42 +168,19 @@ export default function PestCalendar() {
         controlBest:  estimateDateForDD(pest.baseTemp, target),
         controlEnd:   estimateDateForDD(pest.baseTemp, target * 1.075),
       };
-      return { idx, target, pct, status, dates, daysLeft };
+      return { target, pct, status, dates, daysLeft };
     });
   }, [pestDDs]);
 
-  // ── 그래프 데이터 ──
-  const pestBase = PEST_TARGETS.find(p => p.name === selectedPest) ?? PEST_TARGETS[0];
-  const isMultiGen = selectedPest === "복숭아순나방";
-  const graphTarget = isMultiGen ? PEACH_GENERATIONS[peachGraphGenIdx] : pestBase.targetDD;
+  const barPestObj = PEST_TARGETS.find(p => p.name === barPest) ?? PEST_TARGETS[0];
+  const isBarMultiGen = barPest === "복숭아순나방";
+  const barGenerations = isBarMultiGen ? PEACH_GENERATIONS : [barPestObj.targetDD];
+  const barVisibleGens = isBarMultiGen
+    ? barGenerations.filter((_, i) => barSelectedGens[i])
+    : barGenerations;
 
-  const allMonthly = useMemo(() => buildMonthlyDD(pestBase.baseTemp), [pestBase.baseTemp]);
-  const allDaily   = useMemo(() => buildDailyDD(pestBase.baseTemp), [pestBase.baseTemp]);
-
-  const isDailyView = zoomMonths === 1;
-
-  const chartData = useMemo(() => {
-    if (isDailyView) {
-      const start = MONTH_START_DAY[panStart];
-      return allDaily.slice(start, start + MONTH_DAYS[panStart]).map((d, i) => ({
-        label: i % 5 === 0 ? `${d.dayOfMonth}일` : "",
-        fullLabel: `${panStart + 1}월 ${d.dayOfMonth}일`,
-        cumulative: d.cumulative,
-      }));
-    }
-    const clipped = Math.min(panStart, 12 - zoomMonths);
-    return allMonthly.slice(clipped, clipped + zoomMonths).map((cum, i) => ({
-      label: MONTHS_KO[clipped + i],
-      fullLabel: MONTHS_KO[clipped + i],
-      cumulative: cum,
-    }));
-  }, [isDailyView, allDaily, allMonthly, panStart, zoomMonths]);
-
-  const milestones = getMilestones(graphTarget);
-  const currentDDForChart = Math.round(pestDDs[selectedPest]?.currentDD ?? allMonthly[nowMonth] ?? 0);
-  const yMax = Math.max(...chartData.map(d => d.cumulative), milestones.controlEnd) * 1.08;
-  const nowCardStatus = pestCards.find(p => p.name === selectedPest)?.status ?? "정상";
-  const clampedPanStart = Math.min(panStart, 12 - zoomMonths);
+  const todayDOY = MONTH_START_DAY[nowMonth] + new Date().getDate() - 1;
+  const todayPct = dayOfYearToPct(todayDOY);
 
   return (
     <div className="min-h-screen bg-background">
@@ -309,24 +211,14 @@ export default function PestCalendar() {
 
         {/* ── 해충별 상태 카드 ── */}
         <div className="grid gap-4 md:grid-cols-3 mb-6">
-          {/* 복숭아순나방 — 다세대 슬라이드 카드 */}
           <PeachCard
             genData={peachGenData}
             genIdx={peachCardGenIdx}
             setGenIdx={setPeachCardGenIdx}
             currentDD={Math.round(pestDDs["복숭아순나방"]?.currentDD ?? 0)}
             isSelected={selectedPest === "복숭아순나방"}
-            onClick={() => {
-              setSelectedPest("복숭아순나방");
-              setPeachGraphGenIdx(peachCardGenIdx);
-              const target = PEACH_GENERATIONS[peachCardGenIdx];
-              const pest = PEST_TARGETS.find(p => p.name === "복숭아순나방")!;
-              const cm = estimateMonthForDD(pest.baseTemp, target);
-              setPanStart(Math.max(0, Math.min(12 - zoomMonths, cm - 1)));
-            }}
+            onClick={() => setSelectedPest("복숭아순나방")}
           />
-
-          {/* 꽃매미 / 갈색날개매미충 */}
           {pestCards.filter(p => p.name !== "복숭아순나방").map(p => {
             const s = STATUS_STYLE[p.status];
             return (
@@ -338,9 +230,7 @@ export default function PestCalendar() {
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-semibold" style={{ color: PEST_COLOR[p.name] }}>
-                      {p.name}
-                    </CardTitle>
+                    <CardTitle className="text-base font-semibold" style={{ color: PEST_COLOR[p.name] }}>{p.name}</CardTitle>
                     <Badge variant="outline" className={s.badge}>{p.status}</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">발육영점온도 {p.baseTemp}°C</p>
@@ -349,10 +239,10 @@ export default function PestCalendar() {
                   <DDProgressBar pct={p.pct} bar={s.bar} label={s.label} />
                   <div className="grid grid-cols-1 gap-1 text-xs">
                     <MilestoneRow icon="·····" label="예찰 시작" date={p.dates.surveyStart} color="#22c55e" />
-                    <MilestoneRow icon="≈≈≈≈" label="집중예찰" date={`${p.dates.intenseStart} ~ ${p.dates.controlStart}`} color="#eab308" />
+                    <MilestoneRow icon="≈≈≈≈" label="집중예찰"  date={`${p.dates.intenseStart} ~ ${p.dates.controlStart}`} color="#eab308" />
                     <MilestoneRow icon="·····" label="방제 시작" date={p.dates.controlStart} color="#f97316" />
-                    <MilestoneRow icon="━━━━" label="방제 최적" date={p.dates.controlBest} color="#ef4444" bold />
-                    <MilestoneRow icon="·····" label="방제 종료" date={p.dates.controlEnd} color="#ef4444" />
+                    <MilestoneRow icon="━━━━" label="방제 최적" date={p.dates.controlBest}  color="#ef4444" bold />
+                    <MilestoneRow icon="·····" label="방제 종료" date={p.dates.controlEnd}   color="#ef4444" />
                   </div>
                   <div className="text-center text-xs font-semibold" style={{ color: s.bar }}>
                     {p.daysLeft > 0 ? `D-${p.daysLeft}일` : "방제 실행 권고"}
@@ -401,7 +291,7 @@ export default function PestCalendar() {
           </CardContent>
         </Card>
 
-        {/* ── 방제 시기 그래프 (토글, 맨 아래) ── */}
+        {/* ── 방제기간 막대바 (토글, 맨 아래) ── */}
         <Card>
           <CardHeader
             className="cursor-pointer select-none"
@@ -410,63 +300,60 @@ export default function PestCalendar() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-base flex items-center gap-2">
-                  방제 시기 그래프
+                  방제기간 막대바
                   {!graphOpen && (
-                    <span className="text-xs text-muted-foreground font-normal ml-1">
-                      (클릭하여 펼치기)
-                    </span>
+                    <span className="text-xs text-muted-foreground font-normal ml-1">(클릭하여 펼치기)</span>
                   )}
                 </CardTitle>
                 {graphOpen && (
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    스크롤로 확대/축소 · 드래그로 이동 · 현재 표시: {isDailyView ? `${panStart + 1}월 (일별)` : `${MONTHS_KO[clampedPanStart]} ~ ${MONTHS_KO[Math.min(11, clampedPanStart + zoomMonths - 1)]}`}
+                    해충별 예찰·방제 기간을 막대바로 확인하세요
                   </p>
                 )}
               </div>
               <div className="p-1 rounded hover:bg-muted transition-colors" data-testid="button-toggle-graph">
-                {graphOpen ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+                {graphOpen
+                  ? <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
               </div>
             </div>
 
-            {/* 해충 필터 + 세대 탭 */}
+            {/* 해충 선택 탭 */}
             {graphOpen && (
               <div className="flex flex-wrap items-center gap-2 mt-3" onClick={e => e.stopPropagation()}>
                 {PEST_TARGETS.map(p => (
                   <button
                     key={p.name}
-                    onClick={() => {
-                      setSelectedPest(p.name);
-                      if (p.name !== "복숭아순나방") {
-                        const cm = estimateMonthForDD(p.baseTemp, p.targetDD);
-                        setPanStart(Math.max(0, Math.min(12 - zoomMonths, cm - 1)));
-                      }
-                    }}
-                    data-testid={`tab-pest-${p.name}`}
-                    className={`text-xs px-3 py-1 rounded-full border transition-all ${
-                      selectedPest === p.name ? "text-white border-transparent" : "bg-transparent text-muted-foreground border-border hover:border-primary"
+                    onClick={() => { setBarPest(p.name); setBarSelectedGens([true,true,true,true]); }}
+                    data-testid={`tab-bar-pest-${p.name}`}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
+                      barPest === p.name ? "text-white border-transparent" : "bg-transparent text-muted-foreground border-border hover:border-primary"
                     }`}
-                    style={selectedPest === p.name ? { backgroundColor: PEST_COLOR[p.name] } : {}}
+                    style={barPest === p.name ? { backgroundColor: PEST_COLOR[p.name] } : {}}
                   >
                     {p.name}
                   </button>
                 ))}
 
-                {/* 복숭아순나방 세대 탭 */}
-                {isMultiGen && (
-                  <div className="flex gap-1 ml-2 border-l pl-2" onClick={e => e.stopPropagation()}>
+                {/* 다세대 체크박스 */}
+                {graphOpen && isBarMultiGen && (
+                  <div className="flex gap-2 ml-2 border-l pl-3" onClick={e => e.stopPropagation()}>
                     {PEACH_GENERATIONS.map((_, idx) => (
-                      <button
+                      <label
                         key={idx}
-                        onClick={() => handleGraphGenChange(idx)}
-                        data-testid={`tab-gen-${idx + 1}`}
-                        className={`text-xs px-2.5 py-1 rounded border transition-all ${
-                          peachGraphGenIdx === idx
-                            ? "bg-red-500 text-white border-red-500"
-                            : "border-border text-muted-foreground hover:border-red-400"
-                        }`}
+                        className="flex items-center gap-1 text-xs cursor-pointer select-none"
+                        data-testid={`checkbox-gen-${idx + 1}`}
                       >
-                        {idx + 1}세대
-                      </button>
+                        <input
+                          type="checkbox"
+                          checked={barSelectedGens[idx]}
+                          onChange={() => toggleGen(idx)}
+                          className="accent-red-500 w-3.5 h-3.5"
+                        />
+                        <span className={barSelectedGens[idx] ? "text-red-600 font-medium" : "text-muted-foreground"}>
+                          {idx + 1}세대
+                        </span>
+                      </label>
                     ))}
                   </div>
                 )}
@@ -476,80 +363,16 @@ export default function PestCalendar() {
 
           {graphOpen && (
             <CardContent>
-              <div ref={chartContainerRef} className="select-none" style={{ userSelect: "none" }}>
-                <ResponsiveContainer width="100%" height={360}>
-                  <ComposedChart data={chartData} margin={{ top: 16, right: 44, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis
-                      dataKey="label"
-                      tick={{ fontSize: 11 }}
-                      interval={isDailyView ? 4 : 0}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 11 }}
-                      unit=" DD"
-                      domain={[0, Math.ceil(yMax / 50) * 50]}
-                      width={68}
-                    />
-                    <Tooltip
-                      labelFormatter={(_, payload) => payload?.[0]?.payload?.fullLabel ?? ""}
-                      formatter={(value: number) => [`${value} DD`, "누적 DD"]}
-                      contentStyle={{
-                        background: "hsl(var(--popover))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        fontSize: "12px",
-                      }}
-                    />
-
-                    {/* 집중예찰 반투명 띠 */}
-                    <ReferenceArea y1={milestones.intenseStart} y2={milestones.controlStart} fill="#eab308" fillOpacity={0.13} ifOverflow="extendDomain" />
-                    {/* 방제 권장기간 반투명 띠 */}
-                    <ReferenceArea y1={milestones.controlStart} y2={milestones.controlEnd} fill="#ef4444" fillOpacity={0.10} ifOverflow="extendDomain" />
-
-                    {/* 마일스톤 기준선 */}
-                    <ReferenceLine y={milestones.surveyStart}  stroke="#22c55e" strokeDasharray="5 4" strokeWidth={1.5}
-                      label={{ value: "예찰(70%)", position: "insideTopRight", fontSize: 9, fill: "#22c55e" }} />
-                    <ReferenceLine y={milestones.controlStart} stroke="#f97316" strokeDasharray="5 4" strokeWidth={1.5}
-                      label={{ value: "방제시작(90%)", position: "insideTopRight", fontSize: 9, fill: "#f97316" }} />
-                    <ReferenceLine y={milestones.controlBest}  stroke="#ef4444" strokeWidth={2}
-                      label={{ value: "최적(100%)", position: "insideTopRight", fontSize: 9, fill: "#ef4444" }} />
-                    <ReferenceLine y={milestones.controlEnd}   stroke="#ef4444" strokeDasharray="5 4" strokeWidth={1.5}
-                      label={{ value: "종료(107%)", position: "insideTopRight", fontSize: 9, fill: "#ef4444" }} />
-
-                    {/* 현재 DD */}
-                    <ReferenceLine
-                      y={currentDDForChart}
-                      stroke={STATUS_STYLE[nowCardStatus].bar}
-                      strokeWidth={2}
-                      strokeDasharray="8 3"
-                      label={{ value: `현재 ${currentDDForChart} DD`, position: "insideBottomRight", fontSize: 10, fill: STATUS_STYLE[nowCardStatus].bar }}
-                    />
-
-                    {/* 누적 DD 곡선 */}
-                    <Area
-                      type="monotone"
-                      dataKey="cumulative"
-                      name="누적 DD"
-                      stroke={PEST_COLOR[selectedPest]}
-                      fill={PEST_COLOR[selectedPest]}
-                      fillOpacity={0.08}
-                      strokeWidth={2.5}
-                      dot={false}
-                    />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* 범례 */}
-              <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5"><span className="inline-block w-6 border-t-2 border-dashed border-green-500" />예찰 시작(70%)</span>
-                <span className="flex items-center gap-1.5"><span className="inline-block w-6 h-3 bg-yellow-300/50 border border-yellow-400 rounded-sm" />집중예찰(85~90%)</span>
-                <span className="flex items-center gap-1.5"><span className="inline-block w-6 border-t-2 border-dashed border-orange-500" />방제 시작(90%)</span>
-                <span className="flex items-center gap-1.5"><span className="inline-block w-6 border-t-2 border-red-500" />방제 최적(100%)</span>
-                <span className="flex items-center gap-1.5"><span className="inline-block w-6 border-t-2 border-dashed border-red-400" />방제 종료(107%)</span>
-                <span className="flex items-center gap-1.5 ml-2 text-muted-foreground/60 italic">↕ 스크롤로 확대/축소 · ↔ 드래그로 이동</span>
-              </div>
+              <BarTimeline
+                pestName={barPest}
+                baseTemp={barPestObj.baseTemp}
+                pestColor={PEST_COLOR[barPest]}
+                generations={barVisibleGens}
+                genLabels={isBarMultiGen
+                  ? PEACH_GENERATIONS.map((_, i) => `${i + 1}세대`).filter((_, i) => barSelectedGens[i])
+                  : [barPest]}
+                todayPct={todayPct}
+              />
             </CardContent>
           )}
         </Card>
@@ -559,21 +382,214 @@ export default function PestCalendar() {
   );
 }
 
+// ─── 방제기간 막대바 ──────────────────────────────────────────────────────────
+function BarTimeline({
+  pestName, baseTemp, pestColor, generations, genLabels, todayPct,
+}: {
+  pestName: string;
+  baseTemp: number;
+  pestColor: string;
+  generations: number[];
+  genLabels: string[];
+  todayPct: number;
+}) {
+  // 월 눈금 계산
+  const monthRuler = useMemo(() => {
+    const ruler: { label: string; pct: number }[] = [];
+    for (let m = TL_MONTH_START; m < TL_MONTH_END; m++) {
+      ruler.push({ label: MONTHS_KO[m], pct: dayOfYearToPct(MONTH_START_DAY[m]) });
+    }
+    return ruler;
+  }, []);
+
+  // 각 세대 막대 데이터
+  const rows = useMemo(() => {
+    return generations.map((target, i) => {
+      const ms = getMilestoneDates(baseTemp, target);
+      return {
+        label: genLabels[i],
+        target,
+        p70:  dayOfYearToPct(ms.p70),
+        p85:  dayOfYearToPct(ms.p85),
+        p90:  dayOfYearToPct(ms.p90),
+        p100: dayOfYearToPct(ms.p100),
+        p107: dayOfYearToPct(ms.p107),
+        doy70:  ms.p70,
+        doy85:  ms.p85,
+        doy90:  ms.p90,
+        doy100: ms.p100,
+        doy107: ms.p107,
+      };
+    });
+  }, [generations, genLabels, baseTemp]);
+
+  return (
+    <div className="w-full">
+      {/* 범례 */}
+      <div className="flex flex-wrap gap-4 mb-4 text-xs">
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-8 h-3 rounded-sm bg-yellow-100 border border-yellow-300" />예찰 시기
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-8 h-3 rounded-sm bg-amber-400" />집중 예찰
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-8 h-3 rounded-sm" style={{ background: "linear-gradient(to right, #f97316, #dc2626)" }} />방제 시기
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-8 h-3 rounded-sm bg-red-200" />방제 종료 구간
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-0.5 h-4 bg-blue-500" />오늘
+        </span>
+      </div>
+
+      {/* 전체 타임라인 컨테이너 */}
+      <div className="relative">
+        {/* 월 눈금 헤더 */}
+        <div className="relative h-7 mb-1 border-b border-border">
+          {monthRuler.map(r => (
+            <div
+              key={r.label}
+              className="absolute flex flex-col items-center"
+              style={{ left: `${r.pct}%`, transform: "translateX(-50%)" }}
+            >
+              <div className="h-2 w-px bg-border mb-0.5" />
+              <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">{r.label}</span>
+            </div>
+          ))}
+          {/* 오늘 선 (헤더) */}
+          {todayPct > 0 && todayPct < 100 && (
+            <div
+              className="absolute top-0 bottom-0 w-0.5 bg-blue-500"
+              style={{ left: `${todayPct}%` }}
+            />
+          )}
+        </div>
+
+        {/* 막대 행들 */}
+        {rows.map((row, rowIdx) => (
+          <div key={rowIdx} className="mb-6">
+            {/* 행 레이블 */}
+            {generations.length > 1 && (
+              <div className="text-xs font-semibold mb-1.5" style={{ color: pestColor }}>
+                {row.label} <span className="text-muted-foreground font-normal">(목표 {row.target} DD)</span>
+              </div>
+            )}
+
+            {/* 막대 영역 */}
+            <div className="relative h-9 rounded-md bg-muted/30 border border-border overflow-visible">
+              {/* 예찰 시기 (70~85%) — 연노랑 */}
+              {row.p85 > row.p70 && (
+                <div
+                  className="absolute top-0 h-full bg-yellow-100 border-r border-yellow-300"
+                  style={{ left: `${row.p70}%`, width: `${row.p85 - row.p70}%` }}
+                />
+              )}
+              {/* 집중 예찰 (85~90%) — 진노랑 */}
+              {row.p90 > row.p85 && (
+                <div
+                  className="absolute top-0 h-full bg-amber-400 border-r border-amber-500"
+                  style={{ left: `${row.p85}%`, width: `${row.p90 - row.p85}%` }}
+                />
+              )}
+              {/* 방제 시작~최적 (90~100%) — 주황→빨강 그라디언트 */}
+              {row.p100 > row.p90 && (
+                <div
+                  className="absolute top-0 h-full border-r border-red-600"
+                  style={{
+                    left: `${row.p90}%`,
+                    width: `${row.p100 - row.p90}%`,
+                    background: "linear-gradient(to right, #f97316, #dc2626)",
+                  }}
+                />
+              )}
+              {/* 방제 종료 구간 (100~107.5%) — 연빨강 */}
+              {row.p107 > row.p100 && (
+                <div
+                  className="absolute top-0 h-full bg-red-200"
+                  style={{ left: `${row.p100}%`, width: `${row.p107 - row.p100}%` }}
+                />
+              )}
+
+              {/* 눈금 선 */}
+              {[
+                { pct: row.p70,  color: "#ca8a04" },
+                { pct: row.p85,  color: "#d97706" },
+                { pct: row.p90,  color: "#ea580c" },
+                { pct: row.p100, color: "#dc2626" },
+                { pct: row.p107, color: "#dc2626" },
+              ].map((tick, ti) => (
+                <div
+                  key={ti}
+                  className="absolute top-0 h-full w-0.5"
+                  style={{ left: `${tick.pct}%`, backgroundColor: tick.color, opacity: 0.7 }}
+                />
+              ))}
+
+              {/* 오늘 선 */}
+              {todayPct > 0 && todayPct < 100 && (
+                <div
+                  className="absolute top-0 h-full w-0.5 bg-blue-500 z-10"
+                  style={{ left: `${todayPct}%` }}
+                />
+              )}
+            </div>
+
+            {/* 날짜 레이블 */}
+            <div className="relative h-14 mt-0.5">
+              {[
+                { pct: row.p70,  doy: row.doy70,  label: "예찰 시작", color: "#ca8a04", up: false },
+                { pct: row.p85,  doy: row.doy85,  label: "집중예찰",  color: "#d97706", up: true  },
+                { pct: row.p90,  doy: row.doy90,  label: "방제 시작", color: "#ea580c", up: false },
+                { pct: row.p100, doy: row.doy100, label: "방제 최적", color: "#dc2626", up: true  },
+                { pct: row.p107, doy: row.doy107, label: "방제 종료", color: "#dc2626", up: false },
+              ].map((item, ti) => (
+                <div
+                  key={ti}
+                  className="absolute flex flex-col items-center"
+                  style={{
+                    left: `${item.pct}%`,
+                    transform: "translateX(-50%)",
+                    top: item.up ? 0 : 28,
+                  }}
+                >
+                  <div className="w-px h-2" style={{ backgroundColor: item.color }} />
+                  <div className="text-center" style={{ color: item.color }}>
+                    <div className="text-[9px] font-medium leading-tight whitespace-nowrap">{item.label}</div>
+                    <div className="text-[9px] leading-tight whitespace-nowrap">{doyToLabel(item.doy)}</div>
+                  </div>
+                </div>
+              ))}
+              {/* 오늘 레이블 */}
+              {todayPct > 0 && todayPct < 100 && (
+                <div
+                  className="absolute flex flex-col items-center"
+                  style={{ left: `${todayPct}%`, transform: "translateX(-50%)", top: 12 }}
+                >
+                  <div className="text-[9px] text-blue-500 font-medium whitespace-nowrap">오늘</div>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── 복숭아순나방 다세대 카드 ─────────────────────────────────────────────────
 function PeachCard({
   genData, genIdx, setGenIdx, currentDD, isSelected, onClick,
 }: {
-  genData: ReturnType<typeof Array.prototype.map>;
+  genData: { target: number; pct: number; status: PestStatus; dates: Record<string, string>; daysLeft: number }[];
   genIdx: number;
   setGenIdx: (i: number) => void;
   currentDD: number;
   isSelected: boolean;
   onClick: () => void;
 }) {
-  const gen = genData[genIdx] as {
-    idx: number; target: number; pct: number; status: PestStatus;
-    dates: Record<string, string>; daysLeft: number;
-  };
+  const gen = genData[genIdx];
   const s = STATUS_STYLE[gen.status];
 
   return (
@@ -582,24 +598,19 @@ function PeachCard({
       className={`cursor-pointer transition-all relative overflow-hidden ${isSelected ? "ring-2 ring-primary" : "hover:shadow-md"}`}
       onClick={onClick}
     >
-      {/* 왼쪽 화살표 */}
       <button
         onClick={e => { e.stopPropagation(); setGenIdx(Math.max(0, genIdx - 1)); }}
         disabled={genIdx === 0}
         className="absolute left-0 top-0 bottom-0 w-9 flex items-center justify-center bg-gradient-to-r from-black/5 to-transparent hover:from-black/15 disabled:opacity-0 transition-all z-10"
         data-testid="button-gen-prev"
-        aria-label="이전 세대"
       >
         <ChevronLeft className="h-5 w-5 text-foreground/50" />
       </button>
-
-      {/* 오른쪽 화살표 */}
       <button
         onClick={e => { e.stopPropagation(); setGenIdx(Math.min(PEACH_GENERATIONS.length - 1, genIdx + 1)); }}
         disabled={genIdx === PEACH_GENERATIONS.length - 1}
         className="absolute right-0 top-0 bottom-0 w-9 flex items-center justify-center bg-gradient-to-l from-black/5 to-transparent hover:from-black/15 disabled:opacity-0 transition-all z-10"
         data-testid="button-gen-next"
-        aria-label="다음 세대"
       >
         <ChevronRight className="h-5 w-5 text-foreground/50" />
       </button>
@@ -614,10 +625,7 @@ function PeachCard({
           </CardTitle>
           <Badge variant="outline" className={s.badge}>{gen.status}</Badge>
         </div>
-        <div className="flex items-center gap-2 mt-1">
-          <p className="text-xs text-muted-foreground">목표 {gen.target} DD · 발육영점 7.2°C</p>
-        </div>
-        {/* 세대 인디케이터 */}
+        <p className="text-xs text-muted-foreground">목표 {gen.target} DD · 발육영점 7.2°C</p>
         <div className="flex gap-1 mt-1">
           {PEACH_GENERATIONS.map((_, i) => (
             <button
@@ -632,9 +640,7 @@ function PeachCard({
 
       <CardContent className="space-y-3 px-10">
         <DDProgressBar pct={gen.pct} bar={s.bar} label={s.label} />
-        <div className="text-xs text-muted-foreground text-center">
-          현재 누적: {currentDD} / {gen.target} DD
-        </div>
+        <div className="text-xs text-muted-foreground text-center">현재 누적: {currentDD} / {gen.target} DD</div>
         <div className="grid grid-cols-1 gap-1 text-xs">
           <MilestoneRow icon="·····" label="예찰 시작" date={gen.dates.surveyStart}  color="#22c55e" />
           <MilestoneRow icon="≈≈≈≈" label="집중예찰"  date={`${gen.dates.intenseStart} ~ ${gen.dates.controlStart}`} color="#eab308" />

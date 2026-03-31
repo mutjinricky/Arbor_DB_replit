@@ -80,10 +80,14 @@ public/
 - TreeLayer colors driven by calculated grades
 
 ### C-05: 방제 달력 (Pest Calendar)
-- `/pest-calendar` route with DD progress cards for 3 pest targets
-- Monthly cumulative area chart (Recharts)
-- Annual control timing grid calendar
-- Uses weatherApi.ts / useWeatherData.ts with 이천 평년값 fallback
+- `/pest-calendar` route — 4-stage status system (정상/예찰/준비/실행) based on DD %
+- 5-milestone date cards: 예찰 시작(70%), 집중예찰(85~90%), 방제 시작(90%), 최적(100%), 종료(107.5%)
+- **복숭아순나방 다세대 카드**: 1~4세대, 화살표로 세대 전환, 가장 근접한 세대 우선 표시
+- **방제기간 막대바** (collapsible, 맨 아래): 해충 탭 + 세대 체크박스 + 가로 Gantt 바
+  - 연노랑(예찰) / 진노랑(집중예찰) / 주황→빨강 그라디언트(방제시기) / 연빨강(종료구간)
+  - 월 눈금 + 5개 마일스톤 상세 날짜 레이블 + 오늘 날짜 파란선
+- 월별 방제 시기표 (PDF 8항 기준: ● ◎ ○ 표시)
+- TreeLayer: circle-sort-key로 위험도 높은 수목이 지도 위쪽 렌더링
 
 ### C-06: 대시보드 K-UTSI 토양 요약
 - `SoilSummaryCard` loads all 2985 trees, computes grade distribution (A–E)
