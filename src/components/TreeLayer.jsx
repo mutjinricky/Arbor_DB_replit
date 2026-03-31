@@ -42,12 +42,26 @@ function getColorExpression(mapMode) {
   return buildColorMapping('iqtriGrade', RISK_COLOR_MAP, '#6b7280');
 }
 
+// 위험도 높은 수목이 위쪽에 렌더링되도록 sort-key 설정
+function getSortKeyExpression(mapMode) {
+  if (mapMode === 'pest') {
+    return ['match', ['get', 'pestGrade'], 'danger', 3, 'warning', 2, 'safe', 1, 0];
+  }
+  if (mapMode === 'soil') {
+    return ['match', ['get', 'soilGrade'], 'E', 5, 'D', 4, 'C', 3, 'B', 2, 'A', 1, 0];
+  }
+  return ['match', ['get', 'iqtriGrade'], 'extreme', 4, 'high', 3, 'moderate', 2, 'low', 1, 0];
+}
+
 function TreeLayer({ treesData, selectedTreeIds = [], mapMode = 'risk', filteredIds = null }) {
   const colorExpr = getColorExpression(mapMode);
 
   const baseLayerStyle = {
     id: 'trees-point',
     type: 'circle',
+    layout: {
+      'circle-sort-key': getSortKeyExpression(mapMode),
+    },
     paint: {
       'circle-radius': circleRadius,
       'circle-color': colorExpr,
