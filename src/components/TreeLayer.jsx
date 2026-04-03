@@ -23,9 +23,11 @@ const RISK_COLOR_MAP = {
 };
 
 const PEST_COLOR_MAP = {
-  danger: '#dc2626',
-  warning: '#eab308',
-  safe: '#22c55e',
+  execute: '#ef4444',
+  ready:   '#f97316',
+  survey:  '#eab308',
+  prepare: '#06b6d4',
+  stable:  '#22c55e',
 };
 
 const SOIL_COLOR_MAP = {

@@ -1,5 +1,5 @@
 export type RiskGrade = "extreme" | "high" | "moderate" | "low";
-export type PestGrade = "danger" | "warning" | "safe";
+export type PestGrade = "execute" | "ready" | "survey" | "prepare" | "stable";
 export type SoilGrade = "A" | "B" | "C" | "D" | "E";
 
 export interface TreeFullData {
@@ -156,9 +156,11 @@ export function calculatePestControl(
   const daysUntilControl = Math.round(Math.max(0, minDays));
 
   let grade: PestGrade;
-  if (daysUntilControl < 60) grade = "danger";
-  else if (daysUntilControl < 90) grade = "warning";
-  else grade = "safe";
+  if (daysUntilControl <= 0)  grade = "execute";
+  else if (daysUntilControl <= 7)  grade = "ready";
+  else if (daysUntilControl < 14)  grade = "survey";
+  else if (daysUntilControl <= 30) grade = "prepare";
+  else grade = "stable";
 
   return {
     daysUntilControl,
@@ -291,9 +293,11 @@ export const IQTRI_COLORS: Record<RiskGrade, string> = {
 };
 
 export const PEST_COLORS: Record<PestGrade, string> = {
-  danger: "#dc2626",
-  warning: "#eab308",
-  safe: "#22c55e",
+  execute: "#ef4444",
+  ready:   "#f97316",
+  survey:  "#eab308",
+  prepare: "#06b6d4",
+  stable:  "#22c55e",
 };
 
 export const SOIL_COLORS: Record<SoilGrade, string> = {
@@ -312,9 +316,11 @@ export const IQTRI_LABELS: Record<RiskGrade, string> = {
 };
 
 export const PEST_LABELS: Record<PestGrade, string> = {
-  danger: "위험 (<60일)",
-  warning: "주의 (60~90일)",
-  safe: "안전 (90일+)",
+  execute: "실행 (D-0)",
+  ready:   "방제준비 (D-1~7)",
+  survey:  "예찰 (D-8~14)",
+  prepare: "사전준비 (D-14~30)",
+  stable:  "안정 (D-31+)",
 };
 
 export const SOIL_LABELS: Record<SoilGrade, string> = {

@@ -443,9 +443,11 @@ export default function TreeInventory() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value={ALL_VALUE}>전체</SelectItem>
-                      <SelectItem value="danger">위험 (60일 미만)</SelectItem>
-                      <SelectItem value="warning">주의 (60~90일)</SelectItem>
-                      <SelectItem value="safe">안전 (90일+)</SelectItem>
+                      <SelectItem value="execute">실행 (D-0)</SelectItem>
+                      <SelectItem value="ready">방제준비 (D-1~7)</SelectItem>
+                      <SelectItem value="survey">예찰 (D-8~14)</SelectItem>
+                      <SelectItem value="prepare">사전준비 (D-14~30)</SelectItem>
+                      <SelectItem value="stable">안정 (D-31+)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
