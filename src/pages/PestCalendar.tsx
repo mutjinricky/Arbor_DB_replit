@@ -132,7 +132,6 @@ export default function PestCalendar() {
 
   const [selectedPest, setSelectedPest] = useState("복숭아순나방");
   const [peachCardGenIdx, setPeachCardGenIdx] = useState(0);
-  const [graphOpen, setGraphOpen] = useState(false);
   const [barSelectedGens, setBarSelectedGens] = useState<boolean[]>([true, true, true, true]);
   const [barPest, setBarPest] = useState("복숭아순나방");
 
@@ -146,8 +145,11 @@ export default function PestCalendar() {
   const isDragging = useRef(false);
   const dragStartX = useRef(0);
   const dragStartPan = useRef(0);
+  const userSetGen = useRef(false); // 사용자가 수동으로 세대 선택했는지 여부
 
+  // 최초 데이터 수신 시에만 자동으로 세대 설정 (사용자 수동 선택 이후엔 재설정 안 함)
   useEffect(() => {
+    if (userSetGen.current) return;
     const currentDD = pestDDs["복숭아순나방"]?.currentDD ?? 0;
     setPeachCardGenIdx(getClosestPeachGenIdx(currentDD));
   }, [pestDDs]);
@@ -333,7 +335,7 @@ export default function PestCalendar() {
           <PeachCard
             genData={peachGenData}
             genIdx={peachCardGenIdx}
-            setGenIdx={setPeachCardGenIdx}
+            setGenIdx={(i) => { userSetGen.current = true; setPeachCardGenIdx(i); }}
             currentDD={Math.round(pestDDs["복숭아순나방"]?.currentDD ?? 0)}
             isSelected={selectedPest === "복숭아순나방"}
             onClick={() => setSelectedPest("복숭아순나방")}
@@ -410,90 +412,71 @@ export default function PestCalendar() {
           </CardContent>
         </Card>
 
-        {/* ── 방제기간 막대바 (토글, 맨 아래) ── */}
+        {/* ── 방제기간 막대바 (항상 표시) ── */}
         <Card>
-          <CardHeader
-            className="cursor-pointer select-none"
-            onClick={() => setGraphOpen(o => !o)}
-          >
+          <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base flex items-center gap-2">
-                  방제기간 막대바
-                  {!graphOpen && (
-                    <span className="text-xs text-muted-foreground font-normal ml-1">(클릭하여 펼치기)</span>
-                  )}
-                </CardTitle>
-                {graphOpen && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    해충별 예찰·방제 기간을 막대바로 확인하세요
-                  </p>
-                )}
-              </div>
-              <div className="p-1 rounded hover:bg-muted transition-colors" data-testid="button-toggle-graph">
-                {graphOpen
-                  ? <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                  : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+                <CardTitle className="text-base">방제기간 막대바</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  해충별 예찰·방제 기간을 막대바로 확인하세요 · 막대에 마우스를 올리면 상세 날짜, 클릭하면 세부 정보
+                </p>
               </div>
             </div>
 
             {/* 해충 선택 탭 */}
-            {graphOpen && (
-              <div className="flex flex-wrap items-center gap-2 mt-3" onClick={e => e.stopPropagation()}>
-                {PEST_TARGETS.map(p => (
-                  <button
-                    key={p.name}
-                    onClick={() => { setBarPest(p.name); setBarSelectedGens([true,true,true,true]); }}
-                    data-testid={`tab-bar-pest-${p.name}`}
-                    className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
-                      barPest === p.name ? "text-white border-transparent" : "bg-transparent text-muted-foreground border-border hover:border-primary"
-                    }`}
-                    style={barPest === p.name ? { backgroundColor: PEST_COLOR[p.name] } : {}}
-                  >
-                    {p.name}
-                  </button>
-                ))}
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              {PEST_TARGETS.map(p => (
+                <button
+                  key={p.name}
+                  onClick={() => { setBarPest(p.name); setBarSelectedGens([true,true,true,true]); }}
+                  data-testid={`tab-bar-pest-${p.name}`}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
+                    barPest === p.name ? "text-white border-transparent" : "bg-transparent text-muted-foreground border-border hover:border-primary"
+                  }`}
+                  style={barPest === p.name ? { backgroundColor: PEST_COLOR[p.name] } : {}}
+                >
+                  {p.name}
+                </button>
+              ))}
 
-                {/* 다세대 체크박스 */}
-                {graphOpen && isBarMultiGen && (
-                  <div className="flex gap-2 ml-2 border-l pl-3" onClick={e => e.stopPropagation()}>
-                    {PEACH_GENERATIONS.map((_, idx) => (
-                      <label
-                        key={idx}
-                        className="flex items-center gap-1 text-xs cursor-pointer select-none"
-                        data-testid={`checkbox-gen-${idx + 1}`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={barSelectedGens[idx]}
-                          onChange={() => toggleGen(idx)}
-                          className="accent-red-500 w-3.5 h-3.5"
-                        />
-                        <span className={barSelectedGens[idx] ? "text-red-600 font-medium" : "text-muted-foreground"}>
-                          {idx + 1}세대
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+              {/* 다세대 체크박스 */}
+              {isBarMultiGen && (
+                <div className="flex gap-2 ml-2 border-l pl-3">
+                  {PEACH_GENERATIONS.map((_, idx) => (
+                    <label
+                      key={idx}
+                      className="flex items-center gap-1 text-xs cursor-pointer select-none"
+                      data-testid={`checkbox-gen-${idx + 1}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={barSelectedGens[idx]}
+                        onChange={() => toggleGen(idx)}
+                        className="accent-red-500 w-3.5 h-3.5"
+                      />
+                      <span className={barSelectedGens[idx] ? "text-red-600 font-medium" : "text-muted-foreground"}>
+                        {idx + 1}세대
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardHeader>
 
-          {graphOpen && (
-            <CardContent>
-              <BarTimeline
-                pestName={barPest}
-                baseTemp={barPestObj.baseTemp}
-                pestColor={PEST_COLOR[barPest]}
-                generations={barVisibleGens}
-                genLabels={isBarMultiGen
-                  ? PEACH_GENERATIONS.map((_, i) => `${i + 1}세대`).filter((_, i) => barSelectedGens[i])
-                  : [barPest]}
-                todayPct={todayPct}
-              />
-            </CardContent>
-          )}
+          <CardContent>
+            <BarTimeline
+              pestName={barPest}
+              baseTemp={barPestObj.baseTemp}
+              pestColor={PEST_COLOR[barPest]}
+              generations={barVisibleGens}
+              genLabels={isBarMultiGen
+                ? PEACH_GENERATIONS.map((_, i) => `${i + 1}세대`).filter((_, i) => barSelectedGens[i])
+                : [barPest]}
+              todayPct={todayPct}
+            />
+          </CardContent>
         </Card>
 
         {/* ── 누적 DD 라인차트 (토글, 맨 아래) ── */}
@@ -666,6 +649,8 @@ export default function PestCalendar() {
 }
 
 // ─── 방제기간 막대바 ──────────────────────────────────────────────────────────
+type BarTooltip = { rowIdx: number; content: { title: string; range: string; color: string }[]; midPct: number };
+
 function BarTimeline({
   pestName, baseTemp, pestColor, generations, genLabels, todayPct,
 }: {
@@ -676,7 +661,12 @@ function BarTimeline({
   genLabels: string[];
   todayPct: number;
 }) {
-  // 월 눈금 계산
+  const [selectedRow, setSelectedRow] = useState<number | null>(null);
+  const [tooltip, setTooltip] = useState<BarTooltip | null>(null);
+
+  // 세대 변경 시 패널 닫기
+  useEffect(() => { setSelectedRow(null); setTooltip(null); }, [pestName, generations]);
+
   const monthRuler = useMemo(() => {
     const ruler: { label: string; pct: number }[] = [];
     for (let m = TL_MONTH_START; m < TL_MONTH_END; m++) {
@@ -685,7 +675,6 @@ function BarTimeline({
     return ruler;
   }, []);
 
-  // 각 세대 막대 데이터
   const rows = useMemo(() => {
     return generations.map((target, i) => {
       const ms = getMilestoneDates(baseTemp, target);
@@ -697,37 +686,47 @@ function BarTimeline({
         p90:  dayOfYearToPct(ms.p90),
         p100: dayOfYearToPct(ms.p100),
         p107: dayOfYearToPct(ms.p107),
-        doy70:  ms.p70,
-        doy85:  ms.p85,
-        doy90:  ms.p90,
-        doy100: ms.p100,
-        doy107: ms.p107,
+        doy70:  ms.p70,  doy85:  ms.p85,
+        doy90:  ms.p90,  doy100: ms.p100,  doy107: ms.p107,
       };
     });
   }, [generations, genLabels, baseTemp]);
+
+  const showTooltip = (rowIdx: number, row: typeof rows[0]) => {
+    setTooltip({
+      rowIdx,
+      midPct: (row.p70 + row.p107) / 2,
+      content: [
+        { title: "예찰 시기",    range: `${doyToLabel(row.doy70)} ~ ${doyToLabel(row.doy90)}`,   color: "#ca8a04" },
+        { title: "├ 집중 예찰", range: `${doyToLabel(row.doy85)} ~ ${doyToLabel(row.doy90)}`,   color: "#d97706" },
+        { title: "방제 시기",    range: `${doyToLabel(row.doy90)} ~ ${doyToLabel(row.doy100)}`,  color: "#ea580c" },
+        { title: "방제 종료",    range: `${doyToLabel(row.doy100)} ~ ${doyToLabel(row.doy107)}`, color: "#dc2626" },
+      ],
+    });
+  };
 
   return (
     <div className="w-full">
       {/* 범례 */}
       <div className="flex flex-wrap gap-4 mb-4 text-xs">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block w-8 h-3 rounded-sm bg-yellow-100 border border-yellow-300" />예찰 시기
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block w-8 h-3 rounded-sm bg-amber-400" />집중 예찰
+          <span className="inline-block w-8 h-3 rounded-sm bg-yellow-100 border border-yellow-300" />
+          예찰 시기
+          <span className="inline-block w-3 h-3 rounded-sm bg-amber-400 ml-1" />
+          (└집중 예찰)
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-8 h-3 rounded-sm" style={{ background: "linear-gradient(to right, #f97316, #dc2626)" }} />방제 시기
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block w-8 h-3 rounded-sm bg-red-200" />방제 종료 구간
+          <span className="inline-block w-8 h-3 rounded-sm bg-red-200" />방제 종료
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-0.5 h-4 bg-blue-500" />오늘
         </span>
       </div>
 
-      {/* 전체 타임라인 컨테이너 */}
+      {/* 타임라인 */}
       <div className="relative">
         {/* 월 눈금 헤더 */}
         <div className="relative h-7 mb-1 border-b border-border">
@@ -741,107 +740,155 @@ function BarTimeline({
               <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">{r.label}</span>
             </div>
           ))}
-          {/* 오늘 선 (헤더) */}
           {todayPct > 0 && todayPct < 100 && (
-            <div
-              className="absolute top-0 bottom-0 w-0.5 bg-blue-500"
-              style={{ left: `${todayPct}%` }}
-            />
+            <>
+              <div className="absolute top-0 bottom-0 w-0.5 bg-blue-500" style={{ left: `${todayPct}%` }} />
+              <span
+                className="absolute bottom-full text-[10px] text-blue-500 font-semibold whitespace-nowrap -translate-x-1/2 mb-0.5"
+                style={{ left: `${todayPct}%` }}
+              >오늘</span>
+            </>
           )}
         </div>
 
         {/* 막대 행들 */}
-        {rows.map((row, rowIdx) => (
-          <div key={rowIdx} className="mb-6">
-            {/* 행 레이블 */}
-            {generations.length > 1 && (
-              <div className="text-xs font-semibold mb-1.5" style={{ color: pestColor }}>
-                {row.label} <span className="text-muted-foreground font-normal">(목표 {row.target} DD)</span>
-              </div>
-            )}
-
-            {/* 막대 영역 */}
-            <div className="relative h-9 rounded-md bg-muted/30 border border-border overflow-visible">
-              {/* 예찰 시기 (70~85%) — 연노랑 */}
-              {row.p85 > row.p70 && (
-                <div
-                  className="absolute top-0 h-full bg-yellow-100 border-r border-yellow-300"
-                  style={{ left: `${row.p70}%`, width: `${row.p85 - row.p70}%` }}
-                />
-              )}
-              {/* 집중 예찰 (85~90%) — 진노랑 */}
-              {row.p90 > row.p85 && (
-                <div
-                  className="absolute top-0 h-full bg-amber-400 border-r border-amber-500"
-                  style={{ left: `${row.p85}%`, width: `${row.p90 - row.p85}%` }}
-                />
-              )}
-              {/* 방제 시작~최적 (90~100%) — 주황→빨강 그라디언트 */}
-              {row.p100 > row.p90 && (
-                <div
-                  className="absolute top-0 h-full border-r border-red-600"
-                  style={{
-                    left: `${row.p90}%`,
-                    width: `${row.p100 - row.p90}%`,
-                    background: "linear-gradient(to right, #f97316, #dc2626)",
-                  }}
-                />
-              )}
-              {/* 방제 종료 구간 (100~107.5%) — 연빨강 */}
-              {row.p107 > row.p100 && (
-                <div
-                  className="absolute top-0 h-full bg-red-200"
-                  style={{ left: `${row.p100}%`, width: `${row.p107 - row.p100}%` }}
-                />
-              )}
-
-              {/* 눈금 선 */}
-              {[
-                { pct: row.p70,  color: "#ca8a04" },
-                { pct: row.p85,  color: "#d97706" },
-                { pct: row.p90,  color: "#ea580c" },
-                { pct: row.p100, color: "#dc2626" },
-                { pct: row.p107, color: "#dc2626" },
-              ].map((tick, ti) => (
-                <div
-                  key={ti}
-                  className="absolute top-0 h-full w-0.5"
-                  style={{ left: `${tick.pct}%`, backgroundColor: tick.color, opacity: 0.7 }}
-                />
-              ))}
-
-              {/* 오늘 선 */}
-              {todayPct > 0 && todayPct < 100 && (
-                <div
-                  className="absolute top-0 h-full w-0.5 bg-blue-500 z-10"
-                  style={{ left: `${todayPct}%` }}
-                />
-              )}
-            </div>
-
-            {/* 날짜 레이블 — 겹침 없는 그리드 */}
-            <div className="mt-2 grid grid-cols-3 gap-x-4 gap-y-1 text-[10px] px-0.5">
-              {[
-                { label: "예찰 시작", doy: row.doy70,  color: "#ca8a04" },
-                { label: "집중 예찰", doy: row.doy85,  color: "#d97706" },
-                { label: "방제 시작", doy: row.doy90,  color: "#ea580c" },
-                { label: "방제 최적", doy: row.doy100, color: "#dc2626" },
-                { label: "방제 종료", doy: row.doy107, color: "#dc2626" },
-              ].map((item, ti) => (
-                <div key={ti} className="flex items-center gap-1 min-w-0">
-                  <span
-                    className="flex-shrink-0 inline-block w-2 h-2 rounded-sm"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-muted-foreground whitespace-nowrap flex-shrink-0">{item.label}</span>
-                  <span className="font-semibold whitespace-nowrap truncate" style={{ color: item.color }}>
-                    {doyToLabel(item.doy)}
-                  </span>
+        {rows.map((row, rowIdx) => {
+          const isSelected = selectedRow === rowIdx;
+          return (
+            <div key={rowIdx} className="mb-3">
+              {/* 행 레이블 */}
+              {generations.length > 1 && (
+                <div className="text-xs font-semibold mb-1" style={{ color: pestColor }}>
+                  {row.label}
+                  <span className="text-muted-foreground font-normal ml-1">(목표 {row.target} DD)</span>
+                  {isSelected && (
+                    <span className="ml-2 text-[10px] font-normal text-muted-foreground">클릭하여 닫기</span>
+                  )}
                 </div>
-              ))}
+              )}
+
+              {/* 클릭 가능한 막대 행 */}
+              <div
+                className="relative cursor-pointer"
+                onMouseLeave={() => setTooltip(null)}
+                onClick={() => setSelectedRow(r => r === rowIdx ? null : rowIdx)}
+              >
+                {/* 배경 트랙 */}
+                <div
+                  className={`relative h-10 rounded-md border transition-all ${
+                    isSelected
+                      ? "shadow-md"
+                      : "bg-muted/30 border-border hover:bg-muted/50"
+                  }`}
+                  style={isSelected ? {
+                    backgroundColor: pestColor + "12",
+                    borderColor: pestColor,
+                    boxShadow: `0 0 0 2px ${pestColor}40`,
+                  } : {}}
+                >
+                  {/* 예찰 구간 (p70~p90) — 연노랑, 집중예찰 내부 강조 */}
+                  {row.p90 > row.p70 && (
+                    <div
+                      className="absolute top-0 h-full bg-yellow-100 rounded-sm overflow-hidden"
+                      style={{ left: `${row.p70}%`, width: `${row.p90 - row.p70}%` }}
+                      onMouseEnter={() => showTooltip(rowIdx, row)}
+                    >
+                      {/* 집중 예찰 (p85~p90) — 내부 짙은 앰버 강조 */}
+                      {row.p90 > row.p85 && (
+                        <div
+                          className="absolute top-0 right-0 h-full bg-amber-400"
+                          style={{ width: `${((row.p90 - row.p85) / (row.p90 - row.p70)) * 100}%` }}
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {/* 방제 시기 (p90~p100) — 주황→빨강 */}
+                  {row.p100 > row.p90 && (
+                    <div
+                      className="absolute top-0 h-full rounded-sm"
+                      style={{
+                        left: `${row.p90}%`,
+                        width: `${row.p100 - row.p90}%`,
+                        background: "linear-gradient(to right, #f97316, #dc2626)",
+                      }}
+                      onMouseEnter={() => showTooltip(rowIdx, row)}
+                    />
+                  )}
+
+                  {/* 방제 종료 (p100~p107) — 연빨강 */}
+                  {row.p107 > row.p100 && (
+                    <div
+                      className="absolute top-0 h-full bg-red-200 rounded-sm"
+                      style={{ left: `${row.p100}%`, width: `${row.p107 - row.p100}%` }}
+                      onMouseEnter={() => showTooltip(rowIdx, row)}
+                    />
+                  )}
+
+                  {/* 오늘 선 */}
+                  {todayPct > 0 && todayPct < 100 && (
+                    <div
+                      className="absolute top-0 h-full w-0.5 bg-blue-500 z-10"
+                      style={{ left: `${todayPct}%` }}
+                    />
+                  )}
+
+                  {/* Hover 툴팁 */}
+                  {tooltip?.rowIdx === rowIdx && (
+                    <div
+                      className="absolute bottom-full mb-2 z-30 bg-popover border rounded-lg shadow-lg px-3 py-2 pointer-events-none min-w-[200px]"
+                      style={{ left: `${Math.min(Math.max(tooltip.midPct, 10), 70)}%`, transform: "translateX(-50%)" }}
+                    >
+                      <p className="text-[11px] font-bold mb-1.5" style={{ color: pestColor }}>
+                        {row.label}
+                      </p>
+                      {tooltip.content.map((item, ci) => (
+                        <div key={ci} className="flex justify-between gap-3 text-[11px] leading-snug">
+                          <span style={{ color: item.color }}>{item.title}</span>
+                          <span className="text-muted-foreground font-medium whitespace-nowrap">{item.range}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 클릭 상세 패널 */}
+              {isSelected && (
+                <div
+                  className="mt-2 rounded-lg border p-3 text-xs space-y-2 animate-in fade-in slide-in-from-top-1"
+                  style={{ backgroundColor: pestColor + "08", borderColor: pestColor + "40" }}
+                >
+                  <p className="font-bold text-sm" style={{ color: pestColor }}>{row.label} 방제 일정 상세</p>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-1">
+                    {[
+                      { label: "예찰 시작",    doy: row.doy70,  color: "#ca8a04" },
+                      { label: "집중 예찰 시작", doy: row.doy85,  color: "#d97706" },
+                      { label: "방제 시작",    doy: row.doy90,  color: "#ea580c" },
+                      { label: "방제 최적 (DD 100%)", doy: row.doy100, color: "#dc2626" },
+                      { label: "방제 종료",    doy: row.doy107, color: "#dc2626" },
+                    ].map((item, i) => (
+                      <div key={i} className="flex justify-between gap-2">
+                        <span className="text-muted-foreground">{item.label}</span>
+                        <span className="font-semibold" style={{ color: item.color }}>{doyToLabel(item.doy)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t pt-2 mt-1" style={{ borderColor: pestColor + "30" }}>
+                    <p className="font-semibold text-[11px] mb-1 text-muted-foreground">권장 조치사항</p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {pestName === "복숭아순나방"
+                        ? "페로몬 트랩 설치 후 예찰 시작 → 집중예찰 구간 주 2회 이상 모니터링 → 90% 도달 시 스피노사드·사이퍼메트린계 약제 살포"
+                        : pestName === "꽃매미"
+                        ? "약충 부화 초기 집중 방제 → 카보설판·클로르피리포스계 등록약제 살포 → 성충 이동 전 완료"
+                        : "약충 발생 초기(4월 하순~5월) 집중 방제 → 이미다클로프리드·아세타미프리드계 약제 적용 → 알 집단 제거 병행"}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
