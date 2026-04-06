@@ -716,10 +716,7 @@ function BarTimeline({
           (└집중 예찰)
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block w-8 h-3 rounded-sm" style={{ background: "linear-gradient(to right, #f97316, #dc2626)" }} />방제 시기
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block w-8 h-3 rounded-sm bg-red-200" />방제 종료
+          <span className="inline-block w-8 h-3 rounded-sm bg-red-600" />방제 시기
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-0.5 h-4 bg-blue-500" />오늘
@@ -803,24 +800,11 @@ function BarTimeline({
                     </div>
                   )}
 
-                  {/* 방제 시기 (p90~p100) — 주황→빨강 */}
-                  {row.p100 > row.p90 && (
+                  {/* 방제 시기 (p90~p107) — 방제시작~종료 단일 빨강 */}
+                  {row.p107 > row.p90 && (
                     <div
-                      className="absolute top-0 h-full rounded-sm"
-                      style={{
-                        left: `${row.p90}%`,
-                        width: `${row.p100 - row.p90}%`,
-                        background: "linear-gradient(to right, #f97316, #dc2626)",
-                      }}
-                      onMouseEnter={() => showTooltip(rowIdx, row)}
-                    />
-                  )}
-
-                  {/* 방제 종료 (p100~p107) — 연빨강 */}
-                  {row.p107 > row.p100 && (
-                    <div
-                      className="absolute top-0 h-full bg-red-200 rounded-sm"
-                      style={{ left: `${row.p100}%`, width: `${row.p107 - row.p100}%` }}
+                      className="absolute top-0 h-full rounded-sm bg-red-600"
+                      style={{ left: `${row.p90}%`, width: `${row.p107 - row.p90}%` }}
                       onMouseEnter={() => showTooltip(rowIdx, row)}
                     />
                   )}
