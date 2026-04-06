@@ -819,40 +819,26 @@ function BarTimeline({
               )}
             </div>
 
-            {/* 날짜 레이블 */}
-            <div className="relative h-14 mt-0.5">
+            {/* 날짜 레이블 — 겹침 없는 그리드 */}
+            <div className="mt-2 grid grid-cols-3 gap-x-4 gap-y-1 text-[10px] px-0.5">
               {[
-                { pct: row.p70,  doy: row.doy70,  label: "예찰 시작", color: "#ca8a04", up: false },
-                { pct: row.p85,  doy: row.doy85,  label: "집중예찰",  color: "#d97706", up: true  },
-                { pct: row.p90,  doy: row.doy90,  label: "방제 시작", color: "#ea580c", up: false },
-                { pct: row.p100, doy: row.doy100, label: "방제 최적", color: "#dc2626", up: true  },
-                { pct: row.p107, doy: row.doy107, label: "방제 종료", color: "#dc2626", up: false },
+                { label: "예찰 시작", doy: row.doy70,  color: "#ca8a04" },
+                { label: "집중 예찰", doy: row.doy85,  color: "#d97706" },
+                { label: "방제 시작", doy: row.doy90,  color: "#ea580c" },
+                { label: "방제 최적", doy: row.doy100, color: "#dc2626" },
+                { label: "방제 종료", doy: row.doy107, color: "#dc2626" },
               ].map((item, ti) => (
-                <div
-                  key={ti}
-                  className="absolute flex flex-col items-center"
-                  style={{
-                    left: `${item.pct}%`,
-                    transform: "translateX(-50%)",
-                    top: item.up ? 0 : 28,
-                  }}
-                >
-                  <div className="w-px h-2" style={{ backgroundColor: item.color }} />
-                  <div className="text-center" style={{ color: item.color }}>
-                    <div className="text-[9px] font-medium leading-tight whitespace-nowrap">{item.label}</div>
-                    <div className="text-[9px] leading-tight whitespace-nowrap">{doyToLabel(item.doy)}</div>
-                  </div>
+                <div key={ti} className="flex items-center gap-1 min-w-0">
+                  <span
+                    className="flex-shrink-0 inline-block w-2 h-2 rounded-sm"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-muted-foreground whitespace-nowrap flex-shrink-0">{item.label}</span>
+                  <span className="font-semibold whitespace-nowrap truncate" style={{ color: item.color }}>
+                    {doyToLabel(item.doy)}
+                  </span>
                 </div>
               ))}
-              {/* 오늘 레이블 */}
-              {todayPct > 0 && todayPct < 100 && (
-                <div
-                  className="absolute flex flex-col items-center"
-                  style={{ left: `${todayPct}%`, transform: "translateX(-50%)", top: 12 }}
-                >
-                  <div className="text-[9px] text-blue-500 font-medium whitespace-nowrap">오늘</div>
-                </div>
-              )}
             </div>
           </div>
         ))}
