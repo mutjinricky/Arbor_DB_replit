@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ReferenceLine, ReferenceArea, ResponsiveContainer,
+  ReferenceLine, ReferenceDot, ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -77,6 +77,27 @@ function doyToLabel(doy: number): string {
     if (doy < end) return `${m + 1}월 ${doy - MONTH_START_DAY[m] + 1}일`;
   }
   return "";
+}
+
+function doyToShortLabel(doy: number): string {
+  for (let m = 0; m < 12; m++) {
+    const end = MONTH_START_DAY[m] + MONTH_DAYS[m];
+    if (doy < end) return `${m + 1}/${doy - MONTH_START_DAY[m] + 1}`;
+  }
+  return "";
+}
+
+// 수직 기준선 레이블 (recharts label 주입용)
+function VLineLabel({ viewBox, line1, line2, color, anchor = "start" }: any) {
+  if (!viewBox) return null;
+  const x = anchor === "start" ? viewBox.x + 4 : viewBox.x - 4;
+  const textAnchor = anchor === "start" ? "start" : "end";
+  return (
+    <g>
+      <text x={x} y={viewBox.y + 13} fontSize={9} fill={color} fontWeight="700" textAnchor={textAnchor}>{line1}</text>
+      {line2 && <text x={x} y={viewBox.y + 24} fontSize={8} fill={color} fillOpacity={0.8} textAnchor={textAnchor}>{line2}</text>}
+    </g>
+  );
 }
 
 // ─── 유틸 ────────────────────────────────────────────────────────────────────
@@ -244,12 +265,39 @@ export default function PestCalendar() {
     return vals.length ? Math.max(...vals) : lineGenTarget * 1.2;
   }, [lineChartData, lineGenTarget]);
 
+  // 마일스톤 도달 날짜 (x축 day-of-year 값)
+  const lineMilestoneDays = useMemo(() => ({
+    p70:  ddToDayOfYear(linePestObj.baseTemp, lineGenTarget * 0.70),
+    p90:  ddToDayOfYear(linePestObj.baseTemp, lineGenTarget * 0.90),
+    p100: ddToDayOfYear(linePestObj.baseTemp, lineGenTarget),
+  }), [linePestObj, lineGenTarget]);
+
+  // zoom 구간에 맞는 X축 눈금 (1개월: 10일 단위, 그 외: 월 단위)
+  const lineXTicks = useMemo(() => {
+    const startDay = MONTH_START_DAY[linePan];
+    const endMonth = Math.min(12, linePan + lineZoom);
+    const endDay = endMonth === 12 ? 365 : MONTH_START_DAY[endMonth];
+    const ticks: number[] = [];
+    if (lineZoom === 1) {
+      for (let day = startDay; day < endDay; day++) {
+        const pt = lineDailyData[day];
+        if (pt && (pt.dayOfMonth === 1 || pt.dayOfMonth === 11 || pt.dayOfMonth === 21)) ticks.push(day);
+      }
+    } else {
+      for (let m = linePan; m < linePan + lineZoom && m < 12; m++) {
+        ticks.push(MONTH_START_DAY[m]);
+      }
+    }
+    return ticks;
+  }, [lineZoom, linePan, lineDailyData]);
+
   const xTickFormatter = useCallback((idx: number) => {
     if (idx < 0 || idx >= lineDailyData.length) return "";
     const pt = lineDailyData[idx];
-    if (pt.dayOfMonth === 1 || pt.dayOfMonth === 15) return `${pt.monthIdx + 1}월${pt.dayOfMonth}일`;
+    if (lineZoom === 1) return `${pt.monthIdx + 1}/${pt.dayOfMonth}`;
+    if (pt.dayOfMonth === 1) return `${pt.monthIdx + 1}월`;
     return "";
-  }, [lineDailyData]);
+  }, [lineDailyData, lineZoom]);
 
   // ── 카드 데이터 ──
   const pestCards = useMemo(() => {
@@ -568,16 +616,17 @@ export default function PestCalendar() {
                 className="cursor-grab active:cursor-grabbing select-none"
                 style={{ userSelect: "none" }}
               >
+                {/* 차트 */}
                 <ResponsiveContainer width="100%" height={300}>
-                  <ComposedChart data={lineChartData} margin={{ top: 10, right: 20, left: 10, bottom: 24 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,100,100,0.15)" />
+                  <ComposedChart data={lineChartData} margin={{ top: 30, right: 20, left: 10, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,100,100,0.12)" />
                     <XAxis
                       dataKey="index"
                       type="number"
                       domain={["dataMin", "dataMax"]}
+                      ticks={lineXTicks}
                       tickFormatter={xTickFormatter}
                       tick={{ fontSize: 10 }}
-                      label={{ value: "날짜", position: "insideBottomRight", offset: -8, fontSize: 11 }}
                     />
                     <YAxis
                       tick={{ fontSize: 10 }}
@@ -597,26 +646,54 @@ export default function PestCalendar() {
                       }}
                     />
 
-                    {/* 예찰 시작 밴드 70~85% */}
-                    <ReferenceArea y1={lineMilestones.p70} y2={lineMilestones.p85} fill="#22c55e" fillOpacity={0.08} />
-                    {/* 집중예찰 밴드 85~90% */}
-                    <ReferenceArea y1={lineMilestones.p85} y2={lineMilestones.p90} fill="#eab308" fillOpacity={0.12} />
-                    {/* 방제 구간 90~107% */}
-                    <ReferenceArea y1={lineMilestones.p90} y2={lineMilestones.p107} fill={lineColor} fillOpacity={0.10} />
+                    {/* 수직 기준선 — 예찰 시작 (p70) */}
+                    {lineMilestoneDays.p70 >= lineChartData[0]?.index && lineMilestoneDays.p70 <= lineChartData[lineChartData.length - 1]?.index && <>
+                      <ReferenceLine
+                        x={lineMilestoneDays.p70}
+                        stroke="#22c55e"
+                        strokeDasharray="5 4"
+                        strokeWidth={1.5}
+                        label={<VLineLabel line1="예찰 시작" line2={`${doyToShortLabel(lineMilestoneDays.p70)} (${Math.round(lineGenTarget * 0.70)}DD)`} color="#22c55e" />}
+                      />
+                      <ReferenceDot x={lineMilestoneDays.p70} y={Math.round(lineGenTarget * 0.70)} r={5} fill="#22c55e" stroke="white" strokeWidth={2} />
+                    </>}
 
-                    {/* 마일스톤 라인 */}
-                    <ReferenceLine y={lineMilestones.p70}  stroke="#22c55e" strokeDasharray="4 3" label={{ value: "예찰", fontSize: 10, fill: "#22c55e", position: "right" }} />
-                    <ReferenceLine y={lineMilestones.p90}  stroke="#f97316" strokeDasharray="4 3" label={{ value: "방제시작", fontSize: 10, fill: "#f97316", position: "right" }} />
-                    <ReferenceLine y={lineMilestones.p100} stroke={lineColor} strokeWidth={2}     label={{ value: "방제최적", fontSize: 10, fill: lineColor, position: "right" }} />
-                    <ReferenceLine y={lineMilestones.p107} stroke={lineColor} strokeDasharray="4 3" label={{ value: "방제종료", fontSize: 10, fill: lineColor, position: "right" }} />
+                    {/* 수직 기준선 — 방제 시작 (p90) */}
+                    {lineMilestoneDays.p90 >= lineChartData[0]?.index && lineMilestoneDays.p90 <= lineChartData[lineChartData.length - 1]?.index && <>
+                      <ReferenceLine
+                        x={lineMilestoneDays.p90}
+                        stroke="#f97316"
+                        strokeDasharray="5 4"
+                        strokeWidth={1.5}
+                        label={<VLineLabel line1="방제 시작" line2={`${doyToShortLabel(lineMilestoneDays.p90)} (${Math.round(lineGenTarget * 0.90)}DD)`} color="#f97316" anchor="end" />}
+                      />
+                      <ReferenceDot x={lineMilestoneDays.p90} y={Math.round(lineGenTarget * 0.90)} r={5} fill="#f97316" stroke="white" strokeWidth={2} />
+                    </>}
 
-                    {/* 오늘 라인 */}
-                    <ReferenceLine
-                      x={MONTH_START_DAY[nowMonth] + new Date().getDate() - 1}
-                      stroke="#60a5fa"
-                      strokeWidth={2}
-                      label={{ value: "오늘", fontSize: 10, fill: "#60a5fa", position: "top" }}
-                    />
+                    {/* 수직 기준선 — 방제 적기 (p100) */}
+                    {lineMilestoneDays.p100 >= lineChartData[0]?.index && lineMilestoneDays.p100 <= lineChartData[lineChartData.length - 1]?.index && <>
+                      <ReferenceLine
+                        x={lineMilestoneDays.p100}
+                        stroke={lineColor}
+                        strokeDasharray="5 4"
+                        strokeWidth={2}
+                        label={<VLineLabel line1="방제 적기" line2={`${doyToShortLabel(lineMilestoneDays.p100)} (${lineGenTarget}DD)`} color={lineColor} anchor="end" />}
+                      />
+                      <ReferenceDot x={lineMilestoneDays.p100} y={lineGenTarget} r={6} fill={lineColor} stroke="white" strokeWidth={2} />
+                    </>}
+
+                    {/* 오늘 세로선 */}
+                    {(() => {
+                      const todayDoy = MONTH_START_DAY[nowMonth] + new Date().getDate() - 1;
+                      return todayDoy >= lineChartData[0]?.index && todayDoy <= lineChartData[lineChartData.length - 1]?.index ? (
+                        <ReferenceLine
+                          x={todayDoy}
+                          stroke="#60a5fa"
+                          strokeWidth={2}
+                          label={<VLineLabel line1="오늘" color="#60a5fa" />}
+                        />
+                      ) : null;
+                    })()}
 
                     <Area
                       type="monotone"
@@ -633,11 +710,45 @@ export default function PestCalendar() {
               </div>
 
               {/* 범례 */}
-              <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground px-1">
-                <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-green-500 inline-block" /> 예찰 시작 (70%)</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-orange-500 inline-block" /> 방제 시작 (90%)</span>
-                <span className="flex items-center gap-1" style={{ color: lineColor }}><span className="w-3 h-0.5 inline-block" style={{ background: lineColor }} /> 방제 최적 (100%)</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-blue-400 inline-block" /> 오늘</span>
+              <div className="flex flex-wrap gap-4 mt-2 mb-4 text-xs text-muted-foreground px-1">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-0 h-3 border-l-2 border-dashed border-green-500 inline-block" />
+                  <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
+                  예찰 시작
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-0 h-3 border-l-2 border-dashed border-orange-500 inline-block" />
+                  <span className="w-2 h-2 rounded-full bg-orange-500 inline-block" />
+                  방제 시작
+                </span>
+                <span className="flex items-center gap-1.5" style={{ color: lineColor }}>
+                  <span className="w-0 h-3 border-l-2 border-dashed inline-block" style={{ borderColor: lineColor }} />
+                  <span className="w-2 h-2 rounded-full inline-block" style={{ background: lineColor }} />
+                  방제 적기
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-0 h-3 border-l-2 border-blue-400 inline-block" />
+                  오늘
+                </span>
+              </div>
+
+              {/* 하단 요약 카드 */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { title: "예찰 시작", doy: lineMilestoneDays.p70,  dd: Math.round(lineGenTarget * 0.70), color: "#22c55e" },
+                  { title: "방제 시작", doy: lineMilestoneDays.p90,  dd: Math.round(lineGenTarget * 0.90), color: "#f97316" },
+                  { title: "방제 적기", doy: lineMilestoneDays.p100, dd: lineGenTarget,                    color: lineColor },
+                ].map(card => (
+                  <div
+                    key={card.title}
+                    className="rounded-lg border p-3 text-center"
+                    style={{ borderColor: card.color + "50", backgroundColor: card.color + "10" }}
+                  >
+                    <p className="text-[11px] text-muted-foreground mb-1">{card.title}</p>
+                    <p className="text-sm font-bold" style={{ color: card.color }}>{doyToLabel(card.doy)}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{card.dd} DD</p>
+                  </div>
+                ))}
               </div>
             </CardContent>
           )}
