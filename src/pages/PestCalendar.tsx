@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bug, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { Bug, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Camera, History, Siren } from "lucide-react";
 import { useWeatherData, PEST_TARGETS } from "@/hooks/useWeatherData";
 
 // ─── 상수 ───────────────────────────────────────────────────────────────────
@@ -24,6 +24,112 @@ const PEST_COLOR: Record<string, string> = {
 };
 
 const PEACH_GENERATIONS = [214, 660, 1380, 1950];
+
+// ─── 돌발해충 이력 데이터 ─────────────────────────────────────────────────────
+type InvasiveSeverity = "low" | "medium" | "high";
+interface InvasiveHistoryRecord {
+  year: number;
+  startDoy: number;
+  endDoy: number;
+  severity: InvasiveSeverity;
+  project?: string;
+  note: string;
+}
+interface InvasiveProject {
+  year: number;
+  name: string;
+  budget: string;
+  result: string;
+}
+interface InvasivePestData {
+  key: string;
+  name: string;
+  scientificName: string;
+  color: string;
+  description: string;
+  peakMonths: number[];
+  history: InvasiveHistoryRecord[];
+  projects: InvasiveProject[];
+  photos: { label: string; icon: string }[];
+}
+
+const SEVERITY_CONFIG: Record<InvasiveSeverity, { label: string; color: string }> = {
+  low:    { label: "낮음", color: "#22c55e" },
+  medium: { label: "보통", color: "#f59e0b" },
+  high:   { label: "높음", color: "#ef4444" },
+};
+
+const INVASIVE_PEST_DATA: InvasivePestData[] = [
+  {
+    key: "미국선녀벌레",
+    name: "미국선녀벌레",
+    scientificName: "Metcalfa pruinosa",
+    color: "#0ea5e9",
+    description: "북미 원산 침입해충. 약충·성충 모두 식물 즙액 흡즙, 그을음병 유발. 이천시 도심 가로수·조경수에 지속 확산 중.",
+    peakMonths: [5, 6, 7, 8],
+    history: [
+      { year: 2024, startDoy: 152, endDoy: 228, severity: "medium", project: "'24 돌발해충 공동방제", note: "도심 가로수 26개소 집중 방제, 전년比 발생면적 8% 감소" },
+      { year: 2023, startDoy: 145, endDoy: 235, severity: "high",   project: "'23 도심공원 긴급방제 사업", note: "종합운동장 일대 대규모 발생, 피해 조경수 142주 확인" },
+      { year: 2022, startDoy: 158, endDoy: 220, severity: "medium", note: "전년 대비 발생 면적 15% 증가, 신규 확산지 3개소 확인" },
+      { year: 2021, startDoy: 163, endDoy: 215, severity: "low",    note: "예찰 중심 관리, 방제 필요 수준 이하" },
+      { year: 2020, startDoy: 170, endDoy: 208, severity: "low",    note: "이천시 초발견, 산발적 소규모 발생" },
+    ],
+    projects: [
+      { year: 2023, name: "'23 도심공원 긴급방제 사업", budget: "₩18,500,000", result: "완료 (효과율 82%)" },
+      { year: 2024, name: "'24 돌발해충 공동방제",     budget: "₩12,000,000", result: "완료 (효과율 79%)" },
+    ],
+    photos: [
+      { label: "성충", icon: "🦗" }, { label: "약충", icon: "🐛" },
+      { label: "피해 수목", icon: "🌳" }, { label: "그을음병", icon: "🖤" },
+    ],
+  },
+  {
+    key: "매미나방",
+    name: "매미나방",
+    scientificName: "Lymantria dispar",
+    color: "#84cc16",
+    description: "식엽성 해충. 대발생 시 활엽수 임상 완전 탈엽. 5~7월 유충 집중 가해, 2~4년 주기 대발생 패턴.",
+    peakMonths: [4, 5, 6],
+    history: [
+      { year: 2024, startDoy: 121, endDoy: 196, severity: "low",    note: "소규모 산발 발생, 자연천적에 의한 자연소멸 확인" },
+      { year: 2023, startDoy: 110, endDoy: 200, severity: "medium", project: "'23 솔잎혹파리·매미나방 항공방제", note: "설봉산·원적산 임야 집중 방제 시행" },
+      { year: 2022, startDoy: 105, endDoy: 210, severity: "high",   project: "'22 산림해충 긴급방제 사업", note: "기록적 대발생, 활엽수 35ha 완전 탈엽 피해" },
+      { year: 2021, startDoy: 118, endDoy: 195, severity: "medium", note: "전년도 대발생 이후 개체수 감소 추세, 지속 예찰" },
+      { year: 2020, startDoy: 125, endDoy: 188, severity: "low",    note: "예찰 중심, 국소 방제 1개소 시행" },
+    ],
+    projects: [
+      { year: 2022, name: "'22 산림해충 긴급방제 사업",         budget: "₩42,000,000", result: "완료 (효과율 78%)" },
+      { year: 2023, name: "'23 솔잎혹파리·매미나방 항공방제",   budget: "₩28,500,000", result: "완료 (효과율 91%)" },
+    ],
+    photos: [
+      { label: "성충(수컷)", icon: "🦋" }, { label: "유충", icon: "🐛" },
+      { label: "알 덩어리", icon: "🥚" }, { label: "피해 임상", icon: "🌲" },
+    ],
+  },
+  {
+    key: "솔껍질깍지벌레",
+    name: "솔껍질깍지벌레",
+    scientificName: "Matsucoccus thunbergianae",
+    color: "#f59e0b",
+    description: "소나무류 수피 내 기생. 수액 흡즙으로 고사 유발. 4~5월 부화 약충 방제 시기가 핵심.",
+    peakMonths: [3, 4, 5],
+    history: [
+      { year: 2024, startDoy: 91,  endDoy: 152, severity: "medium", project: "'24 소나무류 병해충 방제", note: "군부대 인근 소나무 군락 집중 피해, 수목 주사 처리" },
+      { year: 2023, startDoy: 95,  endDoy: 145, severity: "low",    note: "피해 수목 8주, 예방적 수목 주사 처리 완료" },
+      { year: 2022, startDoy: 88,  endDoy: 158, severity: "high",   project: "'22 소나무재선충·깍지벌레 통합방제", note: "설봉공원 노거수 12주 고사 피해, 긴급 방제" },
+      { year: 2021, startDoy: 98,  endDoy: 148, severity: "medium", note: "방제 구역 확대 (전년도 확산 지역 대응)" },
+      { year: 2020, startDoy: 102, endDoy: 143, severity: "low",    note: "초기 발견, 국소 방제 시행 완료" },
+    ],
+    projects: [
+      { year: 2022, name: "'22 소나무재선충·깍지벌레 통합방제", budget: "₩35,000,000", result: "완료 (효과율 85%)" },
+      { year: 2024, name: "'24 소나무류 병해충 방제",           budget: "₩9,800,000",  result: "완료 (효과율 88%)" },
+    ],
+    photos: [
+      { label: "성충·약충", icon: "🐞" }, { label: "피해 수피", icon: "🌿" },
+      { label: "고사 수목", icon: "🌲" }, { label: "방제 작업", icon: "💉" },
+    ],
+  },
+];
 
 type MarkType = "primary" | "secondary" | "observe" | "none";
 const MONTHLY_SCHEDULE: Record<string, MarkType[]> = {
@@ -135,6 +241,8 @@ export default function PestCalendar() {
   const [peachCardGenIdx, setPeachCardGenIdx] = useState(0);
   const [barSelectedGens, setBarSelectedGens] = useState<boolean[]>([true, true, true, true]);
   const [barPest, setBarPest] = useState("복숭아순나방");
+  const [invasivePest, setInvasivePest] = useState(INVASIVE_PEST_DATA[0].key);
+  const [invasiveOpen, setInvasiveOpen] = useState(true);
 
   // 누적 DD 라인차트 상태
   const [lineOpen, setLineOpen] = useState(false);
@@ -729,6 +837,63 @@ export default function PestCalendar() {
           )}
         </Card>
 
+        {/* ── 돌발해충 발생 이력 ── */}
+        <Card className="mt-4">
+          <CardHeader
+            className="cursor-pointer select-none"
+            onClick={() => setInvasiveOpen(o => !o)}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Siren className="h-4 w-4 text-orange-500" />
+                  돌발해충 발생 이력
+                  {!invasiveOpen && (
+                    <span className="text-xs text-muted-foreground font-normal ml-1">(클릭하여 펼치기)</span>
+                  )}
+                </CardTitle>
+                {invasiveOpen && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    최근 5년간 이천시 돌발해충 발생 이력 · 방제 사업 현황 · 해충 사진 관리
+                  </p>
+                )}
+              </div>
+              <div className="p-1 rounded hover:bg-muted transition-colors" data-testid="button-toggle-invasive">
+                {invasiveOpen
+                  ? <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+              </div>
+            </div>
+
+            {invasiveOpen && (
+              <div className="flex flex-wrap items-center gap-2 mt-3" onClick={e => e.stopPropagation()}>
+                {INVASIVE_PEST_DATA.map(p => (
+                  <button
+                    key={p.key}
+                    onClick={() => setInvasivePest(p.key)}
+                    data-testid={`tab-invasive-${p.key}`}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
+                      invasivePest === p.key ? "text-white border-transparent" : "bg-transparent text-muted-foreground border-border hover:border-primary"
+                    }`}
+                    style={invasivePest === p.key ? { backgroundColor: p.color, boxShadow: `0 2px 10px ${p.color}50` } : {}}
+                  >
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </CardHeader>
+
+          {invasiveOpen && (
+            <CardContent>
+              <InvasivePestHistory
+                data={INVASIVE_PEST_DATA.find(p => p.key === invasivePest)!}
+                todayPct={todayPct}
+              />
+            </CardContent>
+          )}
+        </Card>
+
       </div>
     </div>
   );
@@ -1135,4 +1300,295 @@ function ScheduleCell({ mark, color }: { mark: MarkType; color: string }) {
     </td>
   );
   return <td className="text-center py-3 px-1"><span className="text-muted-foreground/30 text-xs">—</span></td>;
+}
+
+// ─── 돌발해충 발생 이력 컴포넌트 ──────────────────────────────────────────────
+function InvasivePestHistory({ data, todayPct }: { data: InvasivePestData; todayPct: number }) {
+  const [hoveredYear, setHoveredYear] = useState<number | null>(null);
+  const [photoMessage, setPhotoMessage] = useState<string | null>(null);
+
+  const monthRuler = useMemo(() => {
+    const ruler: { label: string; pct: number }[] = [];
+    for (let m = TL_MONTH_START; m < TL_MONTH_END; m++) {
+      ruler.push({ label: MONTHS_KO[m], pct: dayOfYearToPct(MONTH_START_DAY[m]) });
+    }
+    return ruler;
+  }, []);
+
+  const sortedHistory = useMemo(
+    () => [...data.history].sort((a, b) => b.year - a.year),
+    [data.history],
+  );
+
+  const highestSeverityYear = useMemo(
+    () => data.history.reduce((worst, r) => {
+      const rank = { low: 0, medium: 1, high: 2 };
+      return rank[r.severity] > rank[worst.severity] ? r : worst;
+    }),
+    [data.history],
+  );
+
+  return (
+    <div className="space-y-8">
+
+      {/* ── 해충 정보 헤더 ── */}
+      <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700">
+        <div
+          className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-white"
+          style={{ background: `linear-gradient(135deg, ${data.color}cc, ${data.color})` }}
+        >
+          <Bug className="h-6 w-6" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <span className="font-bold text-sm">{data.name}</span>
+            <span className="text-xs text-slate-400 italic">{data.scientificName}</span>
+            <span
+              className="text-[10px] px-2 py-0.5 rounded-full font-bold text-white ml-auto shrink-0"
+              style={{ backgroundColor: SEVERITY_CONFIG[highestSeverityYear.severity].color }}
+            >
+              최대 발생: {SEVERITY_CONFIG[highestSeverityYear.severity].label} ({highestSeverityYear.year}년)
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">{data.description}</p>
+          <div className="flex flex-wrap gap-1 mt-2">
+            <span className="text-[10px] text-slate-400 mr-1 self-center">주요 발생시기</span>
+            {data.peakMonths.map(m => (
+              <span
+                key={m}
+                className="text-[10px] px-2 py-0.5 rounded-full font-semibold text-white"
+                style={{ backgroundColor: data.color }}
+              >
+                {m + 1}월
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── 5년간 발생 이력 타임라인 ── */}
+      <div>
+        <h4 className="text-sm font-bold mb-4 flex items-center gap-2">
+          <History className="h-4 w-4" style={{ color: data.color }} />
+          5년간 발생 이력 타임라인
+        </h4>
+
+        <div className="relative">
+          {/* 전체 높이 그리드선 레이어 */}
+          <div className="absolute inset-0 pointer-events-none z-0">
+            {monthRuler.map(r => (
+              <div
+                key={r.label}
+                className="absolute top-0 bottom-0 border-l border-dashed border-slate-200 dark:border-slate-700"
+                style={{ left: `${r.pct}%` }}
+              />
+            ))}
+            {todayPct > 0 && todayPct < 100 && (
+              <div
+                className="absolute top-0 bottom-0 w-[2px] z-10"
+                style={{ left: `${todayPct}%`, background: "linear-gradient(to bottom, #60a5fa, #3b82f6)" }}
+              />
+            )}
+          </div>
+
+          {/* 월 눈금 헤더 */}
+          <div className="relative h-10 mb-1">
+            {monthRuler.map(r => (
+              <div
+                key={r.label}
+                className="absolute flex flex-col items-center"
+                style={{ left: `${r.pct}%`, transform: "translateX(-50%)" }}
+              >
+                <span className="text-[12px] font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">{r.label}</span>
+              </div>
+            ))}
+            {todayPct > 0 && todayPct < 100 && (
+              <div
+                className="absolute flex flex-col items-center gap-0.5"
+                style={{ left: `${todayPct}%`, transform: "translateX(-50%)", top: 0 }}
+              >
+                <div className="bg-blue-500 text-white text-[9px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-md font-bold">Today</div>
+                <div className="w-[2px] h-2 bg-blue-400 rounded-full" />
+              </div>
+            )}
+          </div>
+
+          {/* 연도별 바 행 */}
+          {sortedHistory.map(rec => {
+            const startPct = dayOfYearToPct(rec.startDoy);
+            const endPct   = dayOfYearToPct(rec.endDoy);
+            const cfg      = SEVERITY_CONFIG[rec.severity];
+            const isHov    = hoveredYear === rec.year;
+
+            return (
+              <div key={rec.year} className="mb-3 relative z-10">
+                {/* 연도 메타 라벨 */}
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-bold text-slate-500 w-10 shrink-0 tabular-nums">{rec.year}</span>
+                  <span
+                    className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold text-white"
+                    style={{ backgroundColor: cfg.color }}
+                  >
+                    {cfg.label}
+                  </span>
+                  {rec.project && (
+                    <span className="text-[10px] text-slate-400 truncate">📋 {rec.project}</span>
+                  )}
+                </div>
+
+                {/* 클릭·hover 가능한 트랙 */}
+                <div
+                  className="relative h-8 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700 cursor-pointer transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md"
+                  onMouseEnter={() => setHoveredYear(rec.year)}
+                  onMouseLeave={() => setHoveredYear(null)}
+                  data-testid={`invasive-bar-${rec.year}`}
+                >
+                  {/* 발생 기간 바 */}
+                  <div
+                    className="absolute top-1.5 bottom-1.5 rounded-full transition-all duration-200"
+                    style={{
+                      left: `${startPct}%`,
+                      width: `${Math.max(endPct - startPct, 1)}%`,
+                      backgroundColor: cfg.color,
+                      opacity: isHov ? 1 : 0.7,
+                      boxShadow: isHov ? `0 2px 8px ${cfg.color}60` : "none",
+                    }}
+                  />
+
+                  {/* Today 선 (바 내부) */}
+                  {todayPct > 0 && todayPct < 100 && (
+                    <div
+                      className="absolute top-0 bottom-0 w-[2px] z-20 rounded-full"
+                      style={{ left: `${todayPct}%`, background: "linear-gradient(to bottom, #60a5fa, #3b82f6)" }}
+                    />
+                  )}
+
+                  {/* Hover 툴팁 */}
+                  {isHov && (
+                    <div
+                      className="absolute bottom-full mb-2.5 z-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-2xl shadow-2xl px-4 py-3 pointer-events-none min-w-[240px]"
+                      style={{
+                        left: `${Math.min(Math.max((startPct + endPct) / 2, 15), 62)}%`,
+                        transform: "translateX(-50%)",
+                      }}
+                    >
+                      <div className="flex items-center gap-2 mb-2.5">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cfg.color }} />
+                        <span className="text-xs font-bold">{rec.year}년 발생 이력</span>
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white ml-auto"
+                          style={{ backgroundColor: cfg.color }}
+                        >
+                          {cfg.label}
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 text-[11px]">
+                        <div className="flex justify-between gap-4">
+                          <span className="text-slate-400">발생 기간</span>
+                          <span className="font-semibold whitespace-nowrap">{doyToLabel(rec.startDoy)} ~ {doyToLabel(rec.endDoy)}</span>
+                        </div>
+                        {rec.project && (
+                          <div className="flex justify-between gap-4">
+                            <span className="text-slate-400">방제 사업</span>
+                            <span className="font-semibold text-right">{rec.project}</span>
+                          </div>
+                        )}
+                        <div className="pt-1.5 border-t border-slate-100 dark:border-slate-700">
+                          <p className="text-slate-500 leading-relaxed">{rec.note}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* 발생 강도 범례 */}
+          <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+            <span className="text-[11px] text-slate-400">발생 강도</span>
+            {(["low", "medium", "high"] as InvasiveSeverity[]).map(s => (
+              <span key={s} className="flex items-center gap-1.5">
+                <span className="inline-block w-6 h-2.5 rounded-full" style={{ backgroundColor: SEVERITY_CONFIG[s].color }} />
+                {SEVERITY_CONFIG[s].label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── 이전 해충 방제 사업 ── */}
+      <div>
+        <h4 className="text-sm font-bold mb-3 flex items-center gap-2">
+          <span className="w-1 h-4 rounded-full inline-block" style={{ backgroundColor: data.color }} />
+          이전 해충 방제 사업
+        </h4>
+        <div className="space-y-2">
+          {data.projects.map((proj, i) => (
+            <div
+              key={i}
+              className="rounded-2xl border bg-white dark:bg-slate-900 p-3.5 border-slate-100 dark:border-slate-700 hover:shadow-md transition-all"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold tabular-nums">{proj.year}년</span>
+                    <span className="text-xs font-bold truncate">{proj.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="text-[10px] px-2 py-0.5 rounded-full font-semibold text-white"
+                      style={{ backgroundColor: proj.result.includes("진행") ? "#f59e0b" : "#22c55e" }}
+                    >
+                      {proj.result}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-sm font-bold shrink-0 tabular-nums" style={{ color: data.color }}>
+                  {proj.budget}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 발생 당시 해충 사진 ── */}
+      <div>
+        <h4 className="text-sm font-bold mb-3 flex items-center gap-2">
+          <Camera className="h-4 w-4" style={{ color: data.color }} />
+          발생 당시 해충 사진
+        </h4>
+        {photoMessage && (
+          <div className="mb-3 text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800">
+            {photoMessage}
+          </div>
+        )}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {data.photos.map((photo, i) => (
+            <button
+              key={i}
+              data-testid={`photo-slot-${i}`}
+              className="group rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 aspect-square flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all hover:shadow-md hover:-translate-y-0.5"
+              onClick={() => {
+                setPhotoMessage(`'${photo.label}' 사진 등록 기능은 추후 업데이트 예정입니다.`);
+                setTimeout(() => setPhotoMessage(null), 3000);
+              }}
+            >
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform"
+                style={{ backgroundColor: data.color + "15" }}
+              >
+                {photo.icon}
+              </div>
+              <span className="text-[11px] text-slate-500 font-medium">{photo.label}</span>
+              <span className="text-[9px] text-slate-300 dark:text-slate-600 flex items-center gap-0.5">
+                <Camera className="h-2.5 w-2.5" /> 사진 추가
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
