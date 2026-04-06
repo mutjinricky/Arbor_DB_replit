@@ -667,7 +667,7 @@ export default function PestCalendar() {
                           x={todayDoy}
                           stroke="#60a5fa"
                           strokeWidth={2}
-                          label={<VLineLabel line1="오늘" color="#60a5fa" />}
+                          label={{ value: "오늘", fontSize: 10, fill: "#60a5fa", position: "top" }}
                         />
                       ) : null;
                     })()}
