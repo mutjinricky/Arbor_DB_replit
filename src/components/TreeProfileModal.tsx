@@ -21,12 +21,27 @@ import {
   Pencil,
   Save,
   RotateCcw,
+  ShieldAlert,
+  Leaf,
+  Target,
+  Zap,
+  CheckCircle2,
+  XCircle,
+  ChevronRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { getComplaintCount } from "@/lib/riskCalculations";
+import {
+  getComplaintCount,
+  calculateIQTRI,
+  calculateSoilScore,
+  IQTRI_COLORS,
+  IQTRI_LABELS,
+  SOIL_COLORS,
+  SOIL_LABELS,
+} from "@/lib/riskCalculations";
 
 interface TreeData {
   id: string;
@@ -104,6 +119,19 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
   }, [treeId, isOpen]);
 
   if (!treeData || !treeId) return null;
+
+  // Merge edit overrides into tree data for risk calculations
+  const treeFullData = {
+    ...treeData,
+    height:       editValues.height       ?? treeData.height,
+    diameter:     editValues.diameter     ?? treeData.diameter,
+    damage_area:  editValues.damage_area  ?? treeData.damage_area,
+    cavity_depth: editValues.cavity_depth ?? treeData.cavity_depth,
+    ice_damage:   editValues.ice_damage   ?? treeData.ice_damage,
+    need_nutrient: editValues.need_nutrient ?? treeData.need_nutrient,
+  };
+  const iqtri = calculateIQTRI(treeFullData);
+  const soil  = calculateSoilScore(treeId, treeFullData);
 
   // Get tree image based on tree id
   // Convert string id to int, calculate modulo 117, then add 1 to get 1-117 range
@@ -276,8 +304,11 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
           {/* Right Column - Detailed Information */}
           <div className="md:col-span-2">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-6">
+              <TabsList className="grid w-full grid-cols-7">
                 <TabsTrigger value="overview">개요</TabsTrigger>
+                <TabsTrigger value="risk" data-testid="tab-risk" className="flex items-center gap-1">
+                  <ShieldAlert className="h-3.5 w-3.5" />위험성
+                </TabsTrigger>
                 <TabsTrigger value="history">이력</TabsTrigger>
                 <TabsTrigger value="complaints" className="relative">
                   민원
@@ -330,6 +361,284 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                           <span className="font-medium">{tree.lastInspection}</span>
                         </div>
                       )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* ─── 위험성 기준 탭 ─────────────────────────────────── */}
+              <TabsContent value="risk" className="space-y-4 mt-4">
+
+                {/* IQTRI 총점 헤더 */}
+                <div
+                  className="rounded-xl px-5 py-4 flex items-center justify-between"
+                  style={{ backgroundColor: IQTRI_COLORS[iqtri.grade] + "18", border: `1.5px solid ${IQTRI_COLORS[iqtri.grade]}40` }}
+                >
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">IQTRI 위험성 지수 (D × T × I)</p>
+                    <p className="text-3xl font-bold" style={{ color: IQTRI_COLORS[iqtri.grade] }}>{iqtri.score}</p>
+                  </div>
+                  <div className="text-right">
+                    <span
+                      className="inline-block px-3 py-1 rounded-full text-sm font-bold text-white"
+                      style={{ backgroundColor: IQTRI_COLORS[iqtri.grade] }}
+                    >
+                      {IQTRI_LABELS[iqtri.grade]}
+                    </span>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      {iqtri.grade === "extreme" ? "즉시 조치 필요" :
+                       iqtri.grade === "high"    ? "우선 점검 대상" :
+                       iqtri.grade === "moderate"? "정기 모니터링" : "정상 관리"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* D × T × I 세부 카드 */}
+                <div className="grid grid-cols-3 gap-3">
+                  {/* D — 결함 지수 */}
+                  <Card className="border-amber-200 dark:border-amber-900">
+                    <CardContent className="p-3 space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">D — 결함</span>
+                      </div>
+                      <p className="text-2xl font-bold text-amber-600">{iqtri.D.toFixed(1)}</p>
+                      <div className="space-y-1 text-[11px]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">기본 위험등급</span>
+                          <span className="font-medium">
+                            {treeFullData.risk === "high" ? "HIGH (5.0)" : treeFullData.risk === "medium" ? "MEDIUM (1.0)" : "LOW (0.1)"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          {treeFullData.damage_area > 0
+                            ? <CheckCircle2 className="h-3 w-3 text-orange-500 flex-shrink-0" />
+                            : <XCircle      className="h-3 w-3 text-muted-foreground/40 flex-shrink-0" />}
+                          <span className={cn("flex-1 ml-1", treeFullData.damage_area > 0 ? "text-orange-600" : "text-muted-foreground/60")}>
+                            상처면적 ×1.5
+                          </span>
+                          <span className="text-muted-foreground">{treeFullData.damage_area} cm²</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          {treeFullData.ice_damage
+                            ? <CheckCircle2 className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                            : <XCircle      className="h-3 w-3 text-muted-foreground/40 flex-shrink-0" />}
+                          <span className={cn("flex-1 ml-1", treeFullData.ice_damage ? "text-blue-600" : "text-muted-foreground/60")}>
+                            설해피해 ×1.2
+                          </span>
+                          <span className="text-muted-foreground">{treeFullData.ice_damage ? "있음" : "없음"}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          {treeFullData.cavity_depth > 5
+                            ? <CheckCircle2 className="h-3 w-3 text-red-500 flex-shrink-0" />
+                            : <XCircle      className="h-3 w-3 text-muted-foreground/40 flex-shrink-0" />}
+                          <span className={cn("flex-1 ml-1", treeFullData.cavity_depth > 5 ? "text-red-600" : "text-muted-foreground/60")}>
+                            공동깊이 ×1.3
+                          </span>
+                          <span className="text-muted-foreground">{treeFullData.cavity_depth} cm</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* T — 대상 지수 */}
+                  <Card className="border-blue-200 dark:border-blue-900">
+                    <CardContent className="p-3 space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <Target className="h-4 w-4 text-blue-500" />
+                        <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">T — 대상</span>
+                      </div>
+                      <p className="text-2xl font-bold text-blue-600">{iqtri.T}</p>
+                      <div className="space-y-1 text-[11px]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">위치 유형</span>
+                        </div>
+                        <p className="font-medium text-blue-800 dark:text-blue-300 truncate">{treeFullData.district || "공원·산책로"}</p>
+                        <Separator className="my-1" />
+                        {[
+                          { label: "주거·아파트", val: 40 },
+                          { label: "간선·대로·학교", val: 25 },
+                          { label: "공원·산책로", val: 15 },
+                        ].map(row => (
+                          <div key={row.label} className="flex items-center justify-between">
+                            <span className={cn(iqtri.T === row.val ? "font-semibold text-blue-700 dark:text-blue-300" : "text-muted-foreground/60")}>
+                              {iqtri.T === row.val && <ChevronRight className="inline h-3 w-3 mr-0.5" />}
+                              {row.label}
+                            </span>
+                            <span className={cn("font-mono", iqtri.T === row.val ? "font-bold text-blue-600" : "text-muted-foreground/50")}>{row.val}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* I — 충격 지수 */}
+                  <Card className="border-purple-200 dark:border-purple-900">
+                    <CardContent className="p-3 space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <Zap className="h-4 w-4 text-purple-500" />
+                        <span className="text-xs font-semibold text-purple-700 dark:text-purple-400">I — 충격</span>
+                      </div>
+                      <p className="text-2xl font-bold text-purple-600">{iqtri.I}</p>
+                      <div className="space-y-1 text-[11px]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">흉고직경</span>
+                          <span className="font-medium">{treeFullData.diameter} cm ({treeFullData.diameter * 10} mm)</span>
+                        </div>
+                        <Separator className="my-1" />
+                        {[
+                          { label: ">750 mm", val: 10 },
+                          { label: "350~750 mm", val: 6 },
+                          { label: "100~350 mm", val: 4 },
+                          { label: "<100 mm", val: 1 },
+                        ].map(row => (
+                          <div key={row.label} className="flex items-center justify-between">
+                            <span className={cn(iqtri.I === row.val ? "font-semibold text-purple-700 dark:text-purple-300" : "text-muted-foreground/60")}>
+                              {iqtri.I === row.val && <ChevronRight className="inline h-3 w-3 mr-0.5" />}
+                              {row.label}
+                            </span>
+                            <span className={cn("font-mono", iqtri.I === row.val ? "font-bold text-purple-600" : "text-muted-foreground/50")}>{row.val}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* 수식 시각화 */}
+                <div className="flex items-center justify-center gap-3 py-2 bg-muted/40 rounded-lg text-sm font-mono">
+                  <span className="text-amber-600 font-bold">D {iqtri.D.toFixed(1)}</span>
+                  <span className="text-muted-foreground">×</span>
+                  <span className="text-blue-600 font-bold">T {iqtri.T}</span>
+                  <span className="text-muted-foreground">×</span>
+                  <span className="text-purple-600 font-bold">I {iqtri.I}</span>
+                  <span className="text-muted-foreground">=</span>
+                  <span className="font-bold text-base" style={{ color: IQTRI_COLORS[iqtri.grade] }}>
+                    {iqtri.score}점
+                  </span>
+                  <span
+                    className="px-2 py-0.5 rounded text-white text-xs font-bold"
+                    style={{ backgroundColor: IQTRI_COLORS[iqtri.grade] }}
+                  >
+                    {IQTRI_LABELS[iqtri.grade]}
+                  </span>
+                </div>
+
+                {/* 등급 기준표 */}
+                <Card>
+                  <CardContent className="p-3">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">IQTRI 등급 기준</p>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {[
+                        { grade: "low",      label: "저위험",  range: "0~39",  color: "#22c55e" },
+                        { grade: "moderate", label: "보통",    range: "40~99", color: "#eab308" },
+                        { grade: "high",     label: "고위험",  range: "100~399", color: "#f97316" },
+                        { grade: "extreme",  label: "극심",    range: "400+",  color: "#dc2626" },
+                      ].map(g => (
+                        <div
+                          key={g.grade}
+                          className={cn(
+                            "rounded-lg px-2 py-1.5 text-center text-[11px]",
+                            iqtri.grade === g.grade ? "ring-2 ring-offset-1" : "opacity-50"
+                          )}
+                          style={{
+                            backgroundColor: g.color + "18",
+                            border: `1px solid ${g.color}50`,
+                            ringColor: g.color,
+                          }}
+                        >
+                          <p className="font-bold" style={{ color: g.color }}>{g.label}</p>
+                          <p className="text-muted-foreground mt-0.5">{g.range}점</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* K-UTSI 토양 건전성 */}
+                <Card>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold flex items-center gap-2 text-sm">
+                        <Leaf className="h-4 w-4 text-green-600" />
+                        K-UTSI 토양 건전성 지수
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl font-bold" style={{ color: SOIL_COLORS[soil.grade] }}>{soil.score}점</span>
+                        <span
+                          className="px-2 py-0.5 rounded text-white text-xs font-bold"
+                          style={{ backgroundColor: SOIL_COLORS[soil.grade] }}
+                        >
+                          {soil.grade}등급
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 4개 카테고리 바 */}
+                    <div className="space-y-2">
+                      {[
+                        { key: "physical", label: "물리·공간 (×1.5)", max: 37.5, desc: "ERA·토양경도·투수계수·공극률·토성", color: "#3b82f6" },
+                        { key: "chemical", label: "화학·비옥도 (×1.0)", max: 15,   desc: "유기물·산도(pH)·전기전도도", color: "#22c55e" },
+                        { key: "site",     label: "입지·환경 (×1.0)",  max: 20,   desc: "기반시설간섭·지표피복·교통량·강수패턴", color: "#f59e0b" },
+                        { key: "bio",      label: "생물·안정성 (×0.5)", max: 7.5,  desc: "응집체안정성·A층깊이·토양구조", color: "#8b5cf6" },
+                      ].map(cat => {
+                        const val = soil.breakdown[cat.key as keyof typeof soil.breakdown];
+                        const pct = Math.round((val / cat.max) * 100);
+                        return (
+                          <div key={cat.key}>
+                            <div className="flex items-center justify-between text-[11px] mb-0.5">
+                              <span className="font-medium">{cat.label}</span>
+                              <span className="text-muted-foreground">{val} / {cat.max}점 ({pct}%)</span>
+                            </div>
+                            <div className="h-2 rounded-full bg-muted overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all"
+                                style={{ width: `${pct}%`, backgroundColor: cat.color }}
+                              />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{cat.desc}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* 주요 지표 플래그 */}
+                    <Separator />
+                    <p className="text-xs font-semibold text-muted-foreground">영향 지표</p>
+                    <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                      {[
+                        { label: "상처·공동 (토양경도)",  ok: treeFullData.damage_area === 0 && treeFullData.cavity_depth === 0, note: treeFullData.damage_area > 0 || treeFullData.cavity_depth > 0 ? "H 점수 감점" : "양호" },
+                        { label: "설해피해 (강수패턴)",   ok: !treeFullData.ice_damage, note: treeFullData.ice_damage ? "PPT·WAS 감점" : "양호" },
+                        { label: "영양공급 필요",         ok: !treeFullData.need_nutrient, note: treeFullData.need_nutrient ? "SOM·pH·STR 감점" : "양호" },
+                        { label: "도로 위치 (염화물·교통)", ok: !(treeFullData.district?.includes("도로") || treeFullData.district?.includes("대로")), note: "EC·TRA 영향" },
+                        { label: "유효뿌리공간 (직경)",   ok: treeFullData.diameter >= 45, note: `${treeFullData.diameter} cm — ${treeFullData.diameter >= 75 ? "ERA 최상" : treeFullData.diameter >= 45 ? "ERA 양호" : "ERA 불량"}` },
+                        { label: "수령 (A층 깊이)",       ok: (treeFullData.age ?? 10) >= 15, note: `${treeFullData.age ?? 10}년 — ${(treeFullData.age ?? 10) >= 30 ? "HOR 최상" : (treeFullData.age ?? 10) >= 15 ? "HOR 양호" : "HOR 불량"}` },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-start gap-1.5 py-1 px-2 rounded bg-muted/30">
+                          {item.ok
+                            ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                            : <XCircle      className="h-3.5 w-3.5 text-orange-500 mt-0.5 flex-shrink-0" />}
+                          <div className="min-w-0">
+                            <p className="font-medium leading-tight truncate">{item.label}</p>
+                            <p className={cn("leading-tight", item.ok ? "text-muted-foreground" : "text-orange-600")}>{item.note}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* K-UTSI 등급 기준 */}
+                    <Separator />
+                    <div className="grid grid-cols-5 gap-1 text-[10px] text-center">
+                      {(["A","B","C","D","E"] as const).map(g => (
+                        <div
+                          key={g}
+                          className={cn("rounded py-1", soil.grade === g ? "ring-2" : "opacity-50")}
+                          style={{ backgroundColor: SOIL_COLORS[g] + "20", border: `1px solid ${SOIL_COLORS[g]}50`, ringColor: SOIL_COLORS[g] }}
+                        >
+                          <p className="font-bold" style={{ color: SOIL_COLORS[g] }}>{g}</p>
+                          <p className="text-muted-foreground">{g === "A" ? "≥80" : g === "B" ? "65~79" : g === "C" ? "50~64" : g === "D" ? "35~49" : "<35"}</p>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
