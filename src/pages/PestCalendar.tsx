@@ -468,25 +468,23 @@ export default function PestCalendar() {
                 </button>
               ))}
 
-              {/* 다세대 체크박스 */}
+              {/* 다세대 토글 */}
               {isBarMultiGen && (
-                <div className="flex gap-2 ml-2 border-l pl-3">
+                <div className="flex gap-1.5 ml-2 border-l pl-3">
                   {PEACH_GENERATIONS.map((_, idx) => (
-                    <label
+                    <button
                       key={idx}
-                      className="flex items-center gap-1 text-xs cursor-pointer select-none"
+                      onClick={() => toggleGen(idx)}
                       data-testid={`checkbox-gen-${idx + 1}`}
+                      className={`text-xs px-2.5 py-1 rounded-full font-medium transition-all duration-200 ${
+                        barSelectedGens[idx]
+                          ? "text-white shadow-sm scale-105"
+                          : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                      }`}
+                      style={barSelectedGens[idx] ? { backgroundColor: PEST_COLOR[barPest], boxShadow: `0 2px 8px ${PEST_COLOR[barPest]}50` } : {}}
                     >
-                      <input
-                        type="checkbox"
-                        checked={barSelectedGens[idx]}
-                        onChange={() => toggleGen(idx)}
-                        className="accent-red-500 w-3.5 h-3.5"
-                      />
-                      <span className={barSelectedGens[idx] ? "text-red-600 font-medium" : "text-muted-foreground"}>
-                        {idx + 1}세대
-                      </span>
-                    </label>
+                      {idx + 1}세대
+                    </button>
                   ))}
                 </div>
               )}
@@ -739,6 +737,12 @@ export default function PestCalendar() {
 // ─── 방제기간 막대바 ──────────────────────────────────────────────────────────
 type BarTooltip = { rowIdx: number; content: { title: string; range: string; color: string }[]; midPct: number };
 
+const BAR_COLORS = {
+  survey:   { bg: "#fef9c3", border: "#fde047", gradient: "linear-gradient(135deg, #fef9c3 0%, #fef08a 100%)" },
+  focus:    { bg: "#fed7aa", gradient: "linear-gradient(135deg, #fdba74 0%, #fb923c 100%)" },
+  control:  { bg: "#fecaca", gradient: "linear-gradient(135deg, #fca5a5 0%, #f87171 100%)" },
+};
+
 function BarTimeline({
   pestName, baseTemp, pestColor, generations, genLabels, todayPct,
 }: {
@@ -752,7 +756,6 @@ function BarTimeline({
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState<BarTooltip | null>(null);
 
-  // 세대 변경 시 패널 닫기
   useEffect(() => { setSelectedRow(null); setTooltip(null); }, [pestName, generations]);
 
   const monthRuler = useMemo(() => {
@@ -785,141 +788,178 @@ function BarTimeline({
       rowIdx,
       midPct: (row.p70 + row.p107) / 2,
       content: [
-        { title: "예찰 시기",    range: `${doyToLabel(row.doy70)} ~ ${doyToLabel(row.doy90)}`,   color: "#ca8a04" },
-        { title: "├ 집중 예찰", range: `${doyToLabel(row.doy85)} ~ ${doyToLabel(row.doy90)}`,   color: "#d97706" },
-        { title: "방제 시기",    range: `${doyToLabel(row.doy90)} ~ ${doyToLabel(row.doy100)}`,  color: "#ea580c" },
-        { title: "방제 종료",    range: `${doyToLabel(row.doy100)} ~ ${doyToLabel(row.doy107)}`, color: "#dc2626" },
+        { title: "예찰 시기",      range: `${doyToLabel(row.doy70)} ~ ${doyToLabel(row.doy90)}`,   color: "#ca8a04" },
+        { title: "├ 집중 예찰",   range: `${doyToLabel(row.doy85)} ~ ${doyToLabel(row.doy90)}`,   color: "#ea580c" },
+        { title: "방제 시기",      range: `${doyToLabel(row.doy90)} ~ ${doyToLabel(row.doy100)}`,  color: "#ef4444" },
+        { title: "방제 종료",      range: `${doyToLabel(row.doy100)} ~ ${doyToLabel(row.doy107)}`, color: "#dc2626" },
       ],
     });
   };
 
   return (
     <div className="w-full">
-      {/* 범례 */}
-      <div className="flex flex-wrap gap-4 mb-4 text-xs">
+      {/* ── 범례 ── */}
+      <div className="flex flex-wrap items-center gap-3 mb-5 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block w-8 h-3 rounded-sm bg-yellow-100 border border-yellow-300" />
-          예찰 시기
-          <span className="inline-block w-3 h-3 rounded-sm bg-amber-400 ml-1" />
-          (└집중 예찰)
+          <span className="inline-flex items-center gap-0.5">
+            <span className="inline-block w-6 h-3 rounded-l-full" style={{ background: BAR_COLORS.survey.gradient }} />
+            <span className="inline-block w-3 h-3 rounded-r-full" style={{ background: BAR_COLORS.focus.gradient }} />
+          </span>
+          <span>예찰 <span className="opacity-60">(└집중)</span></span>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block w-8 h-3 rounded-sm bg-red-600" />방제 시기
+          <span className="inline-block w-8 h-3 rounded-full" style={{ background: BAR_COLORS.control.gradient }} />
+          방제 시기
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block w-0.5 h-4 bg-blue-500" />오늘
+          <span className="inline-block w-0.5 h-4 rounded-full bg-blue-400" />
+          <span className="bg-blue-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold">Today</span>
         </span>
       </div>
 
-      {/* 타임라인 */}
+      {/* ── 타임라인 본체 ── */}
       <div className="relative">
+
+        {/* 전체 높이 그리드선 레이어 (모든 바 뒤에) */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          {monthRuler.map(r => (
+            <div
+              key={r.label}
+              className="absolute top-0 bottom-0 border-l border-dashed border-slate-200 dark:border-slate-700"
+              style={{ left: `${r.pct}%` }}
+            />
+          ))}
+          {todayPct > 0 && todayPct < 100 && (
+            <div
+              className="absolute top-0 bottom-0 w-[2px] z-10"
+              style={{ left: `${todayPct}%`, background: "linear-gradient(to bottom, #60a5fa, #3b82f6)" }}
+            />
+          )}
+        </div>
+
         {/* 월 눈금 헤더 */}
-        <div className="relative h-7 mb-1 border-b border-border">
+        <div className="relative h-10 mb-2">
           {monthRuler.map(r => (
             <div
               key={r.label}
               className="absolute flex flex-col items-center"
               style={{ left: `${r.pct}%`, transform: "translateX(-50%)" }}
             >
-              <div className="h-2 w-px bg-border mb-0.5" />
-              <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">{r.label}</span>
+              <span className="text-[12px] font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap tracking-tight">{r.label}</span>
             </div>
           ))}
+          {/* Today 배지 */}
           {todayPct > 0 && todayPct < 100 && (
-            <>
-              <div className="absolute top-0 bottom-0 w-0.5 bg-blue-500" style={{ left: `${todayPct}%` }} />
-              <span
-                className="absolute bottom-full text-[10px] text-blue-500 font-semibold whitespace-nowrap -translate-x-1/2 mb-0.5"
-                style={{ left: `${todayPct}%` }}
-              >오늘</span>
-            </>
+            <div
+              className="absolute flex flex-col items-center gap-0.5"
+              style={{ left: `${todayPct}%`, transform: "translateX(-50%)", top: 0 }}
+            >
+              <div className="bg-blue-500 text-white text-[9px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-md font-bold tracking-wide">
+                Today
+              </div>
+              <div className="w-[2px] h-2 bg-blue-400 rounded-full" />
+            </div>
           )}
         </div>
 
-        {/* 막대 행들 */}
+        {/* ── 바 행들 ── */}
         {rows.map((row, rowIdx) => {
           const isSelected = selectedRow === rowIdx;
           return (
-            <div key={rowIdx} className="mb-3">
-              {/* 행 레이블 */}
+            <div key={rowIdx} className="mb-4 relative z-10">
+
+              {/* 세대 레이블 */}
               {generations.length > 1 && (
-                <div className="text-xs font-semibold mb-1" style={{ color: pestColor }}>
-                  {row.label}
-                  <span className="text-muted-foreground font-normal ml-1">(목표 {row.target} DD)</span>
-                  {isSelected && (
-                    <span className="ml-2 text-[10px] font-normal text-muted-foreground">클릭하여 닫기</span>
-                  )}
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-sm font-bold" style={{ color: pestColor }}>{row.label}</span>
+                  <span className="text-xs text-slate-400 font-normal">목표 {row.target} DD</span>
+                  {isSelected && <span className="text-[10px] text-slate-400 ml-auto">클릭하여 닫기 ↑</span>}
                 </div>
               )}
 
-              {/* 클릭 가능한 막대 행 */}
+              {/* 클릭 가능한 바 카드 */}
               <div
-                className="relative cursor-pointer"
+                className={`group relative cursor-pointer rounded-2xl border transition-all duration-200 ${
+                  isSelected
+                    ? "shadow-xl"
+                    : "bg-slate-50/80 dark:bg-slate-800/40 border-slate-100 dark:border-slate-700 hover:-translate-y-[2px] hover:shadow-lg hover:border-slate-200"
+                }`}
+                style={isSelected ? {
+                  backgroundColor: pestColor + "0a",
+                  borderColor: pestColor + "50",
+                  boxShadow: `0 8px 30px ${pestColor}18`,
+                } : {}}
                 onMouseLeave={() => setTooltip(null)}
                 onClick={() => setSelectedRow(r => r === rowIdx ? null : rowIdx)}
               >
-                {/* 배경 트랙 */}
-                <div
-                  className={`relative h-10 rounded-md border transition-all ${
-                    isSelected
-                      ? "shadow-md"
-                      : "bg-muted/30 border-border hover:bg-muted/50"
-                  }`}
-                  style={isSelected ? {
-                    backgroundColor: pestColor + "12",
-                    borderColor: pestColor,
-                    boxShadow: `0 0 0 2px ${pestColor}40`,
-                  } : {}}
-                >
-                  {/* 예찰 구간 (p70~p90) — 연노랑, 집중예찰 내부 강조 */}
+                {/* 프로그레스 트랙 */}
+                <div className="relative h-12 overflow-hidden rounded-2xl">
+
+                  {/* 예찰 구간 (p70 ~ p90) */}
                   {row.p90 > row.p70 && (
                     <div
-                      className="absolute top-0 h-full bg-yellow-100 rounded-sm overflow-hidden"
-                      style={{ left: `${row.p70}%`, width: `${row.p90 - row.p70}%` }}
+                      className="absolute top-1.5 bottom-1.5 overflow-hidden transition-opacity duration-150 group-hover:opacity-90"
+                      style={{
+                        left: `${row.p70}%`,
+                        width: `${row.p90 - row.p70}%`,
+                        background: BAR_COLORS.survey.gradient,
+                        borderRadius: "999px 0 0 999px",
+                      }}
                       onMouseEnter={() => showTooltip(rowIdx, row)}
                     >
-                      {/* 집중 예찰 (p85~p90) — 내부 짙은 앰버 강조 */}
+                      {/* 집중 예찰 (p85 ~ p90) */}
                       {row.p90 > row.p85 && (
                         <div
-                          className="absolute top-0 right-0 h-full bg-amber-400"
-                          style={{ width: `${((row.p90 - row.p85) / (row.p90 - row.p70)) * 100}%` }}
+                          className="absolute top-0 right-0 bottom-0 transition-opacity duration-150"
+                          style={{
+                            width: `${((row.p90 - row.p85) / (row.p90 - row.p70)) * 100}%`,
+                            background: BAR_COLORS.focus.gradient,
+                          }}
                         />
                       )}
                     </div>
                   )}
 
-                  {/* 방제 시기 (p90~p107) — 방제시작~종료 단일 빨강 */}
+                  {/* 방제 시기 (p90 ~ p107) */}
                   {row.p107 > row.p90 && (
                     <div
-                      className="absolute top-0 h-full rounded-sm bg-red-600"
-                      style={{ left: `${row.p90}%`, width: `${row.p107 - row.p90}%` }}
+                      className="absolute top-1.5 bottom-1.5 transition-opacity duration-150 group-hover:opacity-90"
+                      style={{
+                        left: `${row.p90}%`,
+                        width: `${row.p107 - row.p90}%`,
+                        background: BAR_COLORS.control.gradient,
+                        borderRadius: "0 999px 999px 0",
+                      }}
                       onMouseEnter={() => showTooltip(rowIdx, row)}
                     />
                   )}
 
-                  {/* 오늘 선 */}
+                  {/* 오늘 선 (트랙 내) */}
                   {todayPct > 0 && todayPct < 100 && (
                     <div
-                      className="absolute top-0 h-full w-0.5 bg-blue-500 z-10"
-                      style={{ left: `${todayPct}%` }}
+                      className="absolute top-0 bottom-0 w-[2px] z-20"
+                      style={{ left: `${todayPct}%`, background: "linear-gradient(to bottom, #60a5fa, #3b82f6)" }}
                     />
                   )}
 
                   {/* Hover 툴팁 */}
                   {tooltip?.rowIdx === rowIdx && (
                     <div
-                      className="absolute bottom-full mb-2 z-30 bg-popover border rounded-lg shadow-lg px-3 py-2 pointer-events-none min-w-[200px]"
-                      style={{ left: `${Math.min(Math.max(tooltip.midPct, 10), 70)}%`, transform: "translateX(-50%)" }}
+                      className="absolute bottom-full mb-3 z-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-2xl shadow-2xl px-4 py-3 pointer-events-none min-w-[210px]"
+                      style={{ left: `${Math.min(Math.max(tooltip.midPct, 12), 68)}%`, transform: "translateX(-50%)" }}
                     >
-                      <p className="text-[11px] font-bold mb-1.5" style={{ color: pestColor }}>
-                        {row.label}
-                      </p>
-                      {tooltip.content.map((item, ci) => (
-                        <div key={ci} className="flex justify-between gap-3 text-[11px] leading-snug">
-                          <span style={{ color: item.color }}>{item.title}</span>
-                          <span className="text-muted-foreground font-medium whitespace-nowrap">{item.range}</span>
-                        </div>
-                      ))}
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pestColor }} />
+                        <p className="text-xs font-bold" style={{ color: pestColor }}>{row.label}</p>
+                      </div>
+                      <div className="space-y-1">
+                        {tooltip.content.map((item, ci) => (
+                          <div key={ci} className="flex justify-between gap-4 text-[11px]">
+                            <span className="text-slate-400">{item.title}</span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">{item.range}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -928,27 +968,30 @@ function BarTimeline({
               {/* 클릭 상세 패널 */}
               {isSelected && (
                 <div
-                  className="mt-2 rounded-lg border p-3 text-xs space-y-2 animate-in fade-in slide-in-from-top-1"
-                  style={{ backgroundColor: pestColor + "08", borderColor: pestColor + "40" }}
+                  className="mt-2 rounded-2xl border bg-white dark:bg-slate-900 p-4 text-xs space-y-3 animate-in fade-in slide-in-from-top-2 shadow-lg"
+                  style={{ borderColor: pestColor + "30" }}
                 >
-                  <p className="font-bold text-sm" style={{ color: pestColor }}>{row.label} 방제 일정 상세</p>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pestColor }} />
+                    <p className="font-bold text-sm" style={{ color: pestColor }}>{row.label} 방제 일정 상세</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                     {[
-                      { label: "예찰 시작",    doy: row.doy70,  color: "#ca8a04" },
-                      { label: "집중 예찰 시작", doy: row.doy85,  color: "#d97706" },
-                      { label: "방제 시작",    doy: row.doy90,  color: "#ea580c" },
-                      { label: "방제 최적 (DD 100%)", doy: row.doy100, color: "#dc2626" },
-                      { label: "방제 종료",    doy: row.doy107, color: "#dc2626" },
+                      { label: "예찰 시작",         doy: row.doy70,  color: "#ca8a04" },
+                      { label: "집중 예찰 시작",    doy: row.doy85,  color: "#d97706" },
+                      { label: "방제 시작",         doy: row.doy90,  color: "#f87171" },
+                      { label: "방제 최적 (100%)",  doy: row.doy100, color: "#ef4444" },
+                      { label: "방제 종료",         doy: row.doy107, color: "#dc2626" },
                     ].map((item, i) => (
-                      <div key={i} className="flex justify-between gap-2">
-                        <span className="text-muted-foreground">{item.label}</span>
-                        <span className="font-semibold" style={{ color: item.color }}>{doyToLabel(item.doy)}</span>
+                      <div key={i} className="flex items-center justify-between gap-2 py-0.5">
+                        <span className="text-slate-400">{item.label}</span>
+                        <span className="font-bold tabular-nums" style={{ color: item.color }}>{doyToLabel(item.doy)}</span>
                       </div>
                     ))}
                   </div>
-                  <div className="border-t pt-2 mt-1" style={{ borderColor: pestColor + "30" }}>
-                    <p className="font-semibold text-[11px] mb-1 text-muted-foreground">권장 조치사항</p>
-                    <p className="text-muted-foreground leading-relaxed">
+                  <div className="border-t pt-3" style={{ borderColor: pestColor + "20" }}>
+                    <p className="font-semibold text-[11px] mb-1.5 text-slate-400 uppercase tracking-wide">권장 조치사항</p>
+                    <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
                       {pestName === "복숭아순나방"
                         ? "페로몬 트랩 설치 후 예찰 시작 → 집중예찰 구간 주 2회 이상 모니터링 → 90% 도달 시 스피노사드·사이퍼메트린계 약제 살포"
                         : pestName === "꽃매미"
