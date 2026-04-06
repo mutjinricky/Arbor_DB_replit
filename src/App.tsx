@@ -12,6 +12,7 @@ import CreateProject from "./pages/CreateProject";
 import RequestForm from "./pages/RequestForm";
 import PestCalendar from "./pages/PestCalendar";
 import TreeRisk from "./pages/TreeRisk";
+import SoilManagement from "./pages/SoilManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/projects/create" element={<CreateProject />} />
             <Route path="/projects/request" element={<RequestForm />} />
+            <Route path="/soil-management" element={<SoilManagement />} />
             <Route path="/tree-risk" element={<TreeRisk />} />
             <Route path="/pest-calendar" element={<PestCalendar />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
