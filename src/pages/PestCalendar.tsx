@@ -500,7 +500,7 @@ export default function PestCalendar() {
               genLabels={isBarMultiGen
                 ? PEACH_GENERATIONS.map((_, i) => `${i + 1}세대`).filter((_, i) => barSelectedGens[i])
                 : [barPest]}
-              todayPct={todayPct}
+              todayPct={50}
             />
           </CardContent>
         </Card>
