@@ -79,26 +79,6 @@ function doyToLabel(doy: number): string {
   return "";
 }
 
-function doyToShortLabel(doy: number): string {
-  for (let m = 0; m < 12; m++) {
-    const end = MONTH_START_DAY[m] + MONTH_DAYS[m];
-    if (doy < end) return `${m + 1}/${doy - MONTH_START_DAY[m] + 1}`;
-  }
-  return "";
-}
-
-// 수직 기준선 레이블 (recharts label 주입용)
-function VLineLabel({ viewBox, line1, line2, color, anchor = "start" }: any) {
-  if (!viewBox) return null;
-  const x = anchor === "start" ? viewBox.x + 4 : viewBox.x - 4;
-  const textAnchor = anchor === "start" ? "start" : "end";
-  return (
-    <g>
-      <text x={x} y={viewBox.y + 13} fontSize={9} fill={color} fontWeight="700" textAnchor={textAnchor}>{line1}</text>
-      {line2 && <text x={x} y={viewBox.y + 24} fontSize={8} fill={color} fillOpacity={0.8} textAnchor={textAnchor}>{line2}</text>}
-    </g>
-  );
-}
 
 // ─── 유틸 ────────────────────────────────────────────────────────────────────
 function estimateDateForDD(baseTemp: number, targetDD: number): string {
@@ -653,7 +633,6 @@ export default function PestCalendar() {
                         stroke="#22c55e"
                         strokeDasharray="5 4"
                         strokeWidth={1.5}
-                        label={<VLineLabel line1="예찰 시작" line2={`${doyToShortLabel(lineMilestoneDays.p70)} (${Math.round(lineGenTarget * 0.70)}DD)`} color="#22c55e" />}
                       />
                       <ReferenceDot x={lineMilestoneDays.p70} y={Math.round(lineGenTarget * 0.70)} r={5} fill="#22c55e" stroke="white" strokeWidth={2} />
                     </>}
@@ -665,7 +644,6 @@ export default function PestCalendar() {
                         stroke="#f97316"
                         strokeDasharray="5 4"
                         strokeWidth={1.5}
-                        label={<VLineLabel line1="방제 시작" line2={`${doyToShortLabel(lineMilestoneDays.p90)} (${Math.round(lineGenTarget * 0.90)}DD)`} color="#f97316" anchor="end" />}
                       />
                       <ReferenceDot x={lineMilestoneDays.p90} y={Math.round(lineGenTarget * 0.90)} r={5} fill="#f97316" stroke="white" strokeWidth={2} />
                     </>}
@@ -677,7 +655,6 @@ export default function PestCalendar() {
                         stroke={lineColor}
                         strokeDasharray="5 4"
                         strokeWidth={2}
-                        label={<VLineLabel line1="방제 적기" line2={`${doyToShortLabel(lineMilestoneDays.p100)} (${lineGenTarget}DD)`} color={lineColor} anchor="end" />}
                       />
                       <ReferenceDot x={lineMilestoneDays.p100} y={lineGenTarget} r={6} fill={lineColor} stroke="white" strokeWidth={2} />
                     </>}
