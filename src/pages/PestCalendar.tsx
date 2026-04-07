@@ -40,6 +40,7 @@ interface InvasiveProject {
   name: string;
   budget: string;
   result: string;
+  photos: { label: string; icon: string }[];
 }
 interface InvasivePestData {
   key: string;
@@ -50,7 +51,6 @@ interface InvasivePestData {
   peakMonths: number[];
   history: InvasiveHistoryRecord[];
   projects: InvasiveProject[];
-  photos: { label: string; icon: string }[];
 }
 
 const SEVERITY_CONFIG: Record<InvasiveSeverity, { label: string; color: string }> = {
@@ -75,12 +75,10 @@ const INVASIVE_PEST_DATA: InvasivePestData[] = [
       { year: 2020, startDoy: 170, endDoy: 208, severity: "low",    note: "이천시 초발견, 산발적 소규모 발생" },
     ],
     projects: [
-      { year: 2023, name: "'23 도심공원 긴급방제 사업", budget: "₩18,500,000", result: "완료 (효과율 82%)" },
-      { year: 2024, name: "'24 돌발해충 공동방제",     budget: "₩12,000,000", result: "완료 (효과율 79%)" },
-    ],
-    photos: [
-      { label: "성충", icon: "🦗" }, { label: "약충", icon: "🐛" },
-      { label: "피해 수목", icon: "🌳" }, { label: "그을음병", icon: "🖤" },
+      { year: 2023, name: "'23 도심공원 긴급방제 사업", budget: "₩18,500,000", result: "완료",
+        photos: [{ label: "발생 현황", icon: "🦗" }, { label: "약충 피해", icon: "🐛" }, { label: "방제 작업", icon: "💉" }, { label: "방제 후", icon: "✅" }] },
+      { year: 2024, name: "'24 돌발해충 공동방제",     budget: "₩12,000,000", result: "완료",
+        photos: [{ label: "발생 현황", icon: "🌳" }, { label: "그을음병", icon: "🖤" }, { label: "방제 작업", icon: "💉" }, { label: "방제 후", icon: "✅" }] },
     ],
   },
   {
@@ -98,12 +96,10 @@ const INVASIVE_PEST_DATA: InvasivePestData[] = [
       { year: 2020, startDoy: 125, endDoy: 188, severity: "low",    note: "예찰 중심, 국소 방제 1개소 시행" },
     ],
     projects: [
-      { year: 2022, name: "'22 산림해충 긴급방제 사업",         budget: "₩42,000,000", result: "완료 (효과율 78%)" },
-      { year: 2023, name: "'23 솔잎혹파리·매미나방 항공방제",   budget: "₩28,500,000", result: "완료 (효과율 91%)" },
-    ],
-    photos: [
-      { label: "성충(수컷)", icon: "🦋" }, { label: "유충", icon: "🐛" },
-      { label: "알 덩어리", icon: "🥚" }, { label: "피해 임상", icon: "🌲" },
+      { year: 2022, name: "'22 산림해충 긴급방제 사업",        budget: "₩42,000,000", result: "완료",
+        photos: [{ label: "유충 대발생", icon: "🐛" }, { label: "피해 임상", icon: "🌲" }, { label: "방제 작업", icon: "💉" }, { label: "방제 후", icon: "✅" }] },
+      { year: 2023, name: "'23 솔잎혹파리·매미나방 항공방제",  budget: "₩28,500,000", result: "완료",
+        photos: [{ label: "항공방제", icon: "🚁" }, { label: "성충", icon: "🦋" }, { label: "알 덩어리", icon: "🥚" }, { label: "방제 후", icon: "✅" }] },
     ],
   },
   {
@@ -121,22 +117,13 @@ const INVASIVE_PEST_DATA: InvasivePestData[] = [
       { year: 2020, startDoy: 102, endDoy: 143, severity: "low",    note: "초기 발견, 국소 방제 시행 완료" },
     ],
     projects: [
-      { year: 2022, name: "'22 소나무재선충·깍지벌레 통합방제", budget: "₩35,000,000", result: "완료 (효과율 85%)" },
-      { year: 2024, name: "'24 소나무류 병해충 방제",           budget: "₩9,800,000",  result: "완료 (효과율 88%)" },
-    ],
-    photos: [
-      { label: "성충·약충", icon: "🐞" }, { label: "피해 수피", icon: "🌿" },
-      { label: "고사 수목", icon: "🌲" }, { label: "방제 작업", icon: "💉" },
+      { year: 2022, name: "'22 소나무재선충·깍지벌레 통합방제", budget: "₩35,000,000", result: "완료",
+        photos: [{ label: "성충·약충", icon: "🐞" }, { label: "피해 수피", icon: "🌿" }, { label: "방제 작업", icon: "💉" }, { label: "방제 후", icon: "✅" }] },
+      { year: 2024, name: "'24 소나무류 병해충 방제",           budget: "₩9,800,000",  result: "완료",
+        photos: [{ label: "피해 수목", icon: "🌲" }, { label: "수목 주사", icon: "💉" }, { label: "방제 현장", icon: "🌿" }, { label: "방제 후", icon: "✅" }] },
     ],
   },
 ];
-
-type MarkType = "primary" | "secondary" | "observe" | "none";
-const MONTHLY_SCHEDULE: Record<string, MarkType[]> = {
-  복숭아순나방: ["none","none","none","none","primary","primary","secondary","primary","secondary","none","none","none"],
-  꽃매미:      ["none","none","none","observe","primary","secondary","secondary","primary","observe","none","none","none"],
-  갈색날개매미충:["none","none","none","observe","primary","secondary","observe","primary","secondary","none","none","none"],
-};
 
 type PestStatus = "정상" | "예찰" | "준비" | "실행";
 function getPestStatus(pct: number): PestStatus {
@@ -152,15 +139,11 @@ const STATUS_STYLE: Record<PestStatus, { badge: string; bar: string; label: stri
   실행: { badge: "bg-red-100 text-red-700 border-red-200",   bar: "#ef4444", label: "방제 실행 권고" },
 };
 
-// ─── 막대바 타임라인 상수 ──────────────────────────────────────────────────────
-const TL_MONTH_START = 2; // March
-const TL_MONTH_END   = 10; // November
-const TL_DAY_START   = MONTH_START_DAY[TL_MONTH_START];
-const TL_DAY_END     = MONTH_START_DAY[TL_MONTH_END];
-const TL_DAYS_TOTAL  = TL_DAY_END - TL_DAY_START;
+// ─── 막대바 타임라인 상수 (1~12월 전체) ────────────────────────────────────────
+const TL_DAYS_TOTAL = 365;
 
 function dayOfYearToPct(doy: number): number {
-  return Math.max(0, Math.min(100, (doy - TL_DAY_START) / TL_DAYS_TOTAL * 100));
+  return Math.max(0, Math.min(100, doy / TL_DAYS_TOTAL * 100));
 }
 
 function ddToDayOfYear(baseTemp: number, targetDD: number): number {
@@ -248,12 +231,8 @@ export default function PestCalendar() {
   const [lineOpen, setLineOpen] = useState(false);
   const [linePest, setLinePest] = useState("복숭아순나방");
   const [lineGenIdx, setLineGenIdx] = useState(0);
-  const [lineZoom, setLineZoom] = useState<ZoomStep>(3);
-  const [linePan, setLinePan] = useState(0); // start month index
+  const [lineRange, setLineRange] = useState<ZoomStep>(3);
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-  const dragStartX = useRef(0);
-  const dragStartPan = useRef(0);
   const userSetGen = useRef(false); // 사용자가 수동으로 세대 선택했는지 여부
 
   // 최초 데이터 수신 시에만 자동으로 세대 설정 (사용자 수동 선택 이후엔 재설정 안 함)
@@ -273,49 +252,6 @@ export default function PestCalendar() {
     });
   };
 
-  // 라인차트 스크롤/드래그
-  const clampPan = useCallback((pan: number, zoom: ZoomStep) => {
-    return Math.max(0, Math.min(12 - zoom, pan));
-  }, []);
-
-  useEffect(() => {
-    const el = chartContainerRef.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const dir = e.deltaY > 0 ? 1 : -1;
-      setLineZoom(prev => {
-        const idx = ZOOM_STEPS.indexOf(prev);
-        const next = ZOOM_STEPS[Math.max(0, Math.min(ZOOM_STEPS.length - 1, idx + dir))] as ZoomStep;
-        setLinePan(p => clampPan(p, next));
-        return next;
-      });
-    };
-    const onMouseDown = (e: MouseEvent) => {
-      isDragging.current = true;
-      dragStartX.current = e.clientX;
-      dragStartPan.current = 0;
-      setLinePan(p => { dragStartPan.current = p; return p; });
-    };
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      const dx = e.clientX - dragStartX.current;
-      const monthsPerPx = lineZoom / el.clientWidth;
-      const delta = Math.round(-dx * monthsPerPx);
-      setLinePan(clampPan(dragStartPan.current + delta, lineZoom));
-    };
-    const onMouseUp = () => { isDragging.current = false; };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    el.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    return () => {
-      el.removeEventListener("wheel", onWheel);
-      el.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-  }, [lineZoom, clampPan]);
 
   // 라인차트 데이터 계산
   const linePestObj = useMemo(() => PEST_TARGETS.find(p => p.name === linePest) ?? PEST_TARGETS[0], [linePest]);
@@ -323,15 +259,15 @@ export default function PestCalendar() {
   const lineDailyData = useMemo(() => buildDailyDD(linePestObj.baseTemp), [linePestObj]);
 
   const lineChartData = useMemo(() => {
-    const startMonth = linePan;
-    const endMonth = Math.min(12, linePan + lineZoom);
+    const startMonth = Math.max(0, nowMonth - lineRange + 1);
+    const endMonth = Math.min(12, nowMonth + 1);
     const startDay = MONTH_START_DAY[startMonth];
     const endDay = endMonth === 12 ? 365 : MONTH_START_DAY[endMonth];
     return lineDailyData.slice(startDay, endDay).map((pt, i) => ({
       ...pt,
       index: startDay + i,
     }));
-  }, [lineDailyData, linePan, lineZoom]);
+  }, [lineDailyData, lineRange, nowMonth]);
 
   const lineGenTarget = useMemo(() => {
     if (lineIsMultiGen) return PEACH_GENERATIONS[lineGenIdx];
@@ -360,32 +296,33 @@ export default function PestCalendar() {
     p100: ddToDayOfYear(linePestObj.baseTemp, lineGenTarget),
   }), [linePestObj, lineGenTarget]);
 
-  // zoom 구간에 맞는 X축 눈금 (1개월: 10일 단위, 그 외: 월 단위)
+  // 범위에 맞는 X축 눈금 (1개월: 10일 단위, 그 외: 월 단위)
   const lineXTicks = useMemo(() => {
-    const startDay = MONTH_START_DAY[linePan];
-    const endMonth = Math.min(12, linePan + lineZoom);
+    const startMonth = Math.max(0, nowMonth - lineRange + 1);
+    const endMonth = Math.min(12, nowMonth + 1);
+    const startDay = MONTH_START_DAY[startMonth];
     const endDay = endMonth === 12 ? 365 : MONTH_START_DAY[endMonth];
     const ticks: number[] = [];
-    if (lineZoom === 1) {
+    if (lineRange === 1) {
       for (let day = startDay; day < endDay; day++) {
         const pt = lineDailyData[day];
         if (pt && (pt.dayOfMonth === 1 || pt.dayOfMonth === 11 || pt.dayOfMonth === 21)) ticks.push(day);
       }
     } else {
-      for (let m = linePan; m < linePan + lineZoom && m < 12; m++) {
+      for (let m = startMonth; m < endMonth && m < 12; m++) {
         ticks.push(MONTH_START_DAY[m]);
       }
     }
     return ticks;
-  }, [lineZoom, linePan, lineDailyData]);
+  }, [lineRange, nowMonth, lineDailyData]);
 
   const xTickFormatter = useCallback((idx: number) => {
     if (idx < 0 || idx >= lineDailyData.length) return "";
     const pt = lineDailyData[idx];
-    if (lineZoom === 1) return `${pt.monthIdx + 1}/${pt.dayOfMonth}`;
+    if (lineRange === 1) return `${pt.monthIdx + 1}/${pt.dayOfMonth}`;
     if (pt.dayOfMonth === 1) return `${pt.monthIdx + 1}월`;
     return "";
-  }, [lineDailyData, lineZoom]);
+  }, [lineDailyData, lineRange]);
 
   // ── 카드 데이터 ──
   const pestCards = useMemo(() => {
@@ -510,44 +447,6 @@ export default function PestCalendar() {
           })}
         </div>
 
-        {/* ── 월별 방제 시기표 ── */}
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle className="text-base">월별 방제 시기표</CardTitle>
-            <p className="text-xs text-muted-foreground">
-              ● 주요 방제 &nbsp;◎ 추가·2차 방제 &nbsp;○ 예찰·보조관리 &nbsp;— 해당 없음
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2 pr-4 font-medium text-muted-foreground w-36">해충명</th>
-                    {MONTHS_KO.map(m => (
-                      <th key={m} className="text-center py-2 px-1 font-medium text-muted-foreground w-10">{m}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(MONTHLY_SCHEDULE).map(([name, schedule]) => (
-                    <tr key={name} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                      <td className="py-3 pr-4 font-medium" style={{ color: PEST_COLOR[name] }}>{name}</td>
-                      {schedule.map((mark, i) => <ScheduleCell key={i} mark={mark} color={PEST_COLOR[name]} />)}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4 p-3 bg-muted/50 rounded-lg text-xs text-muted-foreground space-y-1">
-              <p>• <strong>복숭아순나방</strong>: 연 4세대 — 1세대(214 DD), 2세대(660 DD), 3세대(1,380 DD), 4세대(1,950 DD)</p>
-              <p>• <strong>꽃매미</strong>: 5월 약충 부화 이후 방제 집중 (목표 355 DD)</p>
-              <p>• <strong>갈색날개매미충</strong>: 4~5월 약충 발생 초기 방제 (목표 202 DD)</p>
-              <p className="text-primary font-medium">※ 방제 시기는 기상청 실시간 데이터 연동 시 자동 업데이트됩니다.</p>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* ── 방제기간 막대바 (항상 표시) ── */}
         <Card>
           <CardHeader>
@@ -608,7 +507,6 @@ export default function PestCalendar() {
               genLabels={isBarMultiGen
                 ? PEACH_GENERATIONS.map((_, i) => `${i + 1}세대`).filter((_, i) => barSelectedGens[i])
                 : [barPest]}
-              todayPct={todayPct}
             />
           </CardContent>
         </Card>
@@ -629,7 +527,7 @@ export default function PestCalendar() {
                 </CardTitle>
                 {lineOpen && (
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    스크롤로 확대/축소, 드래그로 이동 · 기준온도 이상 누적 도일(DD) 추이
+                    오늘 기준 선택 범위의 기준온도 이상 누적 도일(DD) 추이
                   </p>
                 )}
               </div>
@@ -646,7 +544,7 @@ export default function PestCalendar() {
                 {PEST_TARGETS.map(p => (
                   <button
                     key={p.name}
-                    onClick={() => { setLinePest(p.name); setLineGenIdx(0); setLinePan(0); }}
+                    onClick={() => { setLinePest(p.name); setLineGenIdx(0); }}
                     data-testid={`tab-line-pest-${p.name}`}
                     className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
                       linePest === p.name ? "text-white border-transparent" : "bg-transparent text-muted-foreground border-border hover:border-primary"
@@ -676,15 +574,15 @@ export default function PestCalendar() {
                   </div>
                 )}
 
-                {/* 확대 버튼 */}
+                {/* 범위 필터 */}
                 <div className="flex gap-1 ml-auto border-l pl-3">
                   {ZOOM_STEPS.map(z => (
                     <button
                       key={z}
-                      onClick={() => { setLineZoom(z); setLinePan(p => clampPan(p, z)); }}
-                      data-testid={`btn-zoom-${z}`}
+                      onClick={() => setLineRange(z)}
+                      data-testid={`btn-range-${z}`}
                       className={`text-xs px-2 py-1 rounded border transition-all ${
-                        lineZoom === z ? "bg-primary text-primary-foreground border-transparent" : "text-muted-foreground border-border hover:border-primary"
+                        lineRange === z ? "bg-primary text-primary-foreground border-transparent" : "text-muted-foreground border-border hover:border-primary"
                       }`}
                     >
                       {z}개월
@@ -697,11 +595,7 @@ export default function PestCalendar() {
 
           {lineOpen && (
             <CardContent>
-              <div
-                ref={chartContainerRef}
-                className="cursor-grab active:cursor-grabbing select-none"
-                style={{ userSelect: "none" }}
-              >
+              <div ref={chartContainerRef}>
                 {/* 차트 */}
                 <ResponsiveContainer width="100%" height={300}>
                   <ComposedChart data={lineChartData} margin={{ top: 30, right: 20, left: 10, bottom: 20 }}>
@@ -765,19 +659,6 @@ export default function PestCalendar() {
                       <ReferenceDot x={lineMilestoneDays.p100} y={lineGenTarget} r={6} fill={lineColor} stroke="white" strokeWidth={2} />
                     </>}
 
-                    {/* 오늘 세로선 */}
-                    {(() => {
-                      const todayDoy = MONTH_START_DAY[nowMonth] + new Date().getDate() - 1;
-                      return todayDoy >= lineChartData[0]?.index && todayDoy <= lineChartData[lineChartData.length - 1]?.index ? (
-                        <ReferenceLine
-                          x={todayDoy}
-                          stroke="#60a5fa"
-                          strokeWidth={2}
-                          label={{ value: "오늘", fontSize: 10, fill: "#60a5fa", position: "top" }}
-                        />
-                      ) : null;
-                    })()}
-
                     <Area
                       type="monotone"
                       dataKey="cumulative"
@@ -808,10 +689,6 @@ export default function PestCalendar() {
                   <span className="w-0 h-3 border-l-2 border-dashed inline-block" style={{ borderColor: lineColor }} />
                   <span className="w-2 h-2 rounded-full inline-block" style={{ background: lineColor }} />
                   방제 적기
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-0 h-3 border-l-2 border-blue-400 inline-block" />
-                  오늘
                 </span>
               </div>
 
@@ -909,14 +786,13 @@ const BAR_COLORS = {
 };
 
 function BarTimeline({
-  pestName, baseTemp, pestColor, generations, genLabels, todayPct,
+  pestName, baseTemp, pestColor, generations, genLabels,
 }: {
   pestName: string;
   baseTemp: number;
   pestColor: string;
   generations: number[];
   genLabels: string[];
-  todayPct: number;
 }) {
   const [selectedRow, setSelectedRow] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState<BarTooltip | null>(null);
@@ -925,7 +801,7 @@ function BarTimeline({
 
   const monthRuler = useMemo(() => {
     const ruler: { label: string; pct: number }[] = [];
-    for (let m = TL_MONTH_START; m < TL_MONTH_END; m++) {
+    for (let m = 0; m < 12; m++) {
       ruler.push({ label: MONTHS_KO[m], pct: dayOfYearToPct(MONTH_START_DAY[m]) });
     }
     return ruler;
@@ -976,10 +852,6 @@ function BarTimeline({
           <span className="inline-block w-8 h-3 rounded-full" style={{ background: BAR_COLORS.control.gradient }} />
           방제 시기
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block w-0.5 h-4 rounded-full bg-blue-400" />
-          <span className="bg-blue-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold">Today</span>
-        </span>
       </div>
 
       {/* ── 타임라인 본체 ── */}
@@ -994,37 +866,19 @@ function BarTimeline({
               style={{ left: `${r.pct}%` }}
             />
           ))}
-          {todayPct > 0 && todayPct < 100 && (
-            <div
-              className="absolute top-0 bottom-0 w-[2px] z-10"
-              style={{ left: `${todayPct}%`, background: "linear-gradient(to bottom, #60a5fa, #3b82f6)" }}
-            />
-          )}
         </div>
 
         {/* 월 눈금 헤더 */}
-        <div className="relative h-10 mb-2">
+        <div className="relative h-8 mb-2">
           {monthRuler.map(r => (
             <div
               key={r.label}
               className="absolute flex flex-col items-center"
               style={{ left: `${r.pct}%`, transform: "translateX(-50%)" }}
             >
-              <span className="text-[12px] font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap tracking-tight">{r.label}</span>
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap tracking-tight">{r.label}</span>
             </div>
           ))}
-          {/* Today 배지 */}
-          {todayPct > 0 && todayPct < 100 && (
-            <div
-              className="absolute flex flex-col items-center gap-0.5"
-              style={{ left: `${todayPct}%`, transform: "translateX(-50%)", top: 0 }}
-            >
-              <div className="bg-blue-500 text-white text-[9px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-md font-bold tracking-wide">
-                Today
-              </div>
-              <div className="w-[2px] h-2 bg-blue-400 rounded-full" />
-            </div>
-          )}
         </div>
 
         {/* ── 바 행들 ── */}
@@ -1096,14 +950,6 @@ function BarTimeline({
                         borderRadius: "0 999px 999px 0",
                       }}
                       onMouseEnter={() => showTooltip(rowIdx, row)}
-                    />
-                  )}
-
-                  {/* 오늘 선 (트랙 내) */}
-                  {todayPct > 0 && todayPct < 100 && (
-                    <div
-                      className="absolute top-0 bottom-0 w-[2px] z-20"
-                      style={{ left: `${todayPct}%`, background: "linear-gradient(to bottom, #60a5fa, #3b82f6)" }}
                     />
                   )}
 
@@ -1305,11 +1151,11 @@ function ScheduleCell({ mark, color }: { mark: MarkType; color: string }) {
 // ─── 돌발해충 발생 이력 컴포넌트 ──────────────────────────────────────────────
 function InvasivePestHistory({ data, todayPct }: { data: InvasivePestData; todayPct: number }) {
   const [hoveredYear, setHoveredYear] = useState<number | null>(null);
-  const [photoMessage, setPhotoMessage] = useState<string | null>(null);
+  const [selectedProjectIdx, setSelectedProjectIdx] = useState<number | null>(null);
 
   const monthRuler = useMemo(() => {
     const ruler: { label: string; pct: number }[] = [];
-    for (let m = TL_MONTH_START; m < TL_MONTH_END; m++) {
+    for (let m = 0; m < 12; m++) {
       ruler.push({ label: MONTHS_KO[m], pct: dayOfYearToPct(MONTH_START_DAY[m]) });
     }
     return ruler;
@@ -1522,71 +1368,73 @@ function InvasivePestHistory({ data, todayPct }: { data: InvasivePestData; today
         <h4 className="text-sm font-bold mb-3 flex items-center gap-2">
           <span className="w-1 h-4 rounded-full inline-block" style={{ backgroundColor: data.color }} />
           이전 해충 방제 사업
+          <span className="text-[11px] font-normal text-muted-foreground ml-1">— 사업 클릭 시 발생 사진 확인</span>
         </h4>
         <div className="space-y-2">
-          {data.projects.map((proj, i) => (
-            <div
-              key={i}
-              className="rounded-2xl border bg-white dark:bg-slate-900 p-3.5 border-slate-100 dark:border-slate-700 hover:shadow-md transition-all"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold tabular-nums">{proj.year}년</span>
-                    <span className="text-xs font-bold truncate">{proj.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="text-[10px] px-2 py-0.5 rounded-full font-semibold text-white"
-                      style={{ backgroundColor: proj.result.includes("진행") ? "#f59e0b" : "#22c55e" }}
-                    >
-                      {proj.result}
+          {data.projects.map((proj, i) => {
+            const isOpen = selectedProjectIdx === i;
+            return (
+              <div key={i} className="rounded-2xl border bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-700 overflow-hidden transition-all">
+                <button
+                  data-testid={`btn-project-${i}`}
+                  className="w-full text-left p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                  onClick={() => setSelectedProjectIdx(isOpen ? null : i)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold tabular-nums">{proj.year}년</span>
+                        <span className="text-xs font-bold truncate">{proj.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="text-[10px] px-2 py-0.5 rounded-full font-semibold text-white"
+                          style={{ backgroundColor: proj.result.includes("진행") ? "#f59e0b" : "#22c55e" }}
+                        >
+                          {proj.result}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                          <Camera className="h-3 w-3" /> 발생 사진 {isOpen ? "▲" : "▼"}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-sm font-bold shrink-0 tabular-nums" style={{ color: data.color }}>
+                      {proj.budget}
                     </span>
                   </div>
-                </div>
-                <span className="text-sm font-bold shrink-0 tabular-nums" style={{ color: data.color }}>
-                  {proj.budget}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+                </button>
 
-      {/* ── 발생 당시 해충 사진 ── */}
-      <div>
-        <h4 className="text-sm font-bold mb-3 flex items-center gap-2">
-          <Camera className="h-4 w-4" style={{ color: data.color }} />
-          발생 당시 해충 사진
-        </h4>
-        {photoMessage && (
-          <div className="mb-3 text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800">
-            {photoMessage}
-          </div>
-        )}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {data.photos.map((photo, i) => (
-            <button
-              key={i}
-              data-testid={`photo-slot-${i}`}
-              className="group rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 aspect-square flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all hover:shadow-md hover:-translate-y-0.5"
-              onClick={() => {
-                setPhotoMessage(`'${photo.label}' 사진 등록 기능은 추후 업데이트 예정입니다.`);
-                setTimeout(() => setPhotoMessage(null), 3000);
-              }}
-            >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform"
-                style={{ backgroundColor: data.color + "15" }}
-              >
-                {photo.icon}
+                {isOpen && (
+                  <div className="px-3.5 pb-3.5 border-t border-slate-100 dark:border-slate-700 pt-3">
+                    <p className="text-[11px] text-muted-foreground mb-2 flex items-center gap-1">
+                      <Camera className="h-3 w-3" />
+                      {proj.year}년 방제 사업 발생 사진
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {proj.photos.map((photo, pi) => (
+                        <div
+                          key={pi}
+                          data-testid={`photo-slot-${i}-${pi}`}
+                          className="rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 aspect-square flex flex-col items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-800/40"
+                        >
+                          <div
+                            className="w-9 h-9 rounded-lg flex items-center justify-center text-lg"
+                            style={{ backgroundColor: data.color + "15" }}
+                          >
+                            {photo.icon}
+                          </div>
+                          <span className="text-[10px] text-slate-500 font-medium">{photo.label}</span>
+                          <span className="text-[9px] text-slate-300 dark:text-slate-600 flex items-center gap-0.5">
+                            <Camera className="h-2 w-2" /> 사진 추가
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-              <span className="text-[11px] text-slate-500 font-medium">{photo.label}</span>
-              <span className="text-[9px] text-slate-300 dark:text-slate-600 flex items-center gap-0.5">
-                <Camera className="h-2.5 w-2.5" /> 사진 추가
-              </span>
-            </button>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

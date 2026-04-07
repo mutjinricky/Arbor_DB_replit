@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import {
   Sprout, Search, Download, MapPin, CheckCircle2, Eye, AlertTriangle,
-  Star, ChevronRight, Info, History, Settings2, BarChart3,
+  Star, ChevronRight, Info, History, BarChart3,
 } from "lucide-react";
 import Map, { NavigationControl } from "react-map-gl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -95,13 +95,6 @@ interface ZoneData {
   linkedProjects: typeof PROJECT_HISTORY;
 }
 
-interface PrioritySettings {
-  deGradeWeight: number;
-  codeOverlapWeight: number;
-  trafficBonus: boolean;
-  excludeRecentProject: boolean;
-}
-
 const GRADE_FILTER_OPTIONS = [
   { key: "all",    label: "전체",    color: "" },
   { key: "normal", label: "정상",    color: "#22c55e" },
@@ -158,14 +151,8 @@ export default function SoilManagement() {
   const [mapState, setMapState] = useState({ longitude: 127.4704, latitude: 37.34111, zoom: 13 });
   const [gradeFilter, setGradeFilter] = useState<"all" | "normal" | "watch" | "action">("all");
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
-  const [zoneTab, setZoneTab] = useState<"overview" | "criteria" | "history">("overview");
+  const [zoneTab, setZoneTab] = useState<"overview" | "history">("overview");
   const [treeSearch, setTreeSearch] = useState("");
-  const [settings, setSettings] = useState<PrioritySettings>({
-    deGradeWeight: 3,
-    codeOverlapWeight: 2,
-    trafficBonus: true,
-    excludeRecentProject: true,
-  });
   const [cursor, setCursor] = useState("grab");
   const { pestDDs } = useWeatherData();
 
@@ -228,12 +215,10 @@ export default function SoilManagement() {
       const deRatio      = (dCount + eCount) / total;
       const avgChipCount = trees.reduce((s, t) => s + t.causeChips.length, 0) / total;
       let score = 0;
-      score += deRatio * 100 * (settings.deGradeWeight / 3);
-      score += cCount / total * 30 * (settings.deGradeWeight / 3);
-      score += avgChipCount * 10 * (settings.codeOverlapWeight / 3);
-      if (settings.trafficBonus && highTraffic) score += 20;
-      const hasRecentProject = linkedProjects.some((p) => p.status === "in_progress" || p.status === "completed");
-      if (settings.excludeRecentProject && hasRecentProject) score -= 15;
+      score += deRatio * 100;
+      score += cCount / total * 30;
+      score += avgChipCount * 10;
+      if (highTraffic) score += 20;
 
       const allWorks = Array.from(new Set(trees.flatMap((t) => t.requiredWorks)));
       return {
@@ -245,7 +230,7 @@ export default function SoilManagement() {
         linkedProjects,
       };
     }).sort((a, b) => b.priorityScore - a.priorityScore);
-  }, [enrichedTrees, settings]);
+  }, [enrichedTrees]);
 
   // ── enriched GeoJSON for map ──────────────────────────────────────────────
   const enrichedGeoJson = useMemo(() => {
@@ -434,72 +419,7 @@ export default function SoilManagement() {
               </CardContent>
             </Card>
 
-            {/* ② 구역별 선정 방법 설정 */}
-            <Card className="border-0 shadow-md">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Settings2 className="h-4 w-4 text-slate-500" />
-                  구역별 우선 점검 선정 기준 설정
-                </CardTitle>
-                <p className="text-[11px] text-muted-foreground">토양등급 결과를 바탕으로 우선 검토 구역 선정 가중치를 조정합니다</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* D/E 등급 비율 가중치 */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-semibold">조치 필요 등급(D/E) 비율 가중치</label>
-                      <span className="text-xs font-bold text-indigo-600">{settings.deGradeWeight} / 5</span>
-                    </div>
-                    <input
-                      type="range" min={1} max={5} step={1}
-                      value={settings.deGradeWeight}
-                      onChange={(e) => setSettings((s) => ({ ...s, deGradeWeight: +e.target.value }))}
-                      data-testid="slider-de-weight"
-                      className="w-full accent-indigo-600"
-                    />
-                    <p className="text-[10px] text-muted-foreground mt-0.5">D/E 등급 수목 비율이 높을수록 점수 부여</p>
-                  </div>
-                  {/* 원인코드 중첩 가중치 */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-semibold">원인코드 중첩 개수 가중치</label>
-                      <span className="text-xs font-bold text-indigo-600">{settings.codeOverlapWeight} / 5</span>
-                    </div>
-                    <input
-                      type="range" min={1} max={5} step={1}
-                      value={settings.codeOverlapWeight}
-                      onChange={(e) => setSettings((s) => ({ ...s, codeOverlapWeight: +e.target.value }))}
-                      data-testid="slider-code-weight"
-                      className="w-full accent-indigo-600"
-                    />
-                    <p className="text-[10px] text-muted-foreground mt-0.5">한 수목에 원인코드가 많을수록 가중치 부여</p>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 pt-1 border-t">
-                  {[
-                    { key: "trafficBonus",        label: "민원·통행량 반영",   desc: "주거·학교·간선도로 구역 가산점 +20" },
-                    { key: "excludeRecentProject", label: "최근 사업 이력 제외", desc: "진행 중·완료 사업 구역 감점 -15" },
-                  ].map((opt) => (
-                    <label key={opt.key} className="flex items-start gap-2 cursor-pointer flex-1">
-                      <div
-                        onClick={() => setSettings((s) => ({ ...s, [opt.key]: !s[opt.key as keyof PrioritySettings] }))}
-                        data-testid={`toggle-${opt.key}`}
-                        className={`mt-0.5 w-9 h-5 rounded-full transition-colors shrink-0 relative cursor-pointer ${settings[opt.key as keyof PrioritySettings] ? "bg-indigo-600" : "bg-slate-300"}`}
-                      >
-                        <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${settings[opt.key as keyof PrioritySettings] ? "translate-x-4" : "translate-x-0.5"}`} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold">{opt.label}</p>
-                        <p className="text-[10px] text-muted-foreground">{opt.desc}</p>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* ③ 수목 상세 목록 */}
+            {/* ② 수목 상세 목록 */}
             <Card className="border-0 shadow-md">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between flex-wrap gap-2">
@@ -519,7 +439,7 @@ export default function SoilManagement() {
                   <input
                     type="text" value={treeSearch}
                     onChange={(e) => setTreeSearch(e.target.value)}
-                    placeholder="수목 ID / 구역명 / 수종 / 원인코드 검색"
+                    placeholder="수목 ID / 구역명 / 수종 / 원인 검색"
                     data-testid="input-tree-list-search"
                     className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-input bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-primary/40"
                   />
@@ -530,7 +450,7 @@ export default function SoilManagement() {
                   <table className="w-full text-xs">
                     <thead className="sticky top-0 z-10">
                       <tr className="border-b bg-slate-50 dark:bg-slate-800/80">
-                        {["수목 ID", "위치", "등급", "원인코드", "필요 사업", "우선순위"].map((h) => (
+                        {["수목 ID", "위치", "등급", "원인", "필요 사업", "우선순위"].map((h) => (
                           <th key={h} className="text-left px-3 py-2 text-[11px] font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
@@ -575,19 +495,17 @@ export default function SoilManagement() {
           {/* ══ 우측 컬럼 ══════════════════════════════════════════════ */}
           <div className="space-y-5">
 
-            {/* ① 우선 점검 대상 카드 목록 */}
+            {/* ① 점검대상구역 카드 목록 */}
             <Card className="border-0 shadow-md">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Star className="h-4 w-4 text-amber-500" />
-                  우선 점검 대상 구역
+                  점검대상구역
                 </CardTitle>
-                <p className="text-[11px] text-muted-foreground">선정 점수 높은 순 — 카드 클릭 시 상세 연동</p>
               </CardHeader>
               <CardContent className="p-3 space-y-2">
                 {zones.slice(0, 6).map((z, i) => {
                   const isSelected = selectedZone === z.name;
-                  const topCode = Object.entries(z.causeCodes).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "양호";
                   return (
                     <div
                       key={z.name}
@@ -597,22 +515,11 @@ export default function SoilManagement() {
                         isSelected ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 shadow-md" : "bg-white dark:bg-slate-900 border-border"
                       }`}
                     >
-                      <div className="flex items-start justify-between mb-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-sm ${
-                            i === 0 ? "bg-red-500" : i === 1 ? "bg-orange-500" : "bg-amber-400"
-                          }`}>{i + 1}</span>
-                          <div>
-                            <p className="text-sm font-bold leading-none">{z.name}</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">
-                              주요 원인: <span className="text-orange-600 font-medium">{topCode}</span>
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-base font-black text-indigo-600">{z.priorityScore}</p>
-                          <p className="text-[9px] text-muted-foreground">선정 점수</p>
-                        </div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-sm ${
+                          i === 0 ? "bg-red-500" : i === 1 ? "bg-orange-500" : "bg-amber-400"
+                        }`}>{i + 1}</span>
+                        <p className="text-sm font-bold leading-none">{z.name}</p>
                       </div>
 
                       <div className="flex items-center gap-2 flex-wrap">
@@ -649,7 +556,7 @@ export default function SoilManagement() {
                       {selectedZoneData.name}
                     </CardTitle>
                     <div className="flex gap-0.5 text-[11px]">
-                      {(["overview", "criteria", "history"] as const).map((tab) => (
+                      {(["overview", "history"] as const).map((tab) => (
                         <button
                           key={tab}
                           onClick={() => setZoneTab(tab)}
@@ -658,7 +565,7 @@ export default function SoilManagement() {
                             zoneTab === tab ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground"
                           }`}
                         >
-                          {tab === "overview" ? "개요" : tab === "criteria" ? "선정 기준" : "사업 이력"}
+                          {tab === "overview" ? "개요" : "사업 이력"}
                         </button>
                       ))}
                     </div>
@@ -745,47 +652,6 @@ export default function SoilManagement() {
                         <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed">
                           이 구역은 <strong>{Object.entries(selectedZoneData.causeCodes).sort((a,b)=>b[1]-a[1])[0]?.[0] ?? "복합"} 등 {Object.keys(selectedZoneData.causeCodes).length}종</strong> 원인이 나타나고 있어 우선 점검이 필요한 구역으로 판단했습니다.
                           발주 전에는 정밀진단 필요 여부와 현장 여건, 최근 사업 이력을 함께 확인하시기 바랍니다.
-                        </p>
-                      </div>
-                    </>
-                  )}
-
-                  {/* 선정 기준 탭 */}
-                  {zoneTab === "criteria" && (
-                    <>
-                      <div className="flex items-center justify-between rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 px-4 py-3">
-                        <div>
-                          <p className="text-xs text-muted-foreground">구역 선정 점수</p>
-                          <p className="text-3xl font-black text-indigo-600 mt-0.5">{selectedZoneData.priorityScore}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">전체 {zones.length}구역 중</p>
-                          <p className="text-xl font-black text-indigo-400">{zones.findIndex((z) => z.name === selectedZoneData.name) + 1}위</p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold">선정 이유</p>
-                        {[
-                          { label: "D/E 등급 비율", value: `${selectedZoneData.dCount + selectedZoneData.eCount}주 / ${selectedZoneData.total}주 (${Math.round((selectedZoneData.dCount + selectedZoneData.eCount)/selectedZoneData.total*100)}%)`, warn: selectedZoneData.dCount + selectedZoneData.eCount > 0 },
-                          { label: "관찰(C) 등급", value: `${selectedZoneData.cCount}주`, warn: selectedZoneData.cCount > 3 },
-                          { label: "원인코드 종류", value: `${Object.keys(selectedZoneData.causeCodes).length}종 (${Object.entries(selectedZoneData.causeCodes).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([k,v])=>`${k} ${v}건`).join(", ")})`, warn: false },
-                          { label: "고통행량·민원 구역", value: selectedZoneData.isHighTraffic ? "해당 (+20점)" : "비해당", warn: false },
-                          { label: "최근 사업 이력", value: selectedZoneData.linkedProjects.find(p=>p.status==="in_progress"||p.status==="completed")?.name ?? "없음 (감점 없음)", warn: false },
-                        ].map((r) => (
-                          <div key={r.label} className="flex items-start justify-between text-xs py-1.5 border-b last:border-0">
-                            <span className="text-muted-foreground">{r.label}</span>
-                            <span className={`font-semibold text-right max-w-[55%] ${r.warn ? "text-orange-600" : "text-foreground"}`}>{r.value || "—"}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-3">
-                        <p className="text-[10px] font-semibold text-muted-foreground mb-1">적용 중인 선정 로직</p>
-                        <p className="text-[10px] text-muted-foreground leading-relaxed">
-                          선정 점수 = D/E비율×100×(가중치{settings.deGradeWeight}/3) + C비율×30×(가중치{settings.deGradeWeight}/3) + 원인코드중첩×10×(가중치{settings.codeOverlapWeight}/3)
-                          {settings.trafficBonus ? " + 고통행량 +20" : ""}
-                          {settings.excludeRecentProject ? " — 최근사업 -15" : ""}
                         </p>
                       </div>
                     </>
