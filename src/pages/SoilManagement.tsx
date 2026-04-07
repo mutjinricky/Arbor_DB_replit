@@ -61,10 +61,12 @@ function getRequiredWorks(grade: SoilGrade, chips: CauseChip[]): string[] {
   if (grade === "D") works.push("토양 개량 사업");
   if (grade === "C") works.push("정밀 진단");
   const codes = chips.map((c) => c.displayCode);
-  if (codes.includes("OM")) works.push("영양 공급");
-  if (codes.includes("DRY") || codes.includes("STR")) works.push("동해 방지 처리");
-  if (codes.includes("INF")) works.push("피해 복구");
-  if (codes.includes("RS")) works.push("뿌리공간 확보");
+  if (codes.includes("OM"))  works.push("유기물 개선·시비");
+  if (codes.includes("PH"))  works.push("pH 교정");
+  if (codes.includes("SAL")) works.push("염류 세척·제거");
+  if (codes.includes("CEC")) works.push("토양 개량제 투입");
+  if (codes.includes("H"))   works.push("경반층 파쇄");
+  if (codes.includes("TEX")) works.push("토성 개선");
   return works.length > 0 ? works : ["현상 유지"];
 }
 

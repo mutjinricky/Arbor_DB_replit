@@ -76,7 +76,7 @@ public/
 ### C-04: IQTRI Risk Score Auto-calculation
 - `calculateIQTRI()` in riskCalculations.ts (D × T × I formula)
 - `calculatePestControl()` — degree-day model for pest control timing
-- `calculateSoilScore()` — K-UTSI simulation
+- `calculateSoilScore()` — K-UTSI: 6항목(H·TEX·SOM·pH·EC·CEC) 동일가중치 30점→100점 환산; A≥90/B≥75/C≥60/D≥40/E<40
 - TreeLayer colors driven by calculated grades
 
 ### C-05: 방제 달력 (Pest Calendar)

@@ -576,23 +576,27 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                       </div>
                     </div>
 
-                    {/* 4개 카테고리 바 */}
+                    {/* 6개 항목 개별 바 — 30점 만점 */}
                     <div className="space-y-2">
-                      {[
-                        { key: "physical", label: "물리·공간 (×1.5)", max: 37.5, desc: "ERA·토양경도·투수계수·공극률·토성", color: "#3b82f6" },
-                        { key: "chemical", label: "화학·비옥도 (×1.0)", max: 15,   desc: "유기물·산도(pH)·전기전도도", color: "#22c55e" },
-                        { key: "site",     label: "입지·환경 (×1.0)",  max: 20,   desc: "기반시설간섭·지표피복·교통량·강수패턴", color: "#f59e0b" },
-                        { key: "bio",      label: "생물·안정성 (×0.5)", max: 7.5,  desc: "응집체안정성·A층깊이·토양구조", color: "#8b5cf6" },
-                      ].map(cat => {
-                        const val = soil.breakdown[cat.key as keyof typeof soil.breakdown];
-                        const pct = Math.round((val / cat.max) * 100);
+                      {(
+                        [
+                          { key: "h",   label: "토양 경도",       desc: "21mm 미만=5 / 24-27mm=3 / 27-30mm=1 / ≥30mm=0", color: "#3b82f6" },
+                          { key: "tex", label: "토성",             desc: "양토=5 / 사양토=3 / 사토·식토=1 / 자갈=0",       color: "#06b6d4" },
+                          { key: "som", label: "유기물 함량",      desc: "≥5%=5 / 3-4%=3 / 1-2%=1 / <1%=0",              color: "#22c55e" },
+                          { key: "ph",  label: "토양 산도 (pH)",   desc: "6.0-6.5=5 / 5.0-7.5=3 / 4.5-8.0=1 / 극단=0",   color: "#a3e635" },
+                          { key: "ec",  label: "전기전도도 (EC)",  desc: "<0.2 dS/m=5 / 0.6-1.0=3 / 1.3-1.5=1 / ≥1.5=0", color: "#f59e0b" },
+                          { key: "cec", label: "양이온치환용량",   desc: "≥10 me/100g=5 / 6-10=3 / 3-6=1 / <3=0",         color: "#8b5cf6" },
+                        ] as const
+                      ).map((cat) => {
+                        const val = soil.breakdown[cat.key];
+                        const pct = Math.round((val / 5) * 100);
                         return (
                           <div key={cat.key}>
                             <div className="flex items-center justify-between text-[11px] mb-0.5">
                               <span className="font-medium">{cat.label}</span>
-                              <span className="text-muted-foreground">{val} / {cat.max}점 ({pct}%)</span>
+                              <span className="text-muted-foreground">{val} / 5점 ({pct}%)</span>
                             </div>
-                            <div className="h-2 rounded-full bg-muted overflow-hidden">
+                            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                               <div
                                 className="h-full rounded-full transition-all"
                                 style={{ width: `${pct}%`, backgroundColor: cat.color }}
@@ -602,27 +606,46 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                           </div>
                         );
                       })}
+                      <p className="text-[10px] text-muted-foreground border-t pt-1.5">
+                        K-UTSI = (합계 / 30점) × 100 = {soil.score}점
+                      </p>
                     </div>
 
-                    {/* 주요 지표 플래그 */}
+                    {/* 6개 항목 개별 플래그 */}
                     <Separator />
-                    <p className="text-xs font-semibold text-muted-foreground">영향 지표</p>
+                    <p className="text-xs font-semibold text-muted-foreground">세부 항목 점수</p>
                     <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                      {[
-                        { label: "상처·공동 (토양경도)",  ok: treeFullData.damage_area === 0 && treeFullData.cavity_depth === 0, note: treeFullData.damage_area > 0 || treeFullData.cavity_depth > 0 ? "H 점수 감점" : "양호" },
-                        { label: "설해피해 (강수패턴)",   ok: !treeFullData.ice_damage, note: treeFullData.ice_damage ? "PPT·WAS 감점" : "양호" },
-                        { label: "영양공급 필요",         ok: !treeFullData.need_nutrient, note: treeFullData.need_nutrient ? "SOM·pH·STR 감점" : "양호" },
-                        { label: "도로 위치 (염화물·교통)", ok: !(treeFullData.district?.includes("도로") || treeFullData.district?.includes("대로")), note: "EC·TRA 영향" },
-                        { label: "유효뿌리공간 (직경)",   ok: treeFullData.diameter >= 45, note: `${treeFullData.diameter} cm — ${treeFullData.diameter >= 75 ? "ERA 최상" : treeFullData.diameter >= 45 ? "ERA 양호" : "ERA 불량"}` },
-                        { label: "수령 (A층 깊이)",       ok: (treeFullData.age ?? 10) >= 15, note: `${treeFullData.age ?? 10}년 — ${(treeFullData.age ?? 10) >= 30 ? "HOR 최상" : (treeFullData.age ?? 10) >= 15 ? "HOR 양호" : "HOR 불량"}` },
-                      ].map((item, i) => (
-                        <div key={i} className="flex items-start gap-1.5 py-1 px-2 rounded bg-muted/30">
-                          {item.ok
+                      {(() => {
+                        const bd = soil.breakdown;
+                        const d  = treeFullData.district || "";
+                        const isRoad   = d.includes("도로") || d.includes("대로");
+                        const isArtery = d.includes("대로");
+                        return [
+                          { label: "토양 경도",      score: bd.h,
+                            note: bd.h === 5 ? "21mm 미만 (양호)" : bd.h === 3 ? "24~27mm" : bd.h === 1 ? "27~30mm" : "30mm 이상 (불량)" },
+                          { label: "토성",           score: bd.tex,
+                            note: bd.tex === 5 ? "양토" : bd.tex === 3 ? "사양토" : bd.tex === 1 ? "사토·식토" : "자갈·폐기물" },
+                          { label: "유기물 함량",    score: bd.som,
+                            note: bd.som === 5 ? "≥5% (풍부)" : bd.som === 3 ? "3~4%" : bd.som === 1 ? "1~2%" : "<1% (부족)" },
+                          { label: "토양 산도 (pH)", score: bd.ph,
+                            note: bd.ph === 5 ? "6.0~6.5 (적정)" : bd.ph === 3 ? "5.0~7.5" : bd.ph === 1 ? "4.5~8.0" : "극단 pH" },
+                          { label: "전기전도도 (EC)", score: bd.ec,
+                            note: isArtery ? "≥1.3 dS/m (염류 과다)" : isRoad ? "0.6~1.0 dS/m" : "<0.2 dS/m (양호)" },
+                          { label: "양이온치환용량",  score: bd.cec,
+                            note: bd.cec === 5 ? "≥10 me/100g" : bd.cec === 3 ? "6~10 me/100g" : bd.cec === 1 ? "3~6 me/100g" : "<3 me/100g" },
+                        ];
+                      })().map((item) => (
+                        <div key={item.label} className="flex items-start gap-1.5 py-1 px-2 rounded bg-muted/30">
+                          {item.score >= 5
                             ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500 mt-0.5 flex-shrink-0" />
-                            : <XCircle      className="h-3.5 w-3.5 text-orange-500 mt-0.5 flex-shrink-0" />}
+                            : item.score >= 3
+                              ? <CheckCircle2 className="h-3.5 w-3.5 text-yellow-500 mt-0.5 flex-shrink-0" />
+                              : <XCircle className="h-3.5 w-3.5 text-orange-500 mt-0.5 flex-shrink-0" />}
                           <div className="min-w-0">
                             <p className="font-medium leading-tight truncate">{item.label}</p>
-                            <p className={cn("leading-tight", item.ok ? "text-muted-foreground" : "text-orange-600")}>{item.note}</p>
+                            <p className={cn("leading-tight", item.score >= 5 ? "text-muted-foreground" : item.score >= 3 ? "text-yellow-600" : "text-orange-600")}>
+                              {item.note} <span className="font-semibold">({item.score}점)</span>
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -649,7 +672,7 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                           style={{ backgroundColor: SOIL_COLORS[g] + "20", border: `1px solid ${SOIL_COLORS[g]}50`, ringColor: SOIL_COLORS[g] }}
                         >
                           <p className="font-bold" style={{ color: SOIL_COLORS[g] }}>{g}</p>
-                          <p className="text-muted-foreground">{g === "A" ? "≥80" : g === "B" ? "65~79" : g === "C" ? "50~64" : g === "D" ? "35~49" : "<35"}</p>
+                          <p className="text-muted-foreground">{g === "A" ? "≥90" : g === "B" ? "75~89" : g === "C" ? "60~74" : g === "D" ? "40~59" : "<40"}</p>
                         </div>
                       ))}
                     </div>

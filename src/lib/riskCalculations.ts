@@ -39,10 +39,12 @@ export interface SoilResult {
   score: number;
   grade: SoilGrade;
   breakdown: {
-    physical: number;
-    chemical: number;
-    site: number;
-    bio: number;
+    h:   number;  // 토양 경도 (0-5)
+    tex: number;  // 토성 (0-5)
+    som: number;  // 유기물 함량 (0-5)
+    ph:  number;  // 토양 산도 (0-5)
+    ec:  number;  // 전기전도도 (0-5)
+    cec: number;  // 양이온치환용량 (0-5)
   };
 }
 
@@ -173,112 +175,85 @@ export function calculatePestControl(
 
 // ─────────────────────────────────────────────
 // C-04C: K-UTSI 토양 건전성 지수
-//   trees.json 실제 필드를 K-UTSI 15개 지표에 매핑
-//   최대 총점: 37.5 + 15 + 20 + 7.5 = 80점
+//   6개 평가항목 동일 가중치 합산 → 30점 만점 → 100점 환산
+//   A≥90 / B≥75 / C≥60 / D≥40 / E<40
 // ─────────────────────────────────────────────
 export function calculateSoilScore(
   treeId: string,
   treeData?: TreeFullData
 ): SoilResult {
   if (!treeData) {
-    const id = parseInt(treeId) || 0;
-    const raw = 35 + ((id * 13 + 7) % 45);
+    // treeData 없을 때: ID 기반 시뮬레이션 (fallback)
+    const id  = parseInt(treeId) || 0;
+    const raw = 40 + ((id * 13 + 7) % 50);
     const score = Math.min(100, raw);
-    const grade = _soilGrade(score);
-    return { score, grade, breakdown: { physical: 0, chemical: 0, site: 0, bio: 0 } };
+    return {
+      score, grade: _soilGrade(score),
+      breakdown: { h: 3, tex: 3, som: 3, ph: 3, ec: 3, cec: 3 },
+    };
   }
 
-  const d = treeData.district || "";
-  const isRoad = d.includes("도로") || d.includes("대로");
-  const isPark = d.includes("공원") || d.includes("산책");
+  const d        = treeData.district || "";
+  const isRoad   = d.includes("도로") || d.includes("대로");
+  const isPark   = d.includes("공원") || d.includes("산책");
   const isArtery = d.includes("대로");
 
-  // ── 물리·공간 지표 (가중치 1.5) ──────────────
-  // 1. ERA: 유효뿌리공간 (직경 기반)
-  const era = treeData.diameter >= 75 ? 5
-    : treeData.diameter >= 45 ? 3
-    : treeData.diameter >= 20 ? 1
+  // ① H: 토양 경도 — damage_area / cavity_depth 역상관 프록시
+  //    5점: <21mm 상당(손상 없음), 3점: 24-27mm, 1점: 27-30mm, 0점: ≥30mm
+  const h = (treeData.damage_area === 0 && treeData.cavity_depth === 0) ? 5
+    : (treeData.damage_area <= 3  && treeData.cavity_depth <= 3)  ? 3
+    : (treeData.damage_area <= 10 && treeData.cavity_depth <= 10) ? 1
     : 0;
 
-  // 2. H: 토양 경도 (damage_area / cavity_depth 역상관)
-  const h = (treeData.damage_area === 0 && treeData.cavity_depth === 0) ? 5
-    : (treeData.damage_area < 5 && treeData.cavity_depth < 5) ? 3
-    : 1;
-
-  // 3. PER: 투수계수 (지구 유형)
-  const per = isPark ? 5 : isRoad ? 1 : 3;
-
-  // 4. POR: 공극률 (도심 평균 가정)
-  const por = isPark ? 5 : 3;
-
-  // 5. TEX: 토성 (이천 사양토 기준)
-  const tex = 3;
-
-  const physical = (era + h + per + por + tex) * 1.5;
-
-  // ── 화학·비옥도 지표 (가중치 1.0) ──────────────
-  // 6. SOM: 유기물 함량 (need_nutrient)
-  const som = treeData.need_nutrient ? 0 : 3;
-
-  // 7. pH: 산도 (need_nutrient이면 pH 불량)
-  const ph = treeData.need_nutrient ? 1 : 5;
-
-  // 8. EC: 전기전도도 (도로 제설 염화물)
-  const ec = isRoad ? 3 : 5;
-
-  const chemical = (som + ph + ec) * 1.0;
-
-  // ── 입지·환경 지표 (가중치 1.0) ──────────────
-  // 9. INF: 기반시설 간섭 (damage_area, cavity_depth)
-  const inf = (treeData.damage_area > 10 || treeData.cavity_depth > 10) ? 0
-    : (treeData.damage_area > 0 || treeData.cavity_depth > 0) ? 1
+  // ② TEX: 토성 — 지구 유형 기반 추정
+  //    5점: 양토(공원), 3점: 사양토(일반), 1점: 사토/식토(도로), 0점: 자갈(간선도로)
+  const tex = isPark    ? 5
+    : isArtery  ? 0
+    : isRoad    ? 1
     : 3;
 
-  // 10. SUR: 지표 투수 피복률
-  const sur = isPark ? 5 : isRoad ? 1 : 3;
+  // ③ SOM: 유기물 함량 — need_nutrient + 지구 유형
+  //    5점: ≥5.0%, 3점: 3-4%, 1점: 1-2%, 0점: <1%
+  const som = treeData.need_nutrient ? 0
+    : isPark    ? 5
+    : 3;
 
-  // 11. TRA: 교통량
-  const tra = isArtery ? 1 : isRoad ? 3 : 5;
+  // ④ pH: 토양 산도 — need_nutrient + 지구 유형
+  //    5점: 6.0-6.5, 3점: 5.0-5.5 or 7.0-7.5, 1점: 4.5-5.0 or 7.5-8.0, 0점: <4.0 or >8.5
+  const ph = (treeData.need_nutrient && isRoad) ? 0
+    : treeData.need_nutrient                     ? 1
+    : isArtery                                   ? 3
+    : 5;
 
-  // 12. PPT: 강수 패턴 (이천 평년 1,200mm; ice_damage 이상기후 지표)
-  const ppt = treeData.ice_damage ? 1 : 3;
+  // ⑤ EC: 전기전도도 — 제설 염화물 / 도로 오염 프록시
+  //    5점: <0.2 dS/m, 3점: 0.6-1.0, 1점: 1.3-1.5, 0점: ≥1.5
+  const ec = isArtery ? 1
+    : isRoad  ? 3
+    : 5;
 
-  const site = (inf + sur + tra + ppt) * 1.0;
-
-  // ── 생물·안정성 지표 (가중치 0.5) ──────────────
-  // 13. WAS: 응집체 안정성
-  const was = (treeData.ice_damage || treeData.damage_area > 5) ? 1 : 3;
-
-  // 14. HOR: A층 깊이 (수령 기반)
+  // ⑥ CEC: 양이온치환용량 — 수령 + 영양상태 프록시
+  //    5점: ≥10 me/100g, 3점: 6-10, 1점: 3-6, 0점: <3
   const age = treeData.age || 10;
-  const hor = age >= 30 ? 5 : age >= 15 ? 3 : 1;
+  const cec = treeData.need_nutrient    ? 1
+    : (age >= 30 && isPark)             ? 5
+    : age >= 15                         ? 3
+    : 1;
 
-  // 15. STR: 토양 구조
-  const str = treeData.need_nutrient ? 1 : 3;
-
-  const bio = (was + hor + str) * 0.5;
-
-  const rawTotal = physical + chemical + site + bio;
-  const maxTotal = 5 * 5 * 1.5 + 5 * 3 * 1.0 + 5 * 4 * 1.0 + 5 * 3 * 0.5;
-  const score = Math.round((rawTotal / maxTotal) * 100);
+  const rawTotal = h + tex + som + ph + ec + cec;
+  const score    = Math.round((rawTotal / 30) * 100);
 
   return {
     score,
     grade: _soilGrade(score),
-    breakdown: {
-      physical: Math.round(physical),
-      chemical: Math.round(chemical),
-      site: Math.round(site),
-      bio: Math.round(bio * 10) / 10,
-    },
+    breakdown: { h, tex, som, ph, ec, cec },
   };
 }
 
 function _soilGrade(score: number): SoilGrade {
-  if (score >= 80) return "A";
-  if (score >= 65) return "B";
-  if (score >= 50) return "C";
-  if (score >= 35) return "D";
+  if (score >= 90) return "A";
+  if (score >= 75) return "B";
+  if (score >= 60) return "C";
+  if (score >= 40) return "D";
   return "E";
 }
 
@@ -309,66 +284,44 @@ function _chipSeverity(score: number): CauseSeverity | null {
 }
 
 export function calculateSoilCauses(treeData: TreeFullData): CauseChip[] {
-  const d = treeData.district || "";
-  const isRoad  = d.includes("도로") || d.includes("대로");
-  const isPark  = d.includes("공원") || d.includes("산책");
+  // calculateSoilScore와 동일한 6개 지표 재계산
+  const d        = treeData.district || "";
+  const isRoad   = d.includes("도로") || d.includes("대로");
+  const isPark   = d.includes("공원") || d.includes("산책");
   const isArtery = d.includes("대로");
 
-  // 15개 K-UTSI 지표 재계산
-  const era = treeData.diameter >= 75 ? 5 : treeData.diameter >= 45 ? 3 : treeData.diameter >= 20 ? 1 : 0;
   const h   = (treeData.damage_area === 0 && treeData.cavity_depth === 0) ? 5
-            : (treeData.damage_area < 5 && treeData.cavity_depth < 5) ? 3 : 1;
-  const per = isPark ? 5 : isRoad ? 1 : 3;
-  const por = isPark ? 5 : 3;
-  const tex = 3;
-  const som = treeData.need_nutrient ? 0 : 3;
-  const ph  = treeData.need_nutrient ? 1 : 5;
-  const ec  = isRoad ? 3 : 5;
-  const inf = (treeData.damage_area > 10 || treeData.cavity_depth > 10) ? 0
-            : (treeData.damage_area > 0 || treeData.cavity_depth > 0) ? 1 : 3;
-  const sur = isPark ? 5 : isRoad ? 1 : 3;
-  const tra = isArtery ? 1 : isRoad ? 3 : 5;
-  const ppt = treeData.ice_damage ? 1 : 3;
-  const was = (treeData.ice_damage || treeData.damage_area > 5) ? 1 : 3;
-  const hor = (treeData.age || 10) >= 30 ? 5 : (treeData.age || 10) >= 15 ? 3 : 1;
-  const str = treeData.need_nutrient ? 1 : 3;
+    : (treeData.damage_area <= 3  && treeData.cavity_depth <= 3)  ? 3
+    : (treeData.damage_area <= 10 && treeData.cavity_depth <= 10) ? 1
+    : 0;
+  const tex = isPark ? 5 : isArtery ? 0 : isRoad ? 1 : 3;
+  const som = treeData.need_nutrient ? 0 : isPark ? 5 : 3;
+  const ph  = (treeData.need_nutrient && isRoad) ? 0
+    : treeData.need_nutrient ? 1 : isArtery ? 3 : 5;
+  const ec  = isArtery ? 1 : isRoad ? 3 : 5;
+  const age = treeData.age || 10;
+  const cec = treeData.need_nutrient ? 1
+    : (age >= 30 && isPark) ? 5 : age >= 15 ? 3 : 1;
 
-  // 세부코드 → (통합코드, 원인명, 점수) 목록
   type RawEntry = { detail: string; display: string; name: string; score: number };
   const raw: RawEntry[] = [
-    { detail: "ERA_RS", display: "RS",  name: "뿌리공간 부족",  score: era },
-    { detail: "HAR_CP", display: "CP",  name: "답압",           score: h   },
-    { detail: "PER_DR", display: "DR",  name: "배수불량",       score: per },
-    { detail: "POR_AP", display: "CP",  name: "답압",           score: por },
-    { detail: "TEX_TX", display: "TX",  name: "부적정 토성",    score: tex },
-    { detail: "SOM_OM", display: "OM",  name: "유기물 부족",    score: som },
-    { detail: treeData.need_nutrient ? "PH_AC" : "PH_AL", display: "PH", name: "pH 이상", score: ph },
-    { detail: "EC_SAL", display: "SAL", name: "염류",           score: ec  },
-    { detail: "INF_IF", display: "INF", name: "기반시설 간섭",  score: inf },
-    { detail: "SUR_IMP",display: "IMP", name: "불투수 피복",    score: sur },
-    { detail: "TRA_POL",display: "TRA", name: "교통·오염",      score: tra },
-    { detail: "PPT_DRY",display: "DRY", name: "수분부족",       score: ppt },
-    { detail: "WAS_AGG",display: "STR", name: "토양구조 불량",  score: was },
-    { detail: "HOR_TOP",display: "RS",  name: "뿌리공간 부족",  score: hor },
-    { detail: "STR_ST", display: "STR", name: "토양구조 불량",  score: str },
+    { detail: "H_HAR",  display: "H",   name: "토양 경도 불량",     score: h   },
+    { detail: "TEX_TX", display: "TEX", name: "부적정 토성",         score: tex },
+    { detail: "SOM_OM", display: "OM",  name: "유기물 부족",         score: som },
+    { detail: treeData.need_nutrient ? "PH_AC" : "PH_AL",
+                        display: "PH",  name: "pH 이상",             score: ph  },
+    { detail: "EC_SAL", display: "SAL", name: "염류·전기전도도 과다", score: ec  },
+    { detail: "CEC_LO", display: "CEC", name: "양이온치환용량 부족",  score: cec },
   ];
 
-  // 통합코드별 중복 제거 — 같은 displayCode는 점수 낮은(심한) 쪽 우선
-  const dedupMap = new Map<string, RawEntry>();
-  for (const entry of raw) {
-    if (entry.score >= 5) continue; // 정상이면 건너뜀
-    const existing = dedupMap.get(entry.display);
-    if (!existing || entry.score < existing.score) {
-      dedupMap.set(entry.display, entry);
-    }
-  }
-
-  return Array.from(dedupMap.values()).map((e) => ({
-    detailCode:  e.detail,
-    displayCode: e.display,
-    causeName:   e.name,
-    severity:    _chipSeverity(e.score)!,
-  }));
+  return raw
+    .filter((e) => e.score < 5)
+    .map((e) => ({
+      detailCode:  e.detail,
+      displayCode: e.display,
+      causeName:   e.name,
+      severity:    _chipSeverity(e.score)!,
+    }));
 }
 
 // ─────────────────────────────────────────────
@@ -413,11 +366,11 @@ export const PEST_LABELS: Record<PestGrade, string> = {
 };
 
 export const SOIL_LABELS: Record<SoilGrade, string> = {
-  A: "A등급 (최상급)",
-  B: "B등급 (양호)",
-  C: "C등급 (경계)",
-  D: "D등급 (불량)",
-  E: "E등급 (생육불능)",
+  A: "A등급 · Excellent (90~100)",
+  B: "B등급 · Good (75~89)",
+  C: "C등급 · Fair (60~74)",
+  D: "D등급 · Poor (40~59)",
+  E: "E등급 · Critical (<40)",
 };
 
 export function getComplaintCount(treeId: string): number {
