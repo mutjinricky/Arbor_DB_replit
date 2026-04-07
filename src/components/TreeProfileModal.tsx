@@ -37,11 +37,13 @@ import {
   getComplaintCount,
   calculateIQTRI,
   calculateSoilScore,
+  calculateSoilCauses,
   IQTRI_COLORS,
   IQTRI_LABELS,
   SOIL_COLORS,
   SOIL_LABELS,
 } from "@/lib/riskCalculations";
+import { CauseChips } from "@/components/CauseChips";
 
 interface TreeData {
   id: string;
@@ -625,6 +627,17 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                         </div>
                       ))}
                     </div>
+
+                    {/* 원인 칩 */}
+                    {(() => {
+                      const chips = calculateSoilCauses(treeFullData);
+                      return chips.length > 0 ? (
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground mb-1.5">원인 분류</p>
+                          <CauseChips chips={chips} size="md" />
+                        </div>
+                      ) : null;
+                    })()}
 
                     {/* K-UTSI 등급 기준 */}
                     <Separator />

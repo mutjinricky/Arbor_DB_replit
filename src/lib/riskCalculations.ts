@@ -283,6 +283,95 @@ function _soilGrade(score: number): SoilGrade {
 }
 
 // ─────────────────────────────────────────────
+// C-04D: 토양 건강도 원인코드 (K-UTSI 세부 지표 → 통합 원인칩)
+// 5점=정상(표시안함), 3점=경, 1점=중, 0점=심
+// ─────────────────────────────────────────────
+export type CauseSeverity = "경" | "중" | "심";
+
+export interface CauseChip {
+  detailCode: string;   // DB 저장용 세부코드 (e.g. "ERA_RS")
+  displayCode: string;  // 화면 표시 통합코드 (e.g. "RS")
+  causeName: string;    // 원인명 (e.g. "뿌리공간 부족")
+  severity: CauseSeverity;
+}
+
+export const CAUSE_SEVERITY_STYLES: Record<CauseSeverity, { bg: string; border: string; text: string }> = {
+  "경": { bg: "#fefce8", border: "#fde047", text: "#713f12" },
+  "중": { bg: "#fff7ed", border: "#fb923c", text: "#7c2d12" },
+  "심": { bg: "#fef2f2", border: "#f87171", text: "#7f1d1d" },
+};
+
+function _chipSeverity(score: number): CauseSeverity | null {
+  if (score >= 5) return null;
+  if (score >= 3) return "경";
+  if (score >= 1) return "중";
+  return "심";
+}
+
+export function calculateSoilCauses(treeData: TreeFullData): CauseChip[] {
+  const d = treeData.district || "";
+  const isRoad  = d.includes("도로") || d.includes("대로");
+  const isPark  = d.includes("공원") || d.includes("산책");
+  const isArtery = d.includes("대로");
+
+  // 15개 K-UTSI 지표 재계산
+  const era = treeData.diameter >= 75 ? 5 : treeData.diameter >= 45 ? 3 : treeData.diameter >= 20 ? 1 : 0;
+  const h   = (treeData.damage_area === 0 && treeData.cavity_depth === 0) ? 5
+            : (treeData.damage_area < 5 && treeData.cavity_depth < 5) ? 3 : 1;
+  const per = isPark ? 5 : isRoad ? 1 : 3;
+  const por = isPark ? 5 : 3;
+  const tex = 3;
+  const som = treeData.need_nutrient ? 0 : 3;
+  const ph  = treeData.need_nutrient ? 1 : 5;
+  const ec  = isRoad ? 3 : 5;
+  const inf = (treeData.damage_area > 10 || treeData.cavity_depth > 10) ? 0
+            : (treeData.damage_area > 0 || treeData.cavity_depth > 0) ? 1 : 3;
+  const sur = isPark ? 5 : isRoad ? 1 : 3;
+  const tra = isArtery ? 1 : isRoad ? 3 : 5;
+  const ppt = treeData.ice_damage ? 1 : 3;
+  const was = (treeData.ice_damage || treeData.damage_area > 5) ? 1 : 3;
+  const hor = (treeData.age || 10) >= 30 ? 5 : (treeData.age || 10) >= 15 ? 3 : 1;
+  const str = treeData.need_nutrient ? 1 : 3;
+
+  // 세부코드 → (통합코드, 원인명, 점수) 목록
+  type RawEntry = { detail: string; display: string; name: string; score: number };
+  const raw: RawEntry[] = [
+    { detail: "ERA_RS", display: "RS",  name: "뿌리공간 부족",  score: era },
+    { detail: "HAR_CP", display: "CP",  name: "답압",           score: h   },
+    { detail: "PER_DR", display: "DR",  name: "배수불량",       score: per },
+    { detail: "POR_AP", display: "CP",  name: "답압",           score: por },
+    { detail: "TEX_TX", display: "TX",  name: "부적정 토성",    score: tex },
+    { detail: "SOM_OM", display: "OM",  name: "유기물 부족",    score: som },
+    { detail: treeData.need_nutrient ? "PH_AC" : "PH_AL", display: "PH", name: "pH 이상", score: ph },
+    { detail: "EC_SAL", display: "SAL", name: "염류",           score: ec  },
+    { detail: "INF_IF", display: "INF", name: "기반시설 간섭",  score: inf },
+    { detail: "SUR_IMP",display: "IMP", name: "불투수 피복",    score: sur },
+    { detail: "TRA_POL",display: "TRA", name: "교통·오염",      score: tra },
+    { detail: "PPT_DRY",display: "DRY", name: "수분부족",       score: ppt },
+    { detail: "WAS_AGG",display: "STR", name: "토양구조 불량",  score: was },
+    { detail: "HOR_TOP",display: "RS",  name: "뿌리공간 부족",  score: hor },
+    { detail: "STR_ST", display: "STR", name: "토양구조 불량",  score: str },
+  ];
+
+  // 통합코드별 중복 제거 — 같은 displayCode는 점수 낮은(심한) 쪽 우선
+  const dedupMap = new Map<string, RawEntry>();
+  for (const entry of raw) {
+    if (entry.score >= 5) continue; // 정상이면 건너뜀
+    const existing = dedupMap.get(entry.display);
+    if (!existing || entry.score < existing.score) {
+      dedupMap.set(entry.display, entry);
+    }
+  }
+
+  return Array.from(dedupMap.values()).map((e) => ({
+    detailCode:  e.detail,
+    displayCode: e.display,
+    causeName:   e.name,
+    severity:    _chipSeverity(e.score)!,
+  }));
+}
+
+// ─────────────────────────────────────────────
 // 색상·레이블 상수
 // ─────────────────────────────────────────────
 export const IQTRI_COLORS: Record<RiskGrade, string> = {

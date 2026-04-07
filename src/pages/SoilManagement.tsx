@@ -1,19 +1,21 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Sprout, Search, Download, MapPin, CheckCircle2, Eye, AlertTriangle,
   Star, ChevronRight, Info, History, Settings2, BarChart3,
 } from "lucide-react";
 import Map, { NavigationControl } from "react-map-gl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import TreeLayer from "@/components/TreeLayer";
 import { MAPBOX_TOKEN } from "@/lib/mapbox";
 import {
   calculateIQTRI, calculateSoilScore, calculatePestControl,
+  calculateSoilCauses,
   SOIL_COLORS, SOIL_LABELS,
   type SoilGrade, type TreeFullData,
   type RiskGrade, type PestGrade,
+  type CauseChip,
 } from "@/lib/riskCalculations";
+import { CauseChips } from "@/components/CauseChips";
 import { useWeatherData } from "@/hooks/useWeatherData";
 
 // ─── 기존 프로젝트 이력 (Projects.tsx / ProjectDetail.tsx 동일 데이터) ──────
@@ -52,25 +54,17 @@ const PROJECT_HISTORY = [
   },
 ];
 
-// ─── 헬퍼: 원인코드 ──────────────────────────────────────────────────────────
-function getCauseCodes(tree: TreeFullData): string[] {
-  const codes: string[] = [];
-  if (tree.need_nutrient) codes.push("영양불량");
-  if (tree.ice_damage) codes.push("동해피해");
-  if ((tree.damage_area ?? 0) > 0) codes.push("기계피해");
-  if ((tree.cavity_depth ?? 0) > 0) codes.push("수간공동");
-  return codes.length > 0 ? codes : ["양호"];
-}
-
-function getRequiredWorks(grade: SoilGrade, codes: string[]): string[] {
+// ─── 헬퍼: 필요 사업 (K-UTSI 등급 + 원인칩 기반) ───────────────────────────
+function getRequiredWorks(grade: SoilGrade, chips: CauseChip[]): string[] {
   const works: string[] = [];
   if (grade === "E") works.push("긴급 토양 개량");
   if (grade === "D") works.push("토양 개량 사업");
   if (grade === "C") works.push("정밀 진단");
-  if (codes.includes("영양불량")) works.push("영양 공급");
-  if (codes.includes("동해피해")) works.push("동해 방지 처리");
-  if (codes.includes("기계피해")) works.push("피해 복구");
-  if (codes.includes("수간공동")) works.push("수간 충전");
+  const codes = chips.map((c) => c.displayCode);
+  if (codes.includes("OM")) works.push("영양 공급");
+  if (codes.includes("DRY") || codes.includes("STR")) works.push("동해 방지 처리");
+  if (codes.includes("INF")) works.push("피해 복구");
+  if (codes.includes("RS")) works.push("뿌리공간 확보");
   return works.length > 0 ? works : ["현상 유지"];
 }
 
@@ -79,7 +73,7 @@ interface EnrichedTree {
   id: string; species: string; district: string;
   lat: number; lng: number;
   soilScore: number; soilGrade: SoilGrade;
-  causeCodes: string[];
+  causeChips: CauseChip[];
   requiredWorks: string[];
   iqtriScore: number; iqtriGrade: RiskGrade;
   pestGrade: PestGrade; pestName: string; pestDays: number;
@@ -187,11 +181,11 @@ export default function SoilManagement() {
   const enrichedTrees = useMemo<EnrichedTree[]>(() => {
     if (!rawTreesJson) return [];
     return Object.entries(rawTreesJson).map(([id, tree]) => {
-      const soil = calculateSoilScore(id, tree);
+      const soil  = calculateSoilScore(id, tree);
       const iqtri = calculateIQTRI(tree);
-      const pest = calculatePestControl(id, pestDDs as any);
-      const codes = getCauseCodes(tree);
-      const works = getRequiredWorks(soil.grade, codes);
+      const pest  = calculatePestControl(id, pestDDs as any);
+      const chips = calculateSoilCauses(tree);
+      const works = getRequiredWorks(soil.grade, chips);
       const priority: EnrichedTree["priority"] =
         soil.grade === "D" || soil.grade === "E" ? "urgent" :
         soil.grade === "C" ? "watch" : "normal";
@@ -199,7 +193,7 @@ export default function SoilManagement() {
         id, species: tree.species || "", district: tree.district || "",
         lat: tree.lat, lng: tree.lng,
         soilScore: soil.score, soilGrade: soil.grade,
-        causeCodes: codes, requiredWorks: works,
+        causeChips: chips, requiredWorks: works,
         iqtriScore: iqtri.score, iqtriGrade: iqtri.grade,
         pestGrade: pest.grade, pestName: pest.pestName, pestDays: pest.daysUntilControl,
         priority,
@@ -215,29 +209,26 @@ export default function SoilManagement() {
       if (!map[zone]) map[zone] = [];
       map[zone].push(t);
     });
-    const recentProjectZones = new Set(
-      PROJECT_HISTORY.filter((p) => p.status === "in_progress" || p.status === "completed")
-        .flatMap((p) => p.zoneKeywords)
-    );
     return Object.entries(map).map(([name, trees]) => {
-      const total = trees.length;
-      const aCount = trees.filter((t) => t.soilGrade === "A").length;
-      const bCount = trees.filter((t) => t.soilGrade === "B").length;
-      const cCount = trees.filter((t) => t.soilGrade === "C").length;
-      const dCount = trees.filter((t) => t.soilGrade === "D").length;
-      const eCount = trees.filter((t) => t.soilGrade === "E").length;
+      const total    = trees.length;
+      const aCount   = trees.filter((t) => t.soilGrade === "A").length;
+      const bCount   = trees.filter((t) => t.soilGrade === "B").length;
+      const cCount   = trees.filter((t) => t.soilGrade === "C").length;
+      const dCount   = trees.filter((t) => t.soilGrade === "D").length;
+      const eCount   = trees.filter((t) => t.soilGrade === "E").length;
       const avgScore = Math.round(trees.reduce((s, t) => s + t.soilScore, 0) / total);
+      // 구역 원인코드 집계: causeName → count
       const causeCodes: Record<string, number> = {};
-      trees.forEach((t) => t.causeCodes.forEach((c) => { causeCodes[c] = (causeCodes[c] || 0) + 1; }));
-      const highTraffic = isHighTrafficZone(name);
+      trees.forEach((t) => t.causeChips.forEach((c) => { causeCodes[c.causeName] = (causeCodes[c.causeName] || 0) + 1; }));
+      const highTraffic    = isHighTrafficZone(name);
       const linkedProjects = getLinkedProjects(name);
 
-      const deRatio = (dCount + eCount) / total;
-      const avgCodeCount = trees.reduce((s, t) => s + (t.causeCodes[0] === "양호" ? 0 : t.causeCodes.length), 0) / total;
+      const deRatio      = (dCount + eCount) / total;
+      const avgChipCount = trees.reduce((s, t) => s + t.causeChips.length, 0) / total;
       let score = 0;
       score += deRatio * 100 * (settings.deGradeWeight / 3);
       score += cCount / total * 30 * (settings.deGradeWeight / 3);
-      score += avgCodeCount * 10 * (settings.codeOverlapWeight / 3);
+      score += avgChipCount * 10 * (settings.codeOverlapWeight / 3);
       if (settings.trafficBonus && highTraffic) score += 20;
       const hasRecentProject = linkedProjects.some((p) => p.status === "in_progress" || p.status === "completed");
       if (settings.excludeRecentProject && hasRecentProject) score -= 15;
@@ -303,7 +294,7 @@ export default function SoilManagement() {
       t.id.toLowerCase().includes(q) ||
       normalizeZone(t.district).includes(q) ||
       t.species.toLowerCase().includes(q) ||
-      t.causeCodes.join(" ").includes(q)
+      t.causeChips.map((c) => c.causeName).join(" ").includes(q)
     );
     return [...list].sort((a, b) => a.soilScore - b.soilScore).slice(0, 80);
   }, [enrichedTrees, selectedZone, treeSearch]);
@@ -555,11 +546,7 @@ export default function SoilManagement() {
                           <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{normalizeZone(t.district)}</td>
                           <td className="px-3 py-2"><SoilBadge grade={t.soilGrade} /></td>
                           <td className="px-3 py-2">
-                            <div className="flex gap-1 flex-wrap">
-                              {t.causeCodes.map((c) => (
-                                <span key={c} className={`text-[10px] px-1.5 py-0.5 rounded-full ${c === "양호" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>{c}</span>
-                              ))}
-                            </div>
+                            <CauseChips chips={t.causeChips} maxVisible={3} />
                           </td>
                           <td className="px-3 py-2 text-muted-foreground">{t.requiredWorks[0]}</td>
                           <td className="px-3 py-2">
@@ -718,17 +705,25 @@ export default function SoilManagement() {
                         </div>
                       </div>
 
-                      {/* 원인코드 */}
-                      <div>
-                        <p className="text-xs font-semibold mb-1.5">원인코드 현황</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {Object.entries(selectedZoneData.causeCodes).sort((a,b) => b[1]-a[1]).map(([code, cnt]) => (
-                            <span key={code} className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${code === "양호" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
-                              {code} ({cnt}건)
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                      {/* 원인코드 현황: 구역 내 수목 chips 집계 */}
+                      {(() => {
+                        const dedup: Record<string, CauseChip> = {};
+                        const sev: Record<string, number> = { "심": 0, "중": 1, "경": 2 };
+                        selectedZoneData.trees.forEach((t) => t.causeChips.forEach((c) => {
+                          const ex = dedup[c.displayCode];
+                          if (!ex || sev[c.severity] < sev[ex.severity]) dedup[c.displayCode] = c;
+                        }));
+                        const zoneChips = Object.values(dedup);
+                        return (
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <p className="text-xs font-semibold">원인코드 현황</p>
+                              <span className="text-[10px] text-muted-foreground">{zoneChips.length}종 원인</span>
+                            </div>
+                            <CauseChips chips={zoneChips} size="md" />
+                          </div>
+                        );
+                      })()}
 
                       {/* 필요 사업 */}
                       <div className="pt-2 border-t">
@@ -746,7 +741,7 @@ export default function SoilManagement() {
                           <Info className="h-3.5 w-3.5" />업무 메모
                         </p>
                         <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed">
-                          이 구역은 <strong>{Object.entries(selectedZoneData.causeCodes).sort((a,b)=>b[1]-a[1])[0]?.[0] ?? "복합"}</strong> 원인이 우세하게 나타나고 있어 우선 점검이 필요한 구역으로 판단했습니다.
+                          이 구역은 <strong>{Object.entries(selectedZoneData.causeCodes).sort((a,b)=>b[1]-a[1])[0]?.[0] ?? "복합"} 등 {Object.keys(selectedZoneData.causeCodes).length}종</strong> 원인이 나타나고 있어 우선 점검이 필요한 구역으로 판단했습니다.
                           발주 전에는 정밀진단 필요 여부와 현장 여건, 최근 사업 이력을 함께 확인하시기 바랍니다.
                         </p>
                       </div>
@@ -772,7 +767,7 @@ export default function SoilManagement() {
                         {[
                           { label: "D/E 등급 비율", value: `${selectedZoneData.dCount + selectedZoneData.eCount}주 / ${selectedZoneData.total}주 (${Math.round((selectedZoneData.dCount + selectedZoneData.eCount)/selectedZoneData.total*100)}%)`, warn: selectedZoneData.dCount + selectedZoneData.eCount > 0 },
                           { label: "관찰(C) 등급", value: `${selectedZoneData.cCount}주`, warn: selectedZoneData.cCount > 3 },
-                          { label: "주요 원인코드", value: Object.entries(selectedZoneData.causeCodes).filter(([k])=>k!=="양호").map(([k,v])=>`${k}(${v})`).join(", ") || "—", warn: false },
+                          { label: "원인코드 종류", value: `${Object.keys(selectedZoneData.causeCodes).length}종 (${Object.entries(selectedZoneData.causeCodes).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([k,v])=>`${k} ${v}건`).join(", ")})`, warn: false },
                           { label: "고통행량·민원 구역", value: selectedZoneData.isHighTraffic ? "해당 (+20점)" : "비해당", warn: false },
                           { label: "최근 사업 이력", value: selectedZoneData.linkedProjects.find(p=>p.status==="in_progress"||p.status==="completed")?.name ?? "없음 (감점 없음)", warn: false },
                         ].map((r) => (
