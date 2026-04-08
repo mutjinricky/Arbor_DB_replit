@@ -28,10 +28,12 @@ import {
   CheckCircle2,
   XCircle,
   ChevronRight,
+  Plus,
+  X,
+  Check,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import {
   getComplaintCount,
@@ -79,6 +81,7 @@ interface EditOverride {
 }
 
 const OVERRIDE_KEY = (id: string) => `tree_override_${id}`;
+const TAGS_KEY     = (id: string) => `tree_tags_${id}`;
 
 export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }: TreeProfileModalProps) {
   const [activeTab, setActiveTab] = useState("overview");
@@ -91,12 +94,21 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
   const [editValues, setEditValues] = useState<EditOverride>({});
   const [editSaved, setEditSaved] = useState(false);
 
+  // Custom tag state
+  const [customTags, setCustomTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [editingTagIdx, setEditingTagIdx] = useState<number | null>(null);
+  const [editingTagText, setEditingTagText] = useState("");
+
   // Fetch tree data when treeId changes
   useEffect(() => {
     if (treeId && isOpen) {
       setLoading(true);
       setImageError(false);
       setEditSaved(false);
+      setTagInput("");
+      setEditingTagIdx(null);
+      setEditingTagText("");
       fetch('/data/trees.json')
         .then(response => response.json())
         .then((data: Record<string, TreeData>) => {
@@ -108,6 +120,23 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
             setEditValues(stored ? JSON.parse(stored) : {});
           } catch {
             setEditValues({});
+          }
+          // Load custom tags — auto-convert ice_damage / need_nutrient if no tags stored yet
+          try {
+            const storedTags = localStorage.getItem(TAGS_KEY(treeId));
+            if (storedTags) {
+              setCustomTags(JSON.parse(storedTags));
+            } else {
+              const autoTags: string[] = [];
+              if (tree?.ice_damage)    autoTags.push("설해 피해");
+              if (tree?.need_nutrient) autoTags.push("영양공급 필요");
+              setCustomTags(autoTags);
+              if (autoTags.length > 0) {
+                localStorage.setItem(TAGS_KEY(treeId), JSON.stringify(autoTags));
+              }
+            }
+          } catch {
+            setCustomTags([]);
           }
         })
         .catch(error => {
@@ -960,31 +989,122 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                       </div>
                     </div>
 
-                    {/* Boolean toggles */}
-                    <div className="space-y-3 pt-1">
-                      <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50">
-                        <div>
-                          <Label className="text-sm font-medium">설해 피해</Label>
-                          <p className="text-xs text-muted-foreground">동절기 눈·빙판 피해 여부</p>
+                    {/* Custom tag management */}
+                    {(() => {
+                      const persistTags = (updated: string[]) => {
+                        setCustomTags(updated);
+                        try { localStorage.setItem(TAGS_KEY(treeId), JSON.stringify(updated)); } catch { /* ignore */ }
+                      };
+                      const addTag = () => {
+                        const val = tagInput.trim();
+                        if (!val || customTags.includes(val)) return;
+                        persistTags([...customTags, val]);
+                        setTagInput("");
+                      };
+                      const deleteTag = (idx: number) => {
+                        persistTags(customTags.filter((_, i) => i !== idx));
+                        if (editingTagIdx === idx) { setEditingTagIdx(null); setEditingTagText(""); }
+                      };
+                      const startEdit = (idx: number) => {
+                        setEditingTagIdx(idx);
+                        setEditingTagText(customTags[idx]);
+                      };
+                      const saveEdit = () => {
+                        if (editingTagIdx === null) return;
+                        const val = editingTagText.trim();
+                        if (!val) return;
+                        if (customTags.includes(val) && customTags[editingTagIdx] !== val) return;
+                        persistTags(customTags.map((t, i) => (i === editingTagIdx ? val : t)));
+                        setEditingTagIdx(null);
+                        setEditingTagText("");
+                      };
+                      return (
+                        <div className="space-y-3 pt-1">
+                          <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">특이사항 태그</Label>
+                          {/* Existing tags */}
+                          <div className="flex flex-wrap gap-1.5 min-h-[32px]">
+                            {customTags.length === 0 && (
+                              <span className="text-xs text-muted-foreground italic">등록된 항목이 없습니다</span>
+                            )}
+                            {customTags.map((tag, idx) => (
+                              <div key={idx} className="flex items-center gap-0.5">
+                                {editingTagIdx === idx ? (
+                                  <div className="flex items-center gap-1">
+                                    <Input
+                                      autoFocus
+                                      value={editingTagText}
+                                      onChange={(e) => setEditingTagText(e.target.value)}
+                                      onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") { setEditingTagIdx(null); setEditingTagText(""); } }}
+                                      className="h-6 text-xs w-28 px-2"
+                                      data-testid={`input-edit-tag-${idx}`}
+                                    />
+                                    <button
+                                      onClick={saveEdit}
+                                      className="h-5 w-5 flex items-center justify-center rounded text-green-600 hover:bg-green-50"
+                                      data-testid={`button-confirm-edit-tag-${idx}`}
+                                    >
+                                      <Check className="h-3 w-3" />
+                                    </button>
+                                    <button
+                                      onClick={() => { setEditingTagIdx(null); setEditingTagText(""); }}
+                                      className="h-5 w-5 flex items-center justify-center rounded text-muted-foreground hover:bg-muted"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span
+                                    className="inline-flex items-center gap-1 pl-2.5 pr-1 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 group"
+                                    data-testid={`chip-tag-${idx}`}
+                                  >
+                                    {tag}
+                                    <button
+                                      onClick={() => startEdit(idx)}
+                                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-opacity"
+                                      data-testid={`button-edit-tag-${idx}`}
+                                    >
+                                      <Pencil className="h-2.5 w-2.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => deleteTag(idx)}
+                                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-red-100 hover:text-red-600 transition-opacity"
+                                      data-testid={`button-delete-tag-${idx}`}
+                                    >
+                                      <X className="h-2.5 w-2.5" />
+                                    </button>
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          {/* Add new tag */}
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="새 항목 입력..."
+                              value={tagInput}
+                              onChange={(e) => setTagInput(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === "Enter") addTag(); }}
+                              className="h-8 text-sm flex-1"
+                              data-testid="input-new-tag"
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={addTag}
+                              disabled={!tagInput.trim() || customTags.includes(tagInput.trim())}
+                              className="h-8 px-3 gap-1"
+                              data-testid="button-add-tag"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              추가
+                            </Button>
+                          </div>
+                          {tagInput.trim() && customTags.includes(tagInput.trim()) && (
+                            <p className="text-xs text-destructive">이미 동일한 항목이 있습니다</p>
+                          )}
                         </div>
-                        <Switch
-                          checked={editValues.ice_damage ?? treeData.ice_damage}
-                          onCheckedChange={(val) => setEditValues((v) => ({ ...v, ice_damage: val }))}
-                          data-testid="switch-ice-damage"
-                        />
-                      </div>
-                      <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50">
-                        <div>
-                          <Label className="text-sm font-medium">영양 공급 필요</Label>
-                          <p className="text-xs text-muted-foreground">토양 영양 부족 판정 여부</p>
-                        </div>
-                        <Switch
-                          checked={editValues.need_nutrient ?? treeData.need_nutrient}
-                          onCheckedChange={(val) => setEditValues((v) => ({ ...v, need_nutrient: val }))}
-                          data-testid="switch-need-nutrient"
-                        />
-                      </div>
-                    </div>
+                      );
+                    })()}
 
                     {/* Save / Reset */}
                     <div className="flex gap-2 pt-1">
