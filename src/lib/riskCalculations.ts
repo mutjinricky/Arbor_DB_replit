@@ -17,14 +17,19 @@ export interface TreeFullData {
   age: number;
   inspection: string;
   species: string;
+  visual_diagnosis?: string;
+  decay_rate?: number;
+  tilt_rate?: number;
 }
 
-export interface IQTRIResult {
-  score: number;
+export interface TreeRiskResult {
   grade: RiskGrade;
-  D: number;
-  T: number;
-  I: number;
+  visualGrade: RiskGrade;
+  decayGrade: RiskGrade;
+  tiltGrade: RiskGrade;
+  visualValue: string;
+  decayValue: number;
+  tiltValue: number;
 }
 
 export interface PestResult {
@@ -55,40 +60,52 @@ export interface ExternalPestDD {
 }
 
 // ─────────────────────────────────────────────
-// C-04A: IQTRI = D × T × I
+// 3대 지표 기반 최고위험도 우선(MAX) 산정
+// 입력: 육안진단(string), 수목 부후도(%), 수목 기울기(%)
 // ─────────────────────────────────────────────
-export function calculateIQTRI(tree: TreeFullData): IQTRIResult {
-  let D = 0.1;
-  if (tree.risk === "high") D = 5.0;
-  else if (tree.risk === "medium") D = 1.0;
+const GRADE_ORDER: Record<RiskGrade, number> = { low: 0, moderate: 1, high: 2, extreme: 3 };
+const ORDER_TO_GRADE: RiskGrade[] = ["low", "moderate", "high", "extreme"];
 
-  if (tree.damage_area > 0 && tree.risk !== "high") D = Math.min(D * 1.5, 10.0);
-  if (tree.ice_damage) D = Math.min(D * 1.2, 10.0);
-  if (tree.cavity_depth > 5) D = Math.min(D * 1.3, 10.0);
+function decayRateToGrade(pct: number): RiskGrade {
+  if (pct >= 50) return "extreme";
+  if (pct >= 40) return "high";
+  if (pct >= 20) return "moderate";
+  return "low";
+}
 
-  let T = 15;
-  const district = tree.district || "";
-  if (district.includes("간선") || district.includes("대로")) T = 25;
-  else if (district.includes("도로")) T = 25;
-  else if (district.includes("주거") || district.includes("아파트")) T = 40;
-  else if (district.includes("학교") || district.includes("놀이터")) T = 25;
-  else if (district.includes("공원") || district.includes("산책")) T = 15;
+function tiltRateToGrade(pct: number): RiskGrade {
+  if (pct >= 25) return "extreme";
+  if (pct >= 15) return "high";
+  if (pct >= 11) return "moderate";
+  return "low";
+}
 
-  const diameterMM = (tree.diameter || 10) * 10;
-  let I = 1;
-  if (diameterMM > 750) I = 10;
-  else if (diameterMM >= 350) I = 6;
-  else if (diameterMM >= 100) I = 4;
+function visualDiagnosisToGrade(v: string): RiskGrade {
+  if (v === "극심") return "extreme";
+  if (v === "심")   return "high";
+  if (v === "중")   return "moderate";
+  return "low";
+}
 
-  const score = Math.round(D * T * I * 10) / 10;
+export function calculateTreeRiskGrade(tree: TreeFullData): TreeRiskResult {
+  const visualValue  = tree.visual_diagnosis ?? (
+    tree.risk === "high" ? "심" : tree.risk === "medium" ? "중" : "경"
+  );
+  const decayValue   = tree.decay_rate  ?? Math.min(tree.damage_area ?? 0, 100);
+  const tiltValue    = tree.tilt_rate   ?? Math.min((tree.cavity_depth ?? 0) * 3, 100);
 
-  let grade: RiskGrade;
-  if (score >= 400) grade = "extreme";
-  else if (score >= 100) grade = "high";
-  else if (score >= 40) grade = "moderate";
-  else grade = "low";
+  const visualGrade = visualDiagnosisToGrade(visualValue);
+  const decayGrade  = decayRateToGrade(decayValue);
+  const tiltGrade   = tiltRateToGrade(tiltValue);
 
-  return { score, grade, D, T, I };
+  const maxOrder = Math.max(
+    GRADE_ORDER[visualGrade],
+    GRADE_ORDER[decayGrade],
+    GRADE_ORDER[tiltGrade],
+  );
+  const grade = ORDER_TO_GRADE[maxOrder];
+
+  return { grade, visualGrade, decayGrade, tiltGrade, visualValue, decayValue, tiltValue };
 }
 
 // ─────────────────────────────────────────────
@@ -333,7 +350,7 @@ export function calculateSoilCauses(treeData: TreeFullData): CauseChip[] {
 // ─────────────────────────────────────────────
 // 색상·레이블 상수
 // ─────────────────────────────────────────────
-export const IQTRI_COLORS: Record<RiskGrade, string> = {
+export const RISK_COLORS: Record<RiskGrade, string> = {
   extreme: "#dc2626",
   high: "#f97316",
   moderate: "#eab308",
@@ -356,7 +373,7 @@ export const SOIL_COLORS: Record<SoilGrade, string> = {
   E: "#dc2626",
 };
 
-export const IQTRI_LABELS: Record<RiskGrade, string> = {
+export const RISK_LABELS: Record<RiskGrade, string> = {
   extreme: "극심",
   high: "심",
   moderate: "중",

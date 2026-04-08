@@ -1,14 +1,14 @@
 import { useState, useMemo, useEffect } from "react";
-import { Search, AlertTriangle, Shield, Target, Zap, TreePine, TrendingUp, MapPin } from "lucide-react";
+import { Search, AlertTriangle, Eye, Layers, ArrowUpDown, TreePine, TrendingUp, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  PieChart, Pie, Cell, Tooltip as ReTooltip, Legend, ResponsiveContainer,
+  PieChart, Pie, Cell, Tooltip as ReTooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from "recharts";
 import MapGL, { NavigationControl } from "react-map-gl";
 import TreeLayer from "@/components/TreeLayer";
 import { MAPBOX_TOKEN } from "@/lib/mapbox";
-import { calculateIQTRI, type TreeFullData } from "@/lib/riskCalculations";
+import { calculateTreeRiskGrade, type TreeFullData } from "@/lib/riskCalculations";
 
 // ─── 타입 ──────────────────────────────────────────────────────────────────────
 type RiskGrade = "extreme" | "high" | "moderate" | "low";
@@ -20,7 +20,13 @@ type EnrichedTree = {
   diameterCm: number;
   risk: string;
   age: number;
-  iqtri: { score: number; grade: RiskGrade; D: number; T: number; I: number };
+  riskGrade: RiskGrade;
+  visualGrade: RiskGrade;
+  decayGrade: RiskGrade;
+  tiltGrade: RiskGrade;
+  visualValue: string;
+  decayValue: number;
+  tiltValue: number;
 };
 
 // ─── 등급 스타일 상수 ──────────────────────────────────────────────────────────
@@ -41,34 +47,34 @@ const RISK_FILTER_OPTIONS = [
   { key: "low",      label: "경",    color: "#22c55e" },
 ] as const;
 
-// ─── IQTRI 점수 게이지 컴포넌트 ──────────────────────────────────────────────
-function ScoreGauge({ score, grade }: { score: number; grade: RiskGrade }) {
+// ─── 최종 위험 등급 뱃지 ──────────────────────────────────────────────────────
+function RiskGradeBadge({ grade }: { grade: RiskGrade }) {
   const meta = GRADE_META[grade];
-  const maxScore = 400;
-  const pct = Math.min(score / maxScore * 100, 100);
+  const actionText = grade === "extreme" ? "즉시 조치 필요" : grade === "high" ? "우선 점검 대상" : grade === "moderate" ? "정기 모니터링" : "정상 관리";
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-2 min-w-[100px]">
       <div
-        className="relative w-32 h-32 rounded-full flex items-center justify-center"
-        style={{ background: `conic-gradient(${meta.color} ${pct * 3.6}deg, #e5e7eb ${pct * 3.6}deg)` }}
+        className="w-24 h-24 rounded-full flex flex-col items-center justify-center border-4"
+        style={{ borderColor: meta.color, backgroundColor: meta.bg }}
       >
-        <div className="absolute inset-2 bg-white dark:bg-slate-900 rounded-full flex flex-col items-center justify-center">
-          <span className="text-2xl font-black" style={{ color: meta.color }}>{score}</span>
-          <span className="text-[10px] text-muted-foreground font-medium">수목 위험도</span>
-        </div>
+        <span className="text-2xl font-black" style={{ color: meta.color }}>{meta.label}</span>
+        <span className="text-[10px] text-muted-foreground font-medium">위험 등급</span>
       </div>
-      <span
-        className="text-xs px-3 py-1 rounded-full font-bold text-white shadow-sm"
-        style={{ backgroundColor: meta.color }}
-      >
-        {meta.label} 위험
-      </span>
+      <span className="text-[11px] text-center text-muted-foreground">{actionText}</span>
     </div>
   );
 }
 
-// ─── D/T/I 카드 컴포넌트 ─────────────────────────────────────────────────────
-function DTICard({ label, value, icon, desc, color }: { label: string; value: number; icon: React.ReactNode; desc: string; color: string }) {
+// ─── 지표 카드 컴포넌트 ───────────────────────────────────────────────────────
+function IndicatorCard({ label, valueText, grade, icon, desc, color }: {
+  label: string;
+  valueText: string;
+  grade: RiskGrade;
+  icon: React.ReactNode;
+  desc: string;
+  color: string;
+}) {
+  const gradeMeta = GRADE_META[grade];
   return (
     <div className="flex-1 rounded-2xl border p-4 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all">
       <div className="flex items-center justify-between mb-2">
@@ -78,9 +84,12 @@ function DTICard({ label, value, icon, desc, color }: { label: string; value: nu
           </div>
           <span className="text-xs font-bold text-muted-foreground">{label}</span>
         </div>
-        <span className="text-2xl font-black" style={{ color }}>{value}</span>
+        <span className="text-2xl font-black" style={{ color }}>{valueText}</span>
       </div>
-      <p className="text-[11px] text-muted-foreground">{desc}</p>
+      <p className="text-[11px] text-muted-foreground mb-2">{desc}</p>
+      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold text-white" style={{ backgroundColor: gradeMeta.color }}>
+        {gradeMeta.label}
+      </span>
     </div>
   );
 }
@@ -130,8 +139,8 @@ export default function TreeRisk() {
         const id = f.properties?.id;
         const tree = id ? rawTreesJson[id] : null;
         if (!tree) return f;
-        const { grade } = calculateIQTRI(tree);
-        return { ...f, properties: { ...f.properties, iqtriGrade: grade } };
+        const { grade } = calculateTreeRiskGrade(tree);
+        return { ...f, properties: { ...f.properties, riskGrade: grade } };
       });
     return { ...rawGeoJson, features };
   }, [rawGeoJson, rawTreesJson]);
@@ -139,15 +148,15 @@ export default function TreeRisk() {
   const riskFilteredIds = useMemo(() => {
     if (!riskEnrichedGeoJson || riskGradeFilter === "all") return null;
     return riskEnrichedGeoJson.features
-      .filter((f: any) => f.properties?.iqtriGrade === riskGradeFilter)
+      .filter((f: any) => f.properties?.riskGrade === riskGradeFilter)
       .map((f: any) => f.properties?.id as string);
   }, [riskEnrichedGeoJson, riskGradeFilter]);
 
   // 실제 수목 데이터 — trees.json을 단일 소스로 사용
-  const realTreesWithIQTRI = useMemo<EnrichedTree[]>(() => {
+  const realTreesWithRisk = useMemo<EnrichedTree[]>(() => {
     if (!rawTreesJson) return [];
     return Object.entries(rawTreesJson).map(([id, tree]) => {
-      const { score, grade, D, T, I } = calculateIQTRI(tree);
+      const { grade, visualGrade, decayGrade, tiltGrade, visualValue, decayValue, tiltValue } = calculateTreeRiskGrade(tree);
       return {
         id,
         species: tree.species || "",
@@ -155,7 +164,13 @@ export default function TreeRisk() {
         diameterCm: tree.diameter || 0,
         risk: tree.risk || "",
         age: tree.age || 0,
-        iqtri: { score, grade, D: parseFloat(D.toFixed(2)), T, I },
+        riskGrade: grade,
+        visualGrade,
+        decayGrade,
+        tiltGrade,
+        visualValue,
+        decayValue: parseFloat(decayValue.toFixed(1)),
+        tiltValue: parseFloat(tiltValue.toFixed(1)),
       };
     });
   }, [rawTreesJson]);
@@ -164,23 +179,23 @@ export default function TreeRisk() {
   const handleSearch = () => {
     const q = searchQuery.trim().toUpperCase();
     if (!q) return;
-    const found = realTreesWithIQTRI.find(t =>
+    const found = realTreesWithRisk.find(t =>
       t.id.toUpperCase() === q ||
       t.id.replace("IC-", "").replace(/^0+/, "") === q.replace("IC-", "").replace(/^0+/, "")
     );
     setSearchResult(found ?? "notfound");
   };
 
-  // 필터된 수목 목록 (위험도 점수 내림차순, 상위 100주만 표시)
+  // 필터된 수목 목록
   const filteredTrees = useMemo(
-    () => filter === "all" ? realTreesWithIQTRI : realTreesWithIQTRI.filter(t => t.species === "산수유"),
-    [filter, realTreesWithIQTRI],
+    () => filter === "all" ? realTreesWithRisk : realTreesWithRisk.filter(t => t.species === "산수유"),
+    [filter, realTreesWithRisk],
   );
 
   // 파이차트 데이터 (위험도 등급별 수목 수)
   const pieData = useMemo(() => {
     const counts: Record<RiskGrade, number> = { extreme: 0, high: 0, moderate: 0, low: 0 };
-    filteredTrees.forEach(t => counts[t.iqtri.grade]++);
+    filteredTrees.forEach(t => counts[t.riskGrade]++);
     return [
       { name: "극심",  value: counts.extreme,  grade: "extreme"  as RiskGrade },
       { name: "심",    value: counts.high,     grade: "high"     as RiskGrade },
@@ -189,25 +204,25 @@ export default function TreeRisk() {
     ].filter(d => d.value > 0);
   }, [filteredTrees]);
 
-  // 막대차트 데이터 (D/T/I 위험 요인 분포)
+  // 막대차트 데이터 (3대 지표별 심 이상 수목 수)
   const barData = useMemo(() => {
-    const dHigh  = filteredTrees.filter(t => t.iqtri.D >= 3.0).length;
-    const tHigh  = filteredTrees.filter(t => t.iqtri.T >= 25).length;
-    const iHigh  = filteredTrees.filter(t => t.iqtri.I >= 6).length;
+    const visualHigh = filteredTrees.filter(t => t.visualGrade === "high" || t.visualGrade === "extreme").length;
+    const decayHigh  = filteredTrees.filter(t => t.decayGrade  === "high" || t.decayGrade  === "extreme").length;
+    const tiltHigh   = filteredTrees.filter(t => t.tiltGrade   === "high" || t.tiltGrade   === "extreme").length;
     return [
-      { factor: "D (결함)", value: dHigh,  color: "#ef4444", desc: "결함 점수 ≥3.0" },
-      { factor: "T (타겟)", value: tHigh,  color: "#f97316", desc: "타겟 점수 ≥25"  },
-      { factor: "I (충돌)", value: iHigh,  color: "#8b5cf6", desc: "충돌 점수 ≥6"   },
+      { factor: "육안진단", value: visualHigh, color: "#ef4444", desc: "육안진단 심 이상" },
+      { factor: "부후도",   value: decayHigh,  color: "#f97316", desc: "부후도 40% 이상"  },
+      { factor: "기울기",   value: tiltHigh,   color: "#8b5cf6", desc: "기울기 15% 이상"  },
     ];
   }, [filteredTrees]);
 
   // 전체 요약 통계
   const stats = useMemo(() => {
     const total    = filteredTrees.length;
-    const extreme  = filteredTrees.filter(t => t.iqtri.grade === "extreme").length;
-    const highRisk = filteredTrees.filter(t => t.iqtri.grade === "high" || t.iqtri.grade === "extreme").length;
-    const avgScore = total ? Math.round(filteredTrees.reduce((s, t) => s + t.iqtri.score, 0) / total) : 0;
-    return { total, extreme, highRisk, avgScore };
+    const extreme  = filteredTrees.filter(t => t.riskGrade === "extreme").length;
+    const highRisk = filteredTrees.filter(t => t.riskGrade === "high" || t.riskGrade === "extreme").length;
+    const lowRisk  = filteredTrees.filter(t => t.riskGrade === "low").length;
+    return { total, extreme, highRisk, lowRisk };
   }, [filteredTrees]);
 
   return (
@@ -262,7 +277,7 @@ export default function TreeRisk() {
           </CardContent>
         </Card>
 
-        {/* ── 검색 결과: IQTRI 카드 ── */}
+        {/* ── 검색 결과: 위험도 카드 ── */}
         {searchResult === "notfound" && (
           <div className="rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-600 font-medium text-center">
             수목 ID를 찾을 수 없습니다. 수목 재고 관리 탭에서 ID를 확인해 주세요.
@@ -271,7 +286,7 @@ export default function TreeRisk() {
 
         {searchResult && searchResult !== "notfound" && (() => {
           const t = searchResult;
-          const meta = GRADE_META[t.iqtri.grade];
+          const meta = GRADE_META[t.riskGrade];
           return (
             <div
               className="rounded-2xl border-2 p-5 shadow-lg animate-in fade-in slide-in-from-top-2"
@@ -286,30 +301,33 @@ export default function TreeRisk() {
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-6">
-                {/* 게이지 */}
-                <ScoreGauge score={t.iqtri.score} grade={t.iqtri.grade} />
+                {/* 최종 등급 뱃지 */}
+                <RiskGradeBadge grade={t.riskGrade} />
 
-                {/* D·T·I 카드 */}
+                {/* 3대 지표 카드 */}
                 <div className="flex flex-col sm:flex-row gap-3 flex-1 w-full">
-                  <DTICard
-                    label="D — 결함 지수"
-                    value={t.iqtri.D}
-                    icon={<Shield className="h-4 w-4" />}
-                    desc="수목 결함 상태 (최대 10.0)"
+                  <IndicatorCard
+                    label="육안진단"
+                    valueText={t.visualValue}
+                    grade={t.visualGrade}
+                    icon={<Eye className="h-4 w-4" />}
+                    desc="수목 외관 상태 (경/중/심/극심)"
                     color="#ef4444"
                   />
-                  <DTICard
-                    label="T — 타겟 지수"
-                    value={t.iqtri.T}
-                    icon={<Target className="h-4 w-4" />}
-                    desc="피해 대상 중요도 (15/25/40)"
+                  <IndicatorCard
+                    label="수목 부후도"
+                    valueText={`${t.decayValue}%`}
+                    grade={t.decayGrade}
+                    icon={<Layers className="h-4 w-4" />}
+                    desc="목재 부후 비율 (≥50%: 극심)"
                     color="#f97316"
                   />
-                  <DTICard
-                    label="I — 충돌 지수"
-                    value={t.iqtri.I}
-                    icon={<Zap className="h-4 w-4" />}
-                    desc="수목 규모·충돌 가능성 (1~10)"
+                  <IndicatorCard
+                    label="수목 기울기"
+                    valueText={`${t.tiltValue}%`}
+                    grade={t.tiltGrade}
+                    icon={<ArrowUpDown className="h-4 w-4" />}
+                    desc="경사 기울기 비율 (≥25%: 극심)"
                     color="#8b5cf6"
                   />
                 </div>
@@ -318,12 +336,12 @@ export default function TreeRisk() {
               {/* 해석 */}
               <div className="mt-4 pt-3 border-t" style={{ borderColor: meta.border }}>
                 <p className="text-xs font-medium" style={{ color: meta.color }}>
-                  ⚠ 수목 위험도 = {t.iqtri.D} × {t.iqtri.T} × {t.iqtri.I} = <strong>{t.iqtri.score}</strong> →
-                  {" "}{meta.label} 수목 위험도 등급
-                  {t.iqtri.grade === "extreme" && " — 즉각적인 위험 조치 필요"}
-                  {t.iqtri.grade === "high"    && " — 조속한 점검 및 처치 권고"}
-                  {t.iqtri.grade === "moderate"&& " — 정기 모니터링 실시"}
-                  {t.iqtri.grade === "low"     && " — 현상 유지, 연 1회 예찰"}
+                  ⚠ 최종 위험도 = MAX(육안진단 {GRADE_META[t.visualGrade].label}, 부후도 {GRADE_META[t.decayGrade].label}, 기울기 {GRADE_META[t.tiltGrade].label}) →
+                  {" "}<strong>{meta.label}</strong> 위험도 등급
+                  {t.riskGrade === "extreme" && " — 즉각적인 위험 조치 필요"}
+                  {t.riskGrade === "high"    && " — 조속한 점검 및 처치 권고"}
+                  {t.riskGrade === "moderate"&& " — 정기 모니터링 실시"}
+                  {t.riskGrade === "low"     && " — 현상 유지, 연 1회 예찰"}
                 </p>
               </div>
             </div>
@@ -336,7 +354,7 @@ export default function TreeRisk() {
             { label: "조회 수목", value: stats.total,    unit: "주",  color: "#6366f1", icon: <TreePine className="h-4 w-4" /> },
             { label: "극심 위험", value: stats.extreme,  unit: "주",  color: "#dc2626", icon: <AlertTriangle className="h-4 w-4" /> },
             { label: "심 이상",   value: stats.highRisk, unit: "주",  color: "#ea580c", icon: <TrendingUp className="h-4 w-4" /> },
-            { label: "평균 위험도", value: stats.avgScore, unit: "점", color: "#0ea5e9", icon: <Shield className="h-4 w-4" /> },
+            { label: "경 (안전)", value: stats.lowRisk,  unit: "주",  color: "#16a34a", icon: <Layers className="h-4 w-4" /> },
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-white dark:bg-slate-900 border shadow-sm p-4 hover:shadow-md transition-all">
               <div className="flex items-center justify-between mb-1">
@@ -446,7 +464,7 @@ export default function TreeRisk() {
               >
                 {f.label}
                 <span className={`ml-1.5 text-[10px] ${filter === f.key ? "opacity-80" : "text-muted-foreground"}`}>
-                  ({filter === f.key && f.key === "산수유" ? filteredTrees.length : f.key === "all" ? realTreesWithIQTRI.length : realTreesWithIQTRI.filter(t => t.species === "산수유").length})
+                  ({filter === f.key && f.key === "산수유" ? filteredTrees.length : f.key === "all" ? realTreesWithRisk.length : realTreesWithRisk.filter(t => t.species === "산수유").length})
                 </span>
               </button>
             ))}
@@ -498,7 +516,7 @@ export default function TreeRisk() {
               <div className="grid grid-cols-2 gap-2 mt-2">
                 {(["extreme","high","moderate","low"] as RiskGrade[]).map(g => {
                   const meta = GRADE_META[g];
-                  const count = filteredTrees.filter(t => t.iqtri.grade === g).length;
+                  const count = filteredTrees.filter(t => t.riskGrade === g).length;
                   return (
                     <div key={g} className="flex items-center justify-between rounded-xl px-3 py-2" style={{ backgroundColor: meta.bg, border: `1px solid ${meta.border}` }}>
                       <div className="flex items-center gap-2">
@@ -521,7 +539,7 @@ export default function TreeRisk() {
                 주요 위험 요인 분포
               </CardTitle>
               <p className="text-[11px] text-muted-foreground">
-                D·T·I 각 지수 임계치 초과 수목 수
+                3대 지표별 심 이상(위험) 수목 수
               </p>
             </CardHeader>
             <CardContent>
@@ -553,12 +571,12 @@ export default function TreeRisk() {
                 </BarChart>
               </ResponsiveContainer>
 
-              {/* 요인 설명 */}
+              {/* 지표 설명 */}
               <div className="space-y-1.5 mt-2">
                 {[
-                  { label: "D (결함)", color: "#ef4444", desc: "수목 결함 점수 3.0 이상 — 손상·공동·동해 복합 위험" },
-                  { label: "T (타겟)", color: "#f97316", desc: "타겟 점수 25 이상 — 주거·도로·학교 인접 위험 수목" },
-                  { label: "I (충돌)", color: "#8b5cf6", desc: "충돌 점수 6 이상 — 흉고직경 35cm 이상 대형 수목" },
+                  { label: "육안진단", color: "#ef4444", desc: "육안 진단 등급 심(심) 이상 — 눈에 띄는 손상·부후 징후" },
+                  { label: "부후도",   color: "#f97316", desc: "수목 부후 비율 40% 이상 — 목재 내부 부패 심각" },
+                  { label: "기울기",   color: "#8b5cf6", desc: "수목 기울기 15% 이상 — 뿌리 약화·쓰러짐 위험" },
                 ].map(f => (
                   <div key={f.label} className="flex items-start gap-2 text-[11px]">
                     <div className="w-2 h-2 rounded-full mt-0.5 shrink-0" style={{ backgroundColor: f.color }} />
@@ -579,7 +597,7 @@ export default function TreeRisk() {
               위험 수목 목록
             </CardTitle>
             <p className="text-[11px] text-muted-foreground">
-              {filter === "all" ? "전체 수목" : "산수유 나무"} — 수목 위험도 점수 높은 순 정렬 (상위 100주)
+              {filter === "all" ? "전체 수목" : "산수유 나무"} — 위험도 등급 기준 정렬 (상위 100주)
             </p>
           </CardHeader>
           <CardContent className="p-0">
@@ -587,31 +605,33 @@ export default function TreeRisk() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b bg-slate-50 dark:bg-slate-800/50">
-                    {["수목 ID","수종","위치","흉고직경","D","T","I","위험도","등급"].map(h => (
+                    {["수목 ID","수종","위치","흉고직경","육안진단","부후도","기울기","최종 등급"].map(h => (
                       <th key={h} className="text-left px-4 py-2.5 text-[11px] font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {[...filteredTrees]
-                    .sort((a, b) => b.iqtri.score - a.iqtri.score)
+                    .sort((a, b) => {
+                      const ORDER: Record<RiskGrade, number> = { extreme: 3, high: 2, moderate: 1, low: 0 };
+                      return ORDER[b.riskGrade] - ORDER[a.riskGrade];
+                    })
                     .slice(0, 100)
                     .map((t, i) => {
-                      const meta = GRADE_META[t.iqtri.grade];
+                      const meta = GRADE_META[t.riskGrade];
                       return (
                         <tr
                           key={t.id}
                           data-testid={`row-tree-${t.id}`}
-                          className={`border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors ${i === 0 && t.iqtri.grade === "extreme" ? "bg-red-50/50 dark:bg-red-900/10" : ""}`}
+                          className={`border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors ${i === 0 && t.riskGrade === "extreme" ? "bg-red-50/50 dark:bg-red-900/10" : ""}`}
                         >
                           <td className="px-4 py-2.5 font-mono font-semibold text-primary">{t.id}</td>
                           <td className="px-4 py-2.5">{t.species}</td>
                           <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">{t.district}</td>
                           <td className="px-4 py-2.5 tabular-nums">{t.diameterCm}cm</td>
-                          <td className="px-4 py-2.5 tabular-nums font-semibold text-red-600">{t.iqtri.D}</td>
-                          <td className="px-4 py-2.5 tabular-nums font-semibold text-orange-600">{t.iqtri.T}</td>
-                          <td className="px-4 py-2.5 tabular-nums font-semibold text-violet-600">{t.iqtri.I}</td>
-                          <td className="px-4 py-2.5 tabular-nums font-black" style={{ color: meta.color }}>{t.iqtri.score}</td>
+                          <td className="px-4 py-2.5 font-semibold" style={{ color: GRADE_META[t.visualGrade].color }}>{t.visualValue}</td>
+                          <td className="px-4 py-2.5 tabular-nums font-semibold" style={{ color: GRADE_META[t.decayGrade].color }}>{t.decayValue}%</td>
+                          <td className="px-4 py-2.5 tabular-nums font-semibold" style={{ color: GRADE_META[t.tiltGrade].color }}>{t.tiltValue}%</td>
                           <td className="px-4 py-2.5">
                             <span
                               className="text-[10px] px-2 py-0.5 rounded-full font-bold text-white whitespace-nowrap"

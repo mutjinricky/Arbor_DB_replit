@@ -23,11 +23,8 @@ import {
   RotateCcw,
   ShieldAlert,
   Leaf,
-  Target,
-  Zap,
-  CheckCircle2,
-  XCircle,
-  ChevronRight,
+  Layers,
+  ArrowUpDown,
   Plus,
   X,
   Check,
@@ -37,11 +34,11 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
   getComplaintCount,
-  calculateIQTRI,
+  calculateTreeRiskGrade,
   calculateSoilScore,
   calculateSoilCauses,
-  IQTRI_COLORS,
-  IQTRI_LABELS,
+  RISK_COLORS,
+  RISK_LABELS,
   SOIL_COLORS,
   SOIL_LABELS,
 } from "@/lib/riskCalculations";
@@ -161,7 +158,7 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
     ice_damage:   editValues.ice_damage   ?? treeData.ice_damage,
     need_nutrient: editValues.need_nutrient ?? treeData.need_nutrient,
   };
-  const iqtri = calculateIQTRI(treeFullData);
+  const riskResult = calculateTreeRiskGrade(treeFullData);
   const soil  = calculateSoilScore(treeId, treeFullData);
 
   // Get tree image based on tree id
@@ -400,135 +397,125 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
               {/* ─── 위험성 기준 탭 ─────────────────────────────────── */}
               <TabsContent value="risk" className="space-y-4 mt-4">
 
-                {/* IQTRI 총점 헤더 */}
+                {/* 최종 위험도 등급 헤더 */}
                 <div
                   className="rounded-xl px-5 py-4 flex items-center justify-between"
-                  style={{ backgroundColor: IQTRI_COLORS[iqtri.grade] + "18", border: `1.5px solid ${IQTRI_COLORS[iqtri.grade]}40` }}
+                  style={{ backgroundColor: RISK_COLORS[riskResult.grade] + "18", border: `1.5px solid ${RISK_COLORS[riskResult.grade]}40` }}
                 >
                   <div>
-                    <p className="text-xs text-muted-foreground font-medium mb-0.5">IQTRI 위험성 지수 (D × T × I)</p>
-                    <p className="text-3xl font-bold" style={{ color: IQTRI_COLORS[iqtri.grade] }}>{iqtri.score}</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">수목 위험도 등급 (3대 지표 최고값)</p>
+                    <p className="text-3xl font-bold" style={{ color: RISK_COLORS[riskResult.grade] }}>
+                      {RISK_LABELS[riskResult.grade]}
+                    </p>
                   </div>
                   <div className="text-right">
                     <span
                       className="inline-block px-3 py-1 rounded-full text-sm font-bold text-white"
-                      style={{ backgroundColor: IQTRI_COLORS[iqtri.grade] }}
+                      style={{ backgroundColor: RISK_COLORS[riskResult.grade] }}
                     >
-                      {IQTRI_LABELS[iqtri.grade]}
+                      {RISK_LABELS[riskResult.grade]}
                     </span>
                     <p className="text-[11px] text-muted-foreground mt-1">
-                      {iqtri.grade === "extreme" ? "즉시 조치 필요" :
-                       iqtri.grade === "high"    ? "우선 점검 대상" :
-                       iqtri.grade === "moderate"? "정기 모니터링" : "정상 관리"}
+                      {riskResult.grade === "extreme" ? "즉시 조치 필요" :
+                       riskResult.grade === "high"    ? "우선 점검 대상" :
+                       riskResult.grade === "moderate"? "정기 모니터링" : "정상 관리"}
                     </p>
                   </div>
                 </div>
 
-                {/* D × T × I 세부 카드 */}
+                {/* 3대 지표 세부 카드 */}
                 <div className="grid grid-cols-3 gap-3">
-                  {/* D — 결함 지수 */}
-                  <Card className="border-amber-200 dark:border-amber-900">
+                  {/* 육안진단 */}
+                  <Card className="border-red-200 dark:border-red-900">
                     <CardContent className="p-3 space-y-2">
                       <div className="flex items-center gap-1.5">
-                        <AlertTriangle className="h-4 w-4 text-amber-500" />
-                        <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">D — 결함</span>
+                        <Eye className="h-4 w-4 text-red-500" />
+                        <span className="text-xs font-semibold text-red-700 dark:text-red-400">육안진단</span>
                       </div>
-                      <p className="text-2xl font-bold text-amber-600">{iqtri.D.toFixed(1)}</p>
+                      <p className="text-2xl font-bold" style={{ color: RISK_COLORS[riskResult.visualGrade] }}>
+                        {riskResult.visualValue}
+                      </p>
+                      <Separator className="my-1" />
                       <div className="space-y-1 text-[11px]">
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">기본 위험등급</span>
-                          <span className="font-medium">
-                            {treeFullData.risk === "high" ? "HIGH (5.0)" : treeFullData.risk === "medium" ? "MEDIUM (1.0)" : "LOW (0.1)"}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          {treeFullData.damage_area > 0
-                            ? <CheckCircle2 className="h-3 w-3 text-orange-500 flex-shrink-0" />
-                            : <XCircle      className="h-3 w-3 text-muted-foreground/40 flex-shrink-0" />}
-                          <span className={cn("flex-1 ml-1", treeFullData.damage_area > 0 ? "text-orange-600" : "text-muted-foreground/60")}>
-                            상처면적 ×1.5
-                          </span>
-                          <span className="text-muted-foreground">{treeFullData.damage_area} cm²</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          {treeFullData.ice_damage
-                            ? <CheckCircle2 className="h-3 w-3 text-blue-500 flex-shrink-0" />
-                            : <XCircle      className="h-3 w-3 text-muted-foreground/40 flex-shrink-0" />}
-                          <span className={cn("flex-1 ml-1", treeFullData.ice_damage ? "text-blue-600" : "text-muted-foreground/60")}>
-                            설해피해 ×1.2
-                          </span>
-                          <span className="text-muted-foreground">{treeFullData.ice_damage ? "있음" : "없음"}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          {treeFullData.cavity_depth > 5
-                            ? <CheckCircle2 className="h-3 w-3 text-red-500 flex-shrink-0" />
-                            : <XCircle      className="h-3 w-3 text-muted-foreground/40 flex-shrink-0" />}
-                          <span className={cn("flex-1 ml-1", treeFullData.cavity_depth > 5 ? "text-red-600" : "text-muted-foreground/60")}>
-                            공동깊이 ×1.3
-                          </span>
-                          <span className="text-muted-foreground">{treeFullData.cavity_depth} cm</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* T — 대상 지수 */}
-                  <Card className="border-blue-200 dark:border-blue-900">
-                    <CardContent className="p-3 space-y-2">
-                      <div className="flex items-center gap-1.5">
-                        <Target className="h-4 w-4 text-blue-500" />
-                        <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">T — 대상</span>
-                      </div>
-                      <p className="text-2xl font-bold text-blue-600">{iqtri.T}</p>
-                      <div className="space-y-1 text-[11px]">
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">위치 유형</span>
-                        </div>
-                        <p className="font-medium text-blue-800 dark:text-blue-300 truncate">{treeFullData.district || "공원·산책로"}</p>
-                        <Separator className="my-1" />
-                        {[
-                          { label: "주거·아파트", val: 40 },
-                          { label: "간선·대로·학교", val: 25 },
-                          { label: "공원·산책로", val: 15 },
-                        ].map(row => (
-                          <div key={row.label} className="flex items-center justify-between">
-                            <span className={cn(iqtri.T === row.val ? "font-semibold text-blue-700 dark:text-blue-300" : "text-muted-foreground/60")}>
-                              {iqtri.T === row.val && <ChevronRight className="inline h-3 w-3 mr-0.5" />}
-                              {row.label}
+                        {(["경","중","심","극심"] as const).map(v => (
+                          <div key={v} className="flex items-center justify-between">
+                            <span className={cn(riskResult.visualValue === v ? "font-semibold text-red-700 dark:text-red-300" : "text-muted-foreground/60")}>
+                              {riskResult.visualValue === v && "▶ "}{v}
                             </span>
-                            <span className={cn("font-mono", iqtri.T === row.val ? "font-bold text-blue-600" : "text-muted-foreground/50")}>{row.val}</span>
+                            <span
+                              className="text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white"
+                              style={{ backgroundColor: RISK_COLORS[v === "극심" ? "extreme" : v === "심" ? "high" : v === "중" ? "moderate" : "low"] }}
+                            >
+                              {v === "극심" ? "극심" : v === "심" ? "심" : v === "중" ? "중" : "경"}
+                            </span>
                           </div>
                         ))}
                       </div>
                     </CardContent>
                   </Card>
 
-                  {/* I — 충격 지수 */}
+                  {/* 수목 부후도 */}
+                  <Card className="border-orange-200 dark:border-orange-900">
+                    <CardContent className="p-3 space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <Layers className="h-4 w-4 text-orange-500" />
+                        <span className="text-xs font-semibold text-orange-700 dark:text-orange-400">수목 부후도</span>
+                      </div>
+                      <p className="text-2xl font-bold" style={{ color: RISK_COLORS[riskResult.decayGrade] }}>
+                        {riskResult.decayValue.toFixed(0)}%
+                      </p>
+                      <Separator className="my-1" />
+                      <div className="space-y-1 text-[11px]">
+                        {[
+                          { label: "19% 미만", grade: "low" as const, color: "#22c55e" },
+                          { label: "20~40%",   grade: "moderate" as const, color: "#eab308" },
+                          { label: "40~49%",   grade: "high" as const, color: "#f97316" },
+                          { label: "50% 이상", grade: "extreme" as const, color: "#dc2626" },
+                        ].map(row => (
+                          <div key={row.label} className="flex items-center justify-between">
+                            <span className={cn(riskResult.decayGrade === row.grade ? "font-semibold text-orange-700 dark:text-orange-300" : "text-muted-foreground/60")}>
+                              {riskResult.decayGrade === row.grade && "▶ "}{row.label}
+                            </span>
+                            <span
+                              className="text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white"
+                              style={{ backgroundColor: row.color }}
+                            >
+                              {RISK_LABELS[row.grade]}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* 수목 기울기 */}
                   <Card className="border-purple-200 dark:border-purple-900">
                     <CardContent className="p-3 space-y-2">
                       <div className="flex items-center gap-1.5">
-                        <Zap className="h-4 w-4 text-purple-500" />
-                        <span className="text-xs font-semibold text-purple-700 dark:text-purple-400">I — 충격</span>
+                        <ArrowUpDown className="h-4 w-4 text-purple-500" />
+                        <span className="text-xs font-semibold text-purple-700 dark:text-purple-400">수목 기울기</span>
                       </div>
-                      <p className="text-2xl font-bold text-purple-600">{iqtri.I}</p>
+                      <p className="text-2xl font-bold" style={{ color: RISK_COLORS[riskResult.tiltGrade] }}>
+                        {riskResult.tiltValue.toFixed(0)}%
+                      </p>
+                      <Separator className="my-1" />
                       <div className="space-y-1 text-[11px]">
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">흉고직경</span>
-                          <span className="font-medium">{treeFullData.diameter} cm ({treeFullData.diameter * 10} mm)</span>
-                        </div>
-                        <Separator className="my-1" />
                         {[
-                          { label: ">750 mm", val: 10 },
-                          { label: "350~750 mm", val: 6 },
-                          { label: "100~350 mm", val: 4 },
-                          { label: "<100 mm", val: 1 },
+                          { label: "10% 미만", grade: "low" as const, color: "#22c55e" },
+                          { label: "11~14%",   grade: "moderate" as const, color: "#eab308" },
+                          { label: "15~24%",   grade: "high" as const, color: "#f97316" },
+                          { label: "25% 이상", grade: "extreme" as const, color: "#dc2626" },
                         ].map(row => (
                           <div key={row.label} className="flex items-center justify-between">
-                            <span className={cn(iqtri.I === row.val ? "font-semibold text-purple-700 dark:text-purple-300" : "text-muted-foreground/60")}>
-                              {iqtri.I === row.val && <ChevronRight className="inline h-3 w-3 mr-0.5" />}
-                              {row.label}
+                            <span className={cn(riskResult.tiltGrade === row.grade ? "font-semibold text-purple-700 dark:text-purple-300" : "text-muted-foreground/60")}>
+                              {riskResult.tiltGrade === row.grade && "▶ "}{row.label}
                             </span>
-                            <span className={cn("font-mono", iqtri.I === row.val ? "font-bold text-purple-600" : "text-muted-foreground/50")}>{row.val}</span>
+                            <span
+                              className="text-[10px] px-1.5 py-0.5 rounded-full font-bold text-white"
+                              style={{ backgroundColor: row.color }}
+                            >
+                              {RISK_LABELS[row.grade]}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -536,50 +523,49 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                   </Card>
                 </div>
 
-                {/* 수식 시각화 */}
-                <div className="flex items-center justify-center gap-3 py-2 bg-muted/40 rounded-lg text-sm font-mono">
-                  <span className="text-amber-600 font-bold">D {iqtri.D.toFixed(1)}</span>
-                  <span className="text-muted-foreground">×</span>
-                  <span className="text-blue-600 font-bold">T {iqtri.T}</span>
-                  <span className="text-muted-foreground">×</span>
-                  <span className="text-purple-600 font-bold">I {iqtri.I}</span>
-                  <span className="text-muted-foreground">=</span>
-                  <span className="font-bold text-base" style={{ color: IQTRI_COLORS[iqtri.grade] }}>
-                    {iqtri.score}점
-                  </span>
+                {/* 산정 원칙 시각화 */}
+                <div className="flex items-center justify-center gap-3 py-2 bg-muted/40 rounded-lg text-sm font-mono flex-wrap">
+                  <span className="text-red-600 font-bold">육안진단 {riskResult.visualValue}</span>
+                  <span className="text-muted-foreground">→ {RISK_LABELS[riskResult.visualGrade]}</span>
+                  <span className="text-muted-foreground mx-1">|</span>
+                  <span className="text-orange-600 font-bold">부후도 {riskResult.decayValue.toFixed(0)}%</span>
+                  <span className="text-muted-foreground">→ {RISK_LABELS[riskResult.decayGrade]}</span>
+                  <span className="text-muted-foreground mx-1">|</span>
+                  <span className="text-purple-600 font-bold">기울기 {riskResult.tiltValue.toFixed(0)}%</span>
+                  <span className="text-muted-foreground">→ {RISK_LABELS[riskResult.tiltGrade]}</span>
+                  <span className="text-muted-foreground mx-1">=</span>
                   <span
                     className="px-2 py-0.5 rounded text-white text-xs font-bold"
-                    style={{ backgroundColor: IQTRI_COLORS[iqtri.grade] }}
+                    style={{ backgroundColor: RISK_COLORS[riskResult.grade] }}
                   >
-                    {IQTRI_LABELS[iqtri.grade]}
+                    최종: {RISK_LABELS[riskResult.grade]}
                   </span>
                 </div>
 
                 {/* 등급 기준표 */}
                 <Card>
                   <CardContent className="p-3">
-                    <p className="text-xs font-semibold text-muted-foreground mb-2">IQTRI 등급 기준</p>
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">위험도 등급 기준 (최고위험도 우선 적용)</p>
                     <div className="grid grid-cols-4 gap-1.5">
                       {[
-                        { grade: "low",      label: "저위험",  range: "0~39",  color: "#22c55e" },
-                        { grade: "moderate", label: "보통",    range: "40~99", color: "#eab308" },
-                        { grade: "high",     label: "고위험",  range: "100~399", color: "#f97316" },
-                        { grade: "extreme",  label: "극심",    range: "400+",  color: "#dc2626" },
+                        { grade: "low"     as const, label: "경",  desc: "정상 관리"    },
+                        { grade: "moderate"as const, label: "중",  desc: "모니터링"     },
+                        { grade: "high"    as const, label: "심",  desc: "점검 필요"    },
+                        { grade: "extreme" as const, label: "극심", desc: "즉시 조치"   },
                       ].map(g => (
                         <div
                           key={g.grade}
                           className={cn(
                             "rounded-lg px-2 py-1.5 text-center text-[11px]",
-                            iqtri.grade === g.grade ? "ring-2 ring-offset-1" : "opacity-50"
+                            riskResult.grade === g.grade ? "ring-2 ring-offset-1" : "opacity-50"
                           )}
                           style={{
-                            backgroundColor: g.color + "18",
-                            border: `1px solid ${g.color}50`,
-                            ringColor: g.color,
+                            backgroundColor: RISK_COLORS[g.grade] + "18",
+                            border: `1px solid ${RISK_COLORS[g.grade]}50`,
                           }}
                         >
-                          <p className="font-bold" style={{ color: g.color }}>{g.label}</p>
-                          <p className="text-muted-foreground mt-0.5">{g.range}점</p>
+                          <p className="font-bold" style={{ color: RISK_COLORS[g.grade] }}>{g.label}</p>
+                          <p className="text-muted-foreground mt-0.5">{g.desc}</p>
                         </div>
                       ))}
                     </div>

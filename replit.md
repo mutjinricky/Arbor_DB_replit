@@ -19,7 +19,7 @@ src/
   App.tsx                    — Root app with routing
   main.tsx                   — Entry point
   lib/
-    riskCalculations.ts      — IQTRI, pest DD, K-UTSI score calculators
+    riskCalculations.ts      — Tree risk (3-indicator MAX), pest DD, K-UTSI score calculators
     mapbox.ts                — Mapbox token
     utils.ts                 — Utility functions
   pages/

@@ -25,11 +25,11 @@ import {
 import Map, { NavigationControl } from "react-map-gl";
 import { MAPBOX_TOKEN } from "@/lib/mapbox";
 import {
-  calculateIQTRI,
+  calculateTreeRiskGrade,
   calculatePestControl,
   calculateSoilScore,
-  IQTRI_COLORS,
-  IQTRI_LABELS,
+  RISK_COLORS,
+  RISK_LABELS,
   PEST_COLORS,
   PEST_LABELS,
   SOIL_COLORS,
@@ -52,8 +52,7 @@ interface EnrichedTreeData {
   risk: string;
   inspection: string;
   species: string;
-  iqtriScore: number;
-  iqtriGrade: RiskGrade;
+  riskGrade: RiskGrade;
   pestGrade: PestGrade;
   pestName: string;
   pestDays: number;
@@ -81,8 +80,7 @@ export default function TreeInventory() {
   const [hoveredTree, setHoveredTree] = useState<{
     id: string;
     species: string;
-    iqtriScore: number;
-    iqtriGrade: RiskGrade;
+    riskGrade: RiskGrade;
     pestGrade: PestGrade;
     pestName: string;
     soilGrade: SoilGrade;
@@ -117,9 +115,9 @@ export default function TreeInventory() {
       const id = props.id || "";
       const fullData = rawTreesJson[id];
 
-      const iqtri = fullData
-        ? calculateIQTRI(fullData)
-        : { score: 0, grade: "low" as RiskGrade };
+      const riskResult = fullData
+        ? calculateTreeRiskGrade(fullData)
+        : { grade: "low" as RiskGrade };
       const pest = calculatePestControl(id, pestDDs as any);
       const soil = calculateSoilScore(id, fullData);
 
@@ -127,8 +125,7 @@ export default function TreeInventory() {
         ...feature,
         properties: {
           ...props,
-          iqtriScore: iqtri.score,
-          iqtriGrade: iqtri.grade,
+          riskGrade: riskResult.grade,
           pestGrade: pest.grade,
           pestName: pest.pestName,
           pestDays: pest.daysUntilControl,
@@ -156,8 +153,7 @@ export default function TreeInventory() {
           risk: p.risk || "low",
           inspection: p.inspection || "",
           species: p.species || "",
-          iqtriScore: p.iqtriScore,
-          iqtriGrade: p.iqtriGrade,
+          riskGrade: p.riskGrade,
           pestGrade: p.pestGrade,
           pestName: p.pestName,
           pestDays: p.pestDays,
@@ -176,7 +172,7 @@ export default function TreeInventory() {
     return treesListData.filter((t) => {
       if (searchId.trim() && t.id !== searchId.trim()) return false;
       if (filterSpecies !== ALL_VALUE && t.species !== filterSpecies) return false;
-      if (filterRiskGrade !== ALL_VALUE && t.iqtriGrade !== filterRiskGrade) return false;
+      if (filterRiskGrade !== ALL_VALUE && t.riskGrade !== filterRiskGrade) return false;
       if (filterPestGrade !== ALL_VALUE && t.pestGrade !== filterPestGrade) return false;
       if (filterSoilGrade !== ALL_VALUE && t.soilGrade !== filterSoilGrade) return false;
       return true;
@@ -238,8 +234,7 @@ export default function TreeInventory() {
         setHoveredTree({
           id: p.id || "",
           species: p.species || "",
-          iqtriScore: p.iqtriScore || 0,
-          iqtriGrade: (p.iqtriGrade || "low") as RiskGrade,
+          riskGrade: (p.riskGrade || "low") as RiskGrade,
           pestGrade: (p.pestGrade || "safe") as PestGrade,
           pestName: p.pestName || "",
           soilGrade: (p.soilGrade || "C") as SoilGrade,
@@ -293,8 +288,8 @@ export default function TreeInventory() {
         label,
       }));
     }
-    return Object.entries(IQTRI_LABELS).map(([grade, label]) => ({
-      color: IQTRI_COLORS[grade as RiskGrade],
+    return Object.entries(RISK_LABELS).map(([grade, label]) => ({
+      color: RISK_COLORS[grade as RiskGrade],
       label,
     }));
   };
@@ -422,7 +417,7 @@ export default function TreeInventory() {
                 </div>
 
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">위험 등급 (IQTRI)</p>
+                  <p className="text-xs text-muted-foreground mb-1">위험 등급</p>
                   <Select value={filterRiskGrade} onValueChange={setFilterRiskGrade}>
                     <SelectTrigger className="h-8 text-sm" data-testid="select-risk-grade">
                       <SelectValue placeholder="전체" />
@@ -573,13 +568,13 @@ export default function TreeInventory() {
                     {mapMode === "risk" && (
                       <>
                         <p className="text-xs text-muted-foreground">
-                          IQTRI: {hoveredTree.iqtriScore}점
+                          수목 위험도
                         </p>
                         <Badge
                           className="mt-1 text-xs text-white"
-                          style={{ backgroundColor: IQTRI_COLORS[hoveredTree.iqtriGrade] }}
+                          style={{ backgroundColor: RISK_COLORS[hoveredTree.riskGrade] }}
                         >
-                          {IQTRI_LABELS[hoveredTree.iqtriGrade]}
+                          {RISK_LABELS[hoveredTree.riskGrade]}
                         </Badge>
                       </>
                     )}
@@ -657,7 +652,7 @@ export default function TreeInventory() {
                       <TableHead>종류</TableHead>
                       <TableHead>지역</TableHead>
                       <TableHead>높이 (m)</TableHead>
-                      <TableHead>IQTRI 위험도</TableHead>
+                      <TableHead>위험도</TableHead>
                       <TableHead>해충 방제</TableHead>
                       <TableHead>토양</TableHead>
                       <TableHead>최근 점검일</TableHead>
@@ -678,9 +673,9 @@ export default function TreeInventory() {
                         <TableCell>
                           <Badge
                             className="text-xs text-white"
-                            style={{ backgroundColor: IQTRI_COLORS[tree.iqtriGrade] }}
+                            style={{ backgroundColor: RISK_COLORS[tree.riskGrade] }}
                           >
-                            {IQTRI_LABELS[tree.iqtriGrade]} ({tree.iqtriScore})
+                            {RISK_LABELS[tree.riskGrade]}
                           </Badge>
                         </TableCell>
                         <TableCell>

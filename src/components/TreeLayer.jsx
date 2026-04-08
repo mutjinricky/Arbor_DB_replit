@@ -42,7 +42,7 @@ function getColorExpression(mapMode) {
   if (mapMode === 'basic') return '#22c55e';
   if (mapMode === 'pest') return buildColorMapping('pestGrade', PEST_COLOR_MAP, '#6b7280');
   if (mapMode === 'soil') return buildColorMapping('soilGrade', SOIL_COLOR_MAP, '#6b7280');
-  return buildColorMapping('iqtriGrade', RISK_COLOR_MAP, '#6b7280');
+  return buildColorMapping('riskGrade', RISK_COLOR_MAP, '#6b7280');
 }
 
 // 위험도 높은 수목이 위쪽에 렌더링되도록 sort-key 설정
@@ -54,7 +54,7 @@ function getSortKeyExpression(mapMode) {
   if (mapMode === 'soil') {
     return ['match', ['get', 'soilGrade'], 'E', 5, 'D', 4, 'C', 3, 'B', 2, 'A', 1, 0];
   }
-  return ['match', ['get', 'iqtriGrade'], 'extreme', 4, 'high', 3, 'moderate', 2, 'low', 1, 0];
+  return ['match', ['get', 'riskGrade'], 'extreme', 4, 'high', 3, 'moderate', 2, 'low', 1, 0];
 }
 
 function TreeLayer({ treesData, selectedTreeIds = [], mapMode = 'risk', filteredIds = null }) {

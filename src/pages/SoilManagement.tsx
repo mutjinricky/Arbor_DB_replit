@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import TreeLayer from "@/components/TreeLayer";
 import { MAPBOX_TOKEN } from "@/lib/mapbox";
 import {
-  calculateIQTRI, calculateSoilScore, calculatePestControl,
+  calculateTreeRiskGrade, calculateSoilScore, calculatePestControl,
   calculateSoilCauses,
   SOIL_COLORS, SOIL_LABELS,
   type SoilGrade, type TreeFullData,
@@ -77,7 +77,7 @@ interface EnrichedTree {
   soilScore: number; soilGrade: SoilGrade;
   causeChips: CauseChip[];
   requiredWorks: string[];
-  iqtriScore: number; iqtriGrade: RiskGrade;
+  riskGrade: RiskGrade;
   pestGrade: PestGrade; pestName: string; pestDays: number;
   priority: "urgent" | "watch" | "normal";
 }
@@ -183,7 +183,7 @@ export default function SoilManagement() {
     if (!rawTreesJson) return [];
     return Object.entries(rawTreesJson).map(([id, tree]) => {
       const soil  = calculateSoilScore(id, tree);
-      const iqtri = calculateIQTRI(tree);
+      const risk  = calculateTreeRiskGrade(tree);
       const pest  = calculatePestControl(id, pestDDs as any);
       const chips = calculateSoilCauses(tree);
       const works = getRequiredWorks(soil.grade, chips);
@@ -195,7 +195,7 @@ export default function SoilManagement() {
         lat: tree.lat, lng: tree.lng,
         soilScore: soil.score, soilGrade: soil.grade,
         causeChips: chips, requiredWorks: works,
-        iqtriScore: iqtri.score, iqtriGrade: iqtri.grade,
+        riskGrade: risk.grade,
         pestGrade: pest.grade, pestName: pest.pestName, pestDays: pest.daysUntilControl,
         priority,
       };
@@ -253,13 +253,13 @@ export default function SoilManagement() {
         const id = f.properties?.id || "";
         const tree = rawTreesJson[id];
         const soil = calculateSoilScore(id, tree);
-        const iqtri = tree ? calculateIQTRI(tree) : { score: 0, grade: "low" as RiskGrade };
+        const risk = tree ? calculateTreeRiskGrade(tree) : { grade: "low" as RiskGrade };
         const pest = calculatePestControl(id, pestDDs as any);
         return {
           ...f, properties: {
             ...f.properties,
             soilScore: soil.score, soilGrade: soil.grade,
-            iqtriScore: iqtri.score, iqtriGrade: iqtri.grade,
+            riskGrade: risk.grade,
             pestGrade: pest.grade, pestName: pest.pestName, pestDays: pest.daysUntilControl,
           },
         };
