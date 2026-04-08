@@ -26,7 +26,8 @@ const App = () => (
         <div className="min-h-screen w-full">
           <TopNav />
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<TreeInventory />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/tree-inventory" element={<TreeInventory />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:id" element={<ProjectDetail />} />

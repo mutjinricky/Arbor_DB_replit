@@ -13,7 +13,7 @@ const SUB_URLS = SUB_MENU_ITEMS.map((i) => i.url);
 
 const TOP_NAV_ITEMS = [
   { title: "수목 지도", url: "/tree-inventory" },
-  { title: "대시보드",  url: "/" },
+  { title: "대시보드",  url: "/dashboard" },
 ];
 
 export function TopNav() {
