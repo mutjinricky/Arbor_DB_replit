@@ -199,40 +199,40 @@ export function calculateSoilScore(
   const isArtery = d.includes("대로");
 
   // ① H: 토양 경도 — damage_area / cavity_depth 역상관 프록시
-  //    5점: <21mm 상당(손상 없음), 3점: 24-27mm, 1점: 27-30mm, 0점: ≥30mm
+  //    5점: <23mm / 3점: 23~26.9mm / 1점: 27~29.9mm / 0점: ≥30mm
   const h = (treeData.damage_area === 0 && treeData.cavity_depth === 0) ? 5
     : (treeData.damage_area <= 3  && treeData.cavity_depth <= 3)  ? 3
     : (treeData.damage_area <= 10 && treeData.cavity_depth <= 10) ? 1
     : 0;
 
   // ② TEX: 토성 — 지구 유형 기반 추정
-  //    5점: 양토(공원), 3점: 사양토(일반), 1점: 사토/식토(도로), 0점: 자갈(간선도로)
+  //    5점: 양토/사양토(공원) / 3점: 식양토(일반) / 1점: 사토/식토(도로) / 0점: 자갈/건설폐기물(간선도로)
   const tex = isPark    ? 5
     : isArtery  ? 0
     : isRoad    ? 1
     : 3;
 
   // ③ SOM: 유기물 함량 — need_nutrient + 지구 유형
-  //    5점: ≥5.0%, 3점: 3-4%, 1점: 1-2%, 0점: <1%
+  //    5점: 4.0~6.0% / 3점: 3.0~3.9% 또는 6.1~8.0% / 1점: 1.0~2.9% 또는 8.0% 초과 / 0점: 1.0% 미만
   const som = treeData.need_nutrient ? 0
     : isPark    ? 5
     : 3;
 
   // ④ pH: 토양 산도 — need_nutrient + 지구 유형
-  //    5점: 6.0-6.5, 3점: 5.0-5.5 or 7.0-7.5, 1점: 4.5-5.0 or 7.5-8.0, 0점: <4.0 or >8.5
+  //    5점: 5.5~7.0 / 3점: 5.0~5.4 또는 7.1~7.5 / 1점: 4.5~4.9 또는 7.6~8.5 / 0점: 4.5 미만 또는 8.5 초과
   const ph = (treeData.need_nutrient && isRoad) ? 0
     : treeData.need_nutrient                     ? 1
     : isArtery                                   ? 3
     : 5;
 
   // ⑤ EC: 전기전도도 — 제설 염화물 / 도로 오염 프록시
-  //    5점: <0.2 dS/m, 3점: 0.6-1.0, 1점: 1.3-1.5, 0점: ≥1.5
+  //    5점: 1.0 dS/m 이하 / 3점: 1.1~1.5 / 1점: 1.6~2.0 / 0점: 2.0 초과
   const ec = isArtery ? 1
     : isRoad  ? 3
     : 5;
 
   // ⑥ CEC: 양이온치환용량 — 수령 + 영양상태 프록시
-  //    5점: ≥10 me/100g, 3점: 6-10, 1점: 3-6, 0점: <3
+  //    5점: 6 me/100g 이상 / 3점: 4~5.9 / 1점: 2~3.9 / 0점: 2 미만
   const age = treeData.age || 10;
   const cec = treeData.need_nutrient    ? 1
     : (age >= 30 && isPark)             ? 5
@@ -290,15 +290,21 @@ export function calculateSoilCauses(treeData: TreeFullData): CauseChip[] {
   const isPark   = d.includes("공원") || d.includes("산책");
   const isArtery = d.includes("대로");
 
+  // H: <23mm=5 / 23~26.9mm=3 / 27~29.9mm=1 / ≥30mm=0
   const h   = (treeData.damage_area === 0 && treeData.cavity_depth === 0) ? 5
     : (treeData.damage_area <= 3  && treeData.cavity_depth <= 3)  ? 3
     : (treeData.damage_area <= 10 && treeData.cavity_depth <= 10) ? 1
     : 0;
+  // TEX: 양토/사양토=5 / 식양토=3 / 사토·식토=1 / 자갈·건설폐기물=0
   const tex = isPark ? 5 : isArtery ? 0 : isRoad ? 1 : 3;
+  // SOM: 4.0~6.0%=5 / 3.0~3.9% or 6.1~8.0%=3 / 1.0~2.9% or >8.0%=1 / <1.0%=0
   const som = treeData.need_nutrient ? 0 : isPark ? 5 : 3;
+  // pH: 5.5~7.0=5 / 5.0~5.4 or 7.1~7.5=3 / 4.5~4.9 or 7.6~8.5=1 / <4.5 or >8.5=0
   const ph  = (treeData.need_nutrient && isRoad) ? 0
     : treeData.need_nutrient ? 1 : isArtery ? 3 : 5;
+  // EC: ≤1.0 dS/m=5 / 1.1~1.5=3 / 1.6~2.0=1 / >2.0=0
   const ec  = isArtery ? 1 : isRoad ? 3 : 5;
+  // CEC: ≥6 me/100g=5 / 4~5.9=3 / 2~3.9=1 / <2=0
   const age = treeData.age || 10;
   const cec = treeData.need_nutrient ? 1
     : (age >= 30 && isPark) ? 5 : age >= 15 ? 3 : 1;

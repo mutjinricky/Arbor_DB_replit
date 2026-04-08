@@ -104,9 +104,13 @@ const GRADE_FILTER_OPTIONS = [
 
 const STATUS_META = {
   in_progress: { label: "진행 중",   cls: "bg-blue-100 text-blue-700"   },
-  bidding:     { label: "입찰 중",   cls: "bg-amber-100 text-amber-700" },
+  bidding:     { label: "입찰",      cls: "bg-amber-100 text-amber-700" },
   completed:   { label: "완료",      cls: "bg-green-100 text-green-700" },
-  planning:    { label: "계획 중",   cls: "bg-slate-100 text-slate-700" },
+  planning:    { label: "검토대기",  cls: "bg-slate-100 text-slate-700" },
+};
+
+const STATUS_ORDER: Record<string, number> = {
+  bidding: 0, in_progress: 1, planning: 2, completed: 3,
 };
 
 // ─── 구역명 정규화 ───────────────────────────────────────────────────────────
@@ -126,10 +130,18 @@ function isHighTrafficZone(zoneName: string): boolean {
 }
 
 function getLinkedProjects(zoneName: string) {
-  return PROJECT_HISTORY.filter((p) =>
-    p.zoneKeywords.length === 0 ||
-    p.zoneKeywords.some((kw) => zoneName.includes(kw) || kw.includes(zoneName.slice(0, 2)))
-  );
+  return PROJECT_HISTORY
+    .filter((p) =>
+      p.zoneKeywords.length === 0 ||
+      p.zoneKeywords.some((kw) => zoneName.includes(kw) || kw.includes(zoneName.slice(0, 2)))
+    )
+    .sort((a, b) => {
+      const so = (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
+      if (so !== 0) return so;
+      const dateA = a.period.split(" ~ ")[0] ?? "";
+      const dateB = b.period.split(" ~ ")[0] ?? "";
+      return dateB.localeCompare(dateA);
+    });
 }
 
 // ─── 등급 배지 ───────────────────────────────────────────────────────────────
@@ -468,7 +480,12 @@ export default function SoilManagement() {
                           <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{normalizeZone(t.district)}</td>
                           <td className="px-3 py-2"><SoilBadge grade={t.soilGrade} /></td>
                           <td className="px-3 py-2">
-                            <CauseChips chips={t.causeChips} maxVisible={3} />
+                            <CauseChips
+                              chips={[...t.causeChips.filter((c) => c.severity !== "경")].sort(
+                                (a, b) => (a.severity === "심" ? 0 : 1) - (b.severity === "심" ? 0 : 1)
+                              )}
+                              maxVisible={3}
+                            />
                           </td>
                           <td className="px-3 py-2 text-muted-foreground">{t.requiredWorks[0]}</td>
                           <td className="px-3 py-2">
@@ -578,10 +595,8 @@ export default function SoilManagement() {
                     <>
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          { label: "총 수목",     value: `${selectedZoneData.total}주` },
-                          { label: "평균 K-UTSI", value: `${selectedZoneData.avgScore}점` },
-                          { label: "우선순위",   value: `${zones.findIndex((z) => z.name === selectedZoneData.name) + 1}위` },
-                          { label: "최근 사업",  value: selectedZoneData.linkedProjects.find((p) => p.status === "in_progress")?.name ?? "없음" },
+                          { label: "총 수목",  value: `${selectedZoneData.total}주` },
+                          { label: "최근 사업", value: selectedZoneData.linkedProjects.find((p) => p.status === "in_progress")?.name ?? "없음" },
                         ].map((s) => (
                           <div key={s.label} className="rounded-xl bg-slate-50 dark:bg-slate-800 px-3 py-2">
                             <p className="text-[10px] text-muted-foreground">{s.label}</p>
