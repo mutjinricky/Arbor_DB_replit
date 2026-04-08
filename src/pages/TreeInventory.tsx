@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect, useRef, useMemo } from "react";
-import { Map as MapIcon, List, TreeDeciduous, Search, X, SlidersHorizontal, Bug, Sprout, ShieldAlert } from "lucide-react";
+import { Map as MapIcon, List, TreeDeciduous, Search, X, SlidersHorizontal, Bug, Sprout, ShieldAlert, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +41,7 @@ import {
 } from "@/lib/riskCalculations";
 import { useWeatherData } from "@/hooks/useWeatherData";
 
-type MapMode = "risk" | "pest" | "soil";
+type MapMode = "basic" | "risk" | "pest" | "soil";
 
 interface EnrichedTreeData {
   id: string;
@@ -68,7 +68,7 @@ export default function TreeInventory() {
   const [selectedTreeId, setSelectedTreeId] = useState<string | null>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [workOrderDialogOpen, setWorkOrderDialogOpen] = useState(false);
-  const [mapMode, setMapMode] = useState<MapMode>("risk");
+  const [mapMode, setMapMode] = useState<MapMode>("basic");
   const [mapState, setMapState] = useState({
     longitude: 127.4704,
     latitude: 37.34111,
@@ -280,6 +280,7 @@ export default function TreeInventory() {
   };
 
   const getLegend = () => {
+    if (mapMode === "basic") return [];
     if (mapMode === "pest") {
       return Object.entries(PEST_LABELS).map(([grade, label]) => ({
         color: PEST_COLORS[grade as PestGrade],
@@ -299,6 +300,7 @@ export default function TreeInventory() {
   };
 
   const mapModeConfig = {
+    basic: { icon: Layers, label: "기본" },
     risk: { icon: ShieldAlert, label: "수목 위험도" },
     pest: { icon: Bug, label: "해충 방제" },
     soil: { icon: Sprout, label: "토양" },
@@ -565,6 +567,9 @@ export default function TreeInventory() {
                     <p className="font-semibold text-sm mb-1">
                       {hoveredTree.species} – Tree ID: {hoveredTree.id}
                     </p>
+                    {mapMode === "basic" && (
+                      <p className="text-xs text-muted-foreground">클릭하여 세부정보 확인</p>
+                    )}
                     {mapMode === "risk" && (
                       <>
                         <p className="text-xs text-muted-foreground">
@@ -602,23 +607,25 @@ export default function TreeInventory() {
                   </div>
                 )}
 
-                {/* Legend */}
-                <div className="absolute bottom-4 right-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-4 shadow-lg z-10">
-                  <p className="text-xs font-semibold mb-2">
-                    {mapModeConfig[mapMode].label} 등급
-                  </p>
-                  <div className="space-y-1.5">
-                    {getLegend().map(({ color, label }) => (
-                      <div key={label} className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: color }}
-                        />
-                        <span className="text-xs">{label}</span>
-                      </div>
-                    ))}
+                {/* Legend — 기본 모드에서는 숨김 */}
+                {mapMode !== "basic" && (
+                  <div className="absolute bottom-4 right-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-4 shadow-lg z-10">
+                    <p className="text-xs font-semibold mb-2">
+                      {mapModeConfig[mapMode].label} 등급
+                    </p>
+                    <div className="space-y-1.5">
+                      {getLegend().map(({ color, label }) => (
+                        <div key={label} className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="text-xs">{label}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {filteredIds !== null && filteredIds.length === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

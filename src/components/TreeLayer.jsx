@@ -39,6 +39,7 @@ const SOIL_COLOR_MAP = {
 };
 
 function getColorExpression(mapMode) {
+  if (mapMode === 'basic') return '#22c55e';
   if (mapMode === 'pest') return buildColorMapping('pestGrade', PEST_COLOR_MAP, '#6b7280');
   if (mapMode === 'soil') return buildColorMapping('soilGrade', SOIL_COLOR_MAP, '#6b7280');
   return buildColorMapping('iqtriGrade', RISK_COLOR_MAP, '#6b7280');
@@ -46,6 +47,7 @@ function getColorExpression(mapMode) {
 
 // 위험도 높은 수목이 위쪽에 렌더링되도록 sort-key 설정
 function getSortKeyExpression(mapMode) {
+  if (mapMode === 'basic') return 0;
   if (mapMode === 'pest') {
     return ['match', ['get', 'pestGrade'], 'danger', 3, 'warning', 2, 'safe', 1, 0];
   }

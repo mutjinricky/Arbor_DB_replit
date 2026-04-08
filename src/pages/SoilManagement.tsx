@@ -624,6 +624,7 @@ export default function SoilManagement() {
                         <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
                           {(["A","B","C","D","E"] as SoilGrade[]).map((g) => {
                             const cnt = { A: selectedZoneData.aCount, B: selectedZoneData.bCount, C: selectedZoneData.cCount, D: selectedZoneData.dCount, E: selectedZoneData.eCount }[g];
+                            if (!cnt) return null;
                             return <span key={g}><span style={{ color: SOIL_COLORS[g] }}>{g}</span>{cnt}</span>;
                           })}
                         </div>
