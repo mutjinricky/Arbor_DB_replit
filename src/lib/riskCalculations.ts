@@ -60,6 +60,55 @@ export interface ExternalPestDD {
 }
 
 // ─────────────────────────────────────────────
+// 시드 기반 결정론적 난수 (목업 데이터 일관성 보장)
+// ─────────────────────────────────────────────
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed + 1.0) * 43758.5453123;
+  return x - Math.floor(x);
+}
+
+// 목표 비율: 경 80% / 중 16% / 심 3.5% / 극심 0.5%
+// MAX 로직 고려: dominant 지표 하나가 최종 등급을 결정하도록 난수 부여
+export function getMockRiskData(treeId: string): {
+  visual_diagnosis: string;
+  decay_rate: number;
+  tilt_rate: number;
+} {
+  const id = parseInt(treeId.replace(/\D/g, "")) || 0;
+
+  const r1 = seededRandom(id * 3 + 1);
+  let targetGrade: "low" | "moderate" | "high" | "extreme";
+  if      (r1 < 0.005) targetGrade = "extreme";
+  else if (r1 < 0.040) targetGrade = "high";
+  else if (r1 < 0.200) targetGrade = "moderate";
+  else                 targetGrade = "low";
+
+  const r2  = seededRandom(id * 7  + 2);
+  const r3  = seededRandom(id * 11 + 3);
+  const dom = Math.floor(seededRandom(id * 13 + 5) * 3); // 0=시각 1=부후 2=기울기
+
+  let visual_diagnosis = "경";
+  let decay_rate       = parseFloat((r2 * 19).toFixed(1));       // 경: 0-19
+  let tilt_rate        = parseFloat((r3 * 10).toFixed(1));       // 경: 0-10
+
+  if (targetGrade === "moderate") {
+    if      (dom === 0) visual_diagnosis = "중";
+    else if (dom === 1) decay_rate = parseFloat((20 + r2 * 19).toFixed(1));  // 20-39
+    else                tilt_rate  = parseFloat((11 + r3 * 3.5).toFixed(1)); // 11-14.5
+  } else if (targetGrade === "high") {
+    if      (dom === 0) visual_diagnosis = "심";
+    else if (dom === 1) decay_rate = parseFloat((40 + r2 * 9).toFixed(1));   // 40-49
+    else                tilt_rate  = parseFloat((15 + r3 * 9).toFixed(1));   // 15-24
+  } else if (targetGrade === "extreme") {
+    if      (dom === 0) visual_diagnosis = "극심";
+    else if (dom === 1) decay_rate = parseFloat((50 + r2 * 45).toFixed(1));  // 50-95
+    else                tilt_rate  = parseFloat((25 + r3 * 14).toFixed(1));  // 25-39
+  }
+
+  return { visual_diagnosis, decay_rate, tilt_rate };
+}
+
+// ─────────────────────────────────────────────
 // 3대 지표 기반 최고위험도 우선(MAX) 산정
 // 입력: 육안진단(string), 수목 부후도(%), 수목 기울기(%)
 // ─────────────────────────────────────────────
@@ -88,11 +137,10 @@ function visualDiagnosisToGrade(v: string): RiskGrade {
 }
 
 export function calculateTreeRiskGrade(tree: TreeFullData): TreeRiskResult {
-  const visualValue  = tree.visual_diagnosis ?? (
-    tree.risk === "high" ? "심" : tree.risk === "medium" ? "중" : "경"
-  );
-  const decayValue   = tree.decay_rate  ?? Math.min(tree.damage_area ?? 0, 100);
-  const tiltValue    = tree.tilt_rate   ?? Math.min((tree.cavity_depth ?? 0) * 3, 100);
+  const mock        = getMockRiskData(tree.id);
+  const visualValue = tree.visual_diagnosis ?? mock.visual_diagnosis;
+  const decayValue  = tree.decay_rate       ?? mock.decay_rate;
+  const tiltValue   = tree.tilt_rate        ?? mock.tilt_rate;
 
   const visualGrade = visualDiagnosisToGrade(visualValue);
   const decayGrade  = decayRateToGrade(decayValue);

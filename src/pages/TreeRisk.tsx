@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
-import { Search, AlertTriangle, Eye, Layers, ArrowUpDown, TreePine, TrendingUp, MapPin } from "lucide-react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { Search, AlertTriangle, Eye, Layers, ArrowUpDown, TreePine, TrendingUp, MapPin, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   PieChart, Pie, Cell, Tooltip as ReTooltip, ResponsiveContainer,
@@ -7,6 +7,7 @@ import {
 } from "recharts";
 import MapGL, { NavigationControl } from "react-map-gl";
 import TreeLayer from "@/components/TreeLayer";
+import { TreeProfileModal } from "@/components/TreeProfileModal";
 import { MAPBOX_TOKEN } from "@/lib/mapbox";
 import { calculateTreeRiskGrade, type TreeFullData } from "@/lib/riskCalculations";
 
@@ -112,7 +113,12 @@ function PieLabel({ cx, cy, midAngle, outerRadius, percent, name }: any) {
 export default function TreeRisk() {
   const [searchQuery, setSearchQuery]   = useState("");
   const [searchResult, setSearchResult] = useState<EnrichedTree | null | "notfound">(null);
-  const [filter, setFilter]             = useState<"all" | "산수유">("all");
+  const [filter, setFilter]             = useState<"all" | "산수유 나무">("all");
+  const [tableOpen, setTableOpen]       = useState(false);
+
+  // ── 모달 ────────────────────────────────────────────────────────────────────
+  const [selectedTreeId, setSelectedTreeId]     = useState<string | null>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   // ── 위험도 지도 상태 ────────────────────────────────────────────────────────
   const [rawGeoJson, setRawGeoJson]           = useState<any>(null);
@@ -120,6 +126,10 @@ export default function TreeRisk() {
   const [mapState, setMapState]               = useState({ longitude: 127.4704, latitude: 37.34111, zoom: 13 });
   const [riskGradeFilter, setRiskGradeFilter] = useState<"all" | "extreme" | "high" | "moderate" | "low">("all");
   const [mapCursor, setMapCursor]             = useState("grab");
+  const [hoveredTree, setHoveredTree]         = useState<{
+    id: string; species: string; riskGrade: RiskGrade;
+    position: { x: number; y: number };
+  } | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -175,8 +185,8 @@ export default function TreeRisk() {
     });
   }, [rawTreesJson]);
 
-  // 검색 실행
-  const handleSearch = () => {
+  // 검색 실행 + 지도 이동
+  const handleSearch = useCallback(() => {
     const q = searchQuery.trim().toUpperCase();
     if (!q) return;
     const found = realTreesWithRisk.find(t =>
@@ -184,11 +194,51 @@ export default function TreeRisk() {
       t.id.replace("IC-", "").replace(/^0+/, "") === q.replace("IC-", "").replace(/^0+/, "")
     );
     setSearchResult(found ?? "notfound");
-  };
+    if (found && rawGeoJson) {
+      const feature = rawGeoJson.features.find((f: any) => f.properties?.id === found.id);
+      if (feature?.geometry?.coordinates) {
+        const [lng, lat] = feature.geometry.coordinates;
+        setMapState({ longitude: lng, latitude: lat, zoom: 19 });
+      }
+    }
+  }, [searchQuery, realTreesWithRisk, rawGeoJson]);
+
+  // 지도 이벤트 핸들러
+  const onTreeLayerClick = useCallback((event: any) => {
+    if (event.features && event.features.length > 0) {
+      const id = event.features[0].properties?.id;
+      if (id) { setSelectedTreeId(id); setProfileModalOpen(true); }
+    }
+  }, []);
+
+  const onTreeLayerHover = useCallback((event: any) => {
+    if (event.features && event.features.length > 0) {
+      const p = event.features[0].properties || {};
+      const rect = event.target.getContainer().getBoundingClientRect();
+      setMapCursor("pointer");
+      setHoveredTree({
+        id: p.id || "",
+        species: p.species || "",
+        riskGrade: (p.riskGrade || "low") as RiskGrade,
+        position: {
+          x: (event.point.x / rect.width)  * 100,
+          y: (event.point.y / rect.height) * 100,
+        },
+      });
+    } else {
+      setMapCursor("grab");
+      setHoveredTree(null);
+    }
+  }, []);
+
+  const onTreeLayerLeave = useCallback(() => {
+    setHoveredTree(null);
+    setMapCursor("grab");
+  }, []);
 
   // 필터된 수목 목록
   const filteredTrees = useMemo(
-    () => filter === "all" ? realTreesWithRisk : realTreesWithRisk.filter(t => t.species === "산수유"),
+    () => filter === "all" ? realTreesWithRisk : realTreesWithRisk.filter(t => t.species === "산수유 나무"),
     [filter, realTreesWithRisk],
   );
 
@@ -249,7 +299,6 @@ export default function TreeRisk() {
         {/* ── 수목 ID 검색 ── */}
         <Card className="border-0 shadow-md">
           <CardContent className="pt-6 pb-6">
-            <p className="text-sm font-semibold mb-3">수목 ID로 수목 위험도 조회</p>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -258,7 +307,7 @@ export default function TreeRisk() {
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && handleSearch()}
-                  placeholder="수목 ID 입력  예: IC-0001 / IC-0008 / IC-0013"
+                  placeholder="수목 ID 검색 (예: 1349)"
                   data-testid="input-tree-search"
                   className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-input bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
                 />
@@ -271,9 +320,6 @@ export default function TreeRisk() {
                 조회
               </button>
             </div>
-            <p className="text-[11px] text-muted-foreground mt-2">
-              예: IC-0001, IC-1349 등 수목 ID를 입력하세요
-            </p>
           </CardContent>
         </Card>
 
@@ -348,27 +394,6 @@ export default function TreeRisk() {
           );
         })()}
 
-        {/* ── 요약 통계 카드 ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: "조회 수목", value: stats.total,    unit: "주",  color: "#6366f1", icon: <TreePine className="h-4 w-4" /> },
-            { label: "극심 위험", value: stats.extreme,  unit: "주",  color: "#dc2626", icon: <AlertTriangle className="h-4 w-4" /> },
-            { label: "심 이상",   value: stats.highRisk, unit: "주",  color: "#ea580c", icon: <TrendingUp className="h-4 w-4" /> },
-            { label: "경 (안전)", value: stats.lowRisk,  unit: "주",  color: "#16a34a", icon: <Layers className="h-4 w-4" /> },
-          ].map(s => (
-            <div key={s.label} className="rounded-2xl bg-white dark:bg-slate-900 border shadow-sm p-4 hover:shadow-md transition-all">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] text-muted-foreground font-medium">{s.label}</span>
-                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: s.color + "20", color: s.color }}>
-                  {s.icon}
-                </div>
-              </div>
-              <p className="text-2xl font-black tabular-nums" style={{ color: s.color }}>{s.value.toLocaleString()}</p>
-              <p className="text-[10px] text-muted-foreground">{s.unit}</p>
-            </div>
-          ))}
-        </div>
-
         {/* ── 수목위험도 지도 ── */}
         <Card className="border-0 shadow-md">
           <CardHeader className="pb-3">
@@ -406,8 +431,9 @@ export default function TreeRisk() {
                   mapboxAccessToken={MAPBOX_TOKEN}
                   interactiveLayerIds={["trees-point"]}
                   cursor={mapCursor}
-                  onMouseEnter={() => setMapCursor("pointer")}
-                  onMouseLeave={() => setMapCursor("grab")}
+                  onClick={onTreeLayerClick}
+                  onMouseMove={onTreeLayerHover}
+                  onMouseLeave={onTreeLayerLeave}
                 >
                   <NavigationControl position="top-right" />
                   {riskEnrichedGeoJson && (
@@ -415,7 +441,7 @@ export default function TreeRisk() {
                       treesData={riskEnrichedGeoJson}
                       mapMode="risk"
                       filteredIds={riskFilteredIds}
-                      selectedTreeIds={[]}
+                      selectedTreeIds={selectedTreeId ? [selectedTreeId] : []}
                     />
                   )}
                 </MapGL>
@@ -423,6 +449,27 @@ export default function TreeRisk() {
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/30">
                   <MapPin className="h-12 w-12 text-muted-foreground mb-3" />
                   <p className="text-sm text-muted-foreground">VITE_MAPBOX_TOKEN을 설정해주세요</p>
+                </div>
+              )}
+
+              {/* hover 툴팁 */}
+              {hoveredTree && (
+                <div
+                  className="absolute z-20 bg-card border border-border rounded-xl shadow-xl p-3 pointer-events-none min-w-[160px]"
+                  style={{
+                    left: `${hoveredTree.position.x}%`,
+                    top:  `${hoveredTree.position.y}%`,
+                    transform: "translate(-50%, -120%)",
+                  }}
+                >
+                  <p className="font-semibold text-sm mb-1">{hoveredTree.species} · {hoveredTree.id}</p>
+                  <span
+                    className="text-[11px] px-2 py-0.5 rounded-full font-bold text-white"
+                    style={{ backgroundColor: GRADE_META[hoveredTree.riskGrade].color }}
+                  >
+                    위험도: {GRADE_META[hoveredTree.riskGrade].label}
+                  </span>
+                  <p className="text-[10px] text-muted-foreground mt-1">클릭하여 상세 정보 확인</p>
                 </div>
               )}
 
@@ -449,7 +496,7 @@ export default function TreeRisk() {
           <div className="flex gap-1.5 ml-2">
             {([
               { key: "all",  label: "수목 전체" },
-              { key: "산수유", label: "산수유 나무" },
+              { key: "산수유 나무", label: "산수유 나무" },
             ] as const).map(f => (
               <button
                 key={f.key}
@@ -464,7 +511,7 @@ export default function TreeRisk() {
               >
                 {f.label}
                 <span className={`ml-1.5 text-[10px] ${filter === f.key ? "opacity-80" : "text-muted-foreground"}`}>
-                  ({filter === f.key && f.key === "산수유" ? filteredTrees.length : f.key === "all" ? realTreesWithRisk.length : realTreesWithRisk.filter(t => t.species === "산수유").length})
+                  ({f.key === "all" ? realTreesWithRisk.length : realTreesWithRisk.filter(t => t.species === "산수유 나무").length})
                 </span>
               </button>
             ))}
@@ -589,18 +636,28 @@ export default function TreeRisk() {
 
         </div>
 
-        {/* ── 위험 수목 목록 테이블 ── */}
+        {/* ── 위험 수목 목록 테이블 (아코디언) ── */}
         <Card className="border-0 shadow-md">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <span className="w-1.5 h-4 rounded-full inline-block bg-red-500" />
-              위험 수목 목록
-            </CardTitle>
-            <p className="text-[11px] text-muted-foreground">
-              {filter === "all" ? "전체 수목" : "산수유 나무"} — 위험도 등급 기준 정렬 (상위 100주)
-            </p>
+          <CardHeader
+            className="pb-2 cursor-pointer select-none hover:bg-slate-50 dark:hover:bg-slate-800/30 rounded-t-2xl transition-colors"
+            onClick={() => setTableOpen(v => !v)}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <span className="w-1.5 h-4 rounded-full inline-block bg-red-500" />
+                  위험 수목 목록
+                </CardTitle>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  {filter === "all" ? "전체 수목" : "산수유 나무"} — 위험도 등급 기준 정렬 (상위 100주)
+                </p>
+              </div>
+              {tableOpen
+                ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+            </div>
           </CardHeader>
-          <CardContent className="p-0">
+          {tableOpen && <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
@@ -646,10 +703,17 @@ export default function TreeRisk() {
                 </tbody>
               </table>
             </div>
-          </CardContent>
+          </CardContent>}
         </Card>
 
       </div>
+
+      {/* ── 수목 상세 모달 ── */}
+      <TreeProfileModal
+        treeId={selectedTreeId}
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+      />
     </div>
   );
 }
