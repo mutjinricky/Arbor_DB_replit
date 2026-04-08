@@ -10,85 +10,35 @@ import TreeLayer from "@/components/TreeLayer";
 import { MAPBOX_TOKEN } from "@/lib/mapbox";
 import { calculateIQTRI, type TreeFullData } from "@/lib/riskCalculations";
 
-// ─── IQTRI 계산 로직 (riskCalculations.ts 동일 공식) ─────────────────────────
+// ─── 타입 ──────────────────────────────────────────────────────────────────────
 type RiskGrade = "extreme" | "high" | "moderate" | "low";
 
-interface IQTRIResult { score: number; grade: RiskGrade; D: number; T: number; I: number; }
-
-function calcIQTRI(risk: string, district: string, diameterCm: number, damageArea: number, iceDamage: boolean, cavityDepth: number): IQTRIResult {
-  let D = 0.1;
-  if (risk === "high") D = 5.0;
-  else if (risk === "medium") D = 1.0;
-  if (damageArea > 0 && risk !== "high") D = Math.min(D * 1.5, 10.0);
-  if (iceDamage) D = Math.min(D * 1.2, 10.0);
-  if (cavityDepth > 5) D = Math.min(D * 1.3, 10.0);
-
-  let T = 15;
-  if (district.includes("주거") || district.includes("아파트")) T = 40;
-  else if (district.includes("도로") || district.includes("간선") || district.includes("학교")) T = 25;
-  else if (district.includes("공원") || district.includes("산책")) T = 15;
-
-  const diamMM = diameterCm * 10;
-  let I = 1;
-  if (diamMM > 750) I = 10;
-  else if (diamMM >= 350) I = 6;
-  else if (diamMM >= 100) I = 4;
-
-  const score = parseFloat((D * T * I).toFixed(1));
-  const grade: RiskGrade = score >= 100 ? "extreme" : score >= 20 ? "high" : score >= 5 ? "moderate" : "low";
-  return { score, grade, D: parseFloat(D.toFixed(2)), T, I };
-}
-
-// ─── 목업 수목 데이터 ─────────────────────────────────────────────────────────
-interface MockTree {
-  id: string; species: string; district: string; diameterCm: number;
-  risk: string; damageArea: number; iceDamage: boolean; cavityDepth: number; age: number;
-}
-
-const MOCK_TREES: MockTree[] = [
-  { id: "IC-0001", species: "느티나무",   district: "주거지역",   diameterCm: 85, risk: "high",   damageArea: 30, iceDamage: true,  cavityDepth: 8,  age: 52 },
-  { id: "IC-0002", species: "산수유",     district: "도로변",     diameterCm: 20, risk: "medium", damageArea: 10, iceDamage: false, cavityDepth: 2,  age: 18 },
-  { id: "IC-0003", species: "벚나무",     district: "공원",       diameterCm: 40, risk: "low",    damageArea: 0,  iceDamage: false, cavityDepth: 0,  age: 24 },
-  { id: "IC-0004", species: "산수유",     district: "아파트단지",  diameterCm: 18, risk: "high",   damageArea: 15, iceDamage: true,  cavityDepth: 0,  age: 12 },
-  { id: "IC-0005", species: "은행나무",   district: "간선도로",   diameterCm: 65, risk: "medium", damageArea: 5,  iceDamage: false, cavityDepth: 3,  age: 38 },
-  { id: "IC-0006", species: "소나무",     district: "학교",       diameterCm: 30, risk: "low",    damageArea: 0,  iceDamage: false, cavityDepth: 0,  age: 45 },
-  { id: "IC-0007", species: "산수유",     district: "주거지역",   diameterCm: 22, risk: "medium", damageArea: 8,  iceDamage: false, cavityDepth: 1,  age: 15 },
-  { id: "IC-0008", species: "느티나무",   district: "아파트단지",  diameterCm: 90, risk: "high",   damageArea: 40, iceDamage: true,  cavityDepth: 12, age: 60 },
-  { id: "IC-0009", species: "메타세콰이아", district: "도로변",   diameterCm: 55, risk: "medium", damageArea: 0,  iceDamage: false, cavityDepth: 0,  age: 30 },
-  { id: "IC-0010", species: "산수유",     district: "공원",       diameterCm: 15, risk: "low",    damageArea: 0,  iceDamage: false, cavityDepth: 0,  age: 10 },
-  { id: "IC-0011", species: "왕벚나무",   district: "주거지역",   diameterCm: 50, risk: "high",   damageArea: 20, iceDamage: false, cavityDepth: 6,  age: 35 },
-  { id: "IC-0012", species: "산수유",     district: "간선도로",   diameterCm: 25, risk: "medium", damageArea: 5,  iceDamage: true,  cavityDepth: 0,  age: 20 },
-  { id: "IC-0013", species: "은행나무",   district: "아파트단지",  diameterCm: 75, risk: "high",   damageArea: 35, iceDamage: true,  cavityDepth: 10, age: 50 },
-  { id: "IC-0014", species: "산수유",     district: "학교",       diameterCm: 20, risk: "low",    damageArea: 0,  iceDamage: false, cavityDepth: 0,  age: 8  },
-  { id: "IC-0015", species: "느티나무",   district: "공원",       diameterCm: 45, risk: "medium", damageArea: 12, iceDamage: false, cavityDepth: 4,  age: 42 },
-  { id: "IC-0016", species: "산수유",     district: "주거지역",   diameterCm: 30, risk: "high",   damageArea: 18, iceDamage: true,  cavityDepth: 7,  age: 22 },
-  { id: "IC-0017", species: "소나무",     district: "도로변",     diameterCm: 35, risk: "medium", damageArea: 0,  iceDamage: false, cavityDepth: 0,  age: 55 },
-  { id: "IC-0018", species: "산수유",     district: "아파트단지",  diameterCm: 22, risk: "medium", damageArea: 6,  iceDamage: false, cavityDepth: 2,  age: 16 },
-  { id: "IC-0019", species: "벚나무",     district: "간선도로",   diameterCm: 48, risk: "low",    damageArea: 0,  iceDamage: false, cavityDepth: 0,  age: 20 },
-  { id: "IC-0020", species: "산수유",     district: "공원",       diameterCm: 18, risk: "low",    damageArea: 0,  iceDamage: false, cavityDepth: 0,  age: 11 },
-];
-
-const MOCK_TREES_WITH_IQTRI = MOCK_TREES.map(t => ({
-  ...t,
-  iqtri: calcIQTRI(t.risk, t.district, t.diameterCm, t.damageArea, t.iceDamage, t.cavityDepth),
-}));
+type EnrichedTree = {
+  id: string;
+  species: string;
+  district: string;
+  diameterCm: number;
+  risk: string;
+  age: number;
+  iqtri: { score: number; grade: RiskGrade; D: number; T: number; I: number };
+};
 
 // ─── 등급 스타일 상수 ──────────────────────────────────────────────────────────
 const GRADE_META: Record<RiskGrade, { label: string; color: string; bg: string; border: string; text: string }> = {
-  extreme: { label: "심각",  color: "#dc2626", bg: "#fef2f2", border: "#fecaca", text: "text-red-700"    },
-  high:    { label: "높음",  color: "#ea580c", bg: "#fff7ed", border: "#fed7aa", text: "text-orange-700" },
-  moderate:{ label: "보통",  color: "#ca8a04", bg: "#fefce8", border: "#fef08a", text: "text-yellow-700" },
-  low:     { label: "낮음",  color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", text: "text-green-700"  },
+  extreme: { label: "극심",  color: "#dc2626", bg: "#fef2f2", border: "#fecaca", text: "text-red-700"    },
+  high:    { label: "심",    color: "#ea580c", bg: "#fff7ed", border: "#fed7aa", text: "text-orange-700" },
+  moderate:{ label: "중",    color: "#ca8a04", bg: "#fefce8", border: "#fef08a", text: "text-yellow-700" },
+  low:     { label: "경",    color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", text: "text-green-700"  },
 };
 
 const PIE_COLORS = ["#dc2626", "#ea580c", "#ca8a04", "#16a34a"];
 
 const RISK_FILTER_OPTIONS = [
   { key: "all",      label: "전체",  color: "" },
-  { key: "extreme",  label: "심각",  color: "#dc2626" },
-  { key: "high",     label: "높음",  color: "#f97316" },
-  { key: "moderate", label: "보통",  color: "#eab308" },
-  { key: "low",      label: "낮음",  color: "#22c55e" },
+  { key: "extreme",  label: "극심",  color: "#dc2626" },
+  { key: "high",     label: "심",    color: "#f97316" },
+  { key: "moderate", label: "중",    color: "#eab308" },
+  { key: "low",      label: "경",    color: "#22c55e" },
 ] as const;
 
 // ─── IQTRI 점수 게이지 컴포넌트 ──────────────────────────────────────────────
@@ -104,7 +54,7 @@ function ScoreGauge({ score, grade }: { score: number; grade: RiskGrade }) {
       >
         <div className="absolute inset-2 bg-white dark:bg-slate-900 rounded-full flex flex-col items-center justify-center">
           <span className="text-2xl font-black" style={{ color: meta.color }}>{score}</span>
-          <span className="text-[10px] text-muted-foreground font-medium">IQTRI</span>
+          <span className="text-[10px] text-muted-foreground font-medium">수목 위험도</span>
         </div>
       </div>
       <span
@@ -152,7 +102,7 @@ function PieLabel({ cx, cy, midAngle, outerRadius, percent, name }: any) {
 // ─── 메인 페이지 ─────────────────────────────────────────────────────────────
 export default function TreeRisk() {
   const [searchQuery, setSearchQuery]   = useState("");
-  const [searchResult, setSearchResult] = useState<typeof MOCK_TREES_WITH_IQTRI[0] | null | "notfound">(null);
+  const [searchResult, setSearchResult] = useState<EnrichedTree | null | "notfound">(null);
   const [filter, setFilter]             = useState<"all" | "산수유">("all");
 
   // ── 위험도 지도 상태 ────────────────────────────────────────────────────────
@@ -193,18 +143,38 @@ export default function TreeRisk() {
       .map((f: any) => f.properties?.id as string);
   }, [riskEnrichedGeoJson, riskGradeFilter]);
 
+  // 실제 수목 데이터 — trees.json을 단일 소스로 사용
+  const realTreesWithIQTRI = useMemo<EnrichedTree[]>(() => {
+    if (!rawTreesJson) return [];
+    return Object.entries(rawTreesJson).map(([id, tree]) => {
+      const { score, grade, D, T, I } = calculateIQTRI(tree);
+      return {
+        id,
+        species: tree.species || "",
+        district: tree.district || "",
+        diameterCm: tree.diameter || 0,
+        risk: tree.risk || "",
+        age: tree.age || 0,
+        iqtri: { score, grade, D: parseFloat(D.toFixed(2)), T, I },
+      };
+    });
+  }, [rawTreesJson]);
+
   // 검색 실행
   const handleSearch = () => {
     const q = searchQuery.trim().toUpperCase();
     if (!q) return;
-    const found = MOCK_TREES_WITH_IQTRI.find(t => t.id.toUpperCase() === q || t.id.replace("IC-", "").replace(/^0+/, "") === q.replace("IC-", "").replace(/^0+/, ""));
+    const found = realTreesWithIQTRI.find(t =>
+      t.id.toUpperCase() === q ||
+      t.id.replace("IC-", "").replace(/^0+/, "") === q.replace("IC-", "").replace(/^0+/, "")
+    );
     setSearchResult(found ?? "notfound");
   };
 
-  // 필터된 수목 목록
+  // 필터된 수목 목록 (위험도 점수 내림차순, 상위 100주만 표시)
   const filteredTrees = useMemo(
-    () => filter === "all" ? MOCK_TREES_WITH_IQTRI : MOCK_TREES_WITH_IQTRI.filter(t => t.species === "산수유"),
-    [filter],
+    () => filter === "all" ? realTreesWithIQTRI : realTreesWithIQTRI.filter(t => t.species === "산수유"),
+    [filter, realTreesWithIQTRI],
   );
 
   // 파이차트 데이터 (위험도 등급별 수목 수)
@@ -212,10 +182,10 @@ export default function TreeRisk() {
     const counts: Record<RiskGrade, number> = { extreme: 0, high: 0, moderate: 0, low: 0 };
     filteredTrees.forEach(t => counts[t.iqtri.grade]++);
     return [
-      { name: "심각",  value: counts.extreme,  grade: "extreme"  as RiskGrade },
-      { name: "높음",  value: counts.high,     grade: "high"     as RiskGrade },
-      { name: "보통",  value: counts.moderate, grade: "moderate" as RiskGrade },
-      { name: "낮음",  value: counts.low,      grade: "low"      as RiskGrade },
+      { name: "극심",  value: counts.extreme,  grade: "extreme"  as RiskGrade },
+      { name: "심",    value: counts.high,     grade: "high"     as RiskGrade },
+      { name: "중",    value: counts.moderate, grade: "moderate" as RiskGrade },
+      { name: "경",    value: counts.low,      grade: "low"      as RiskGrade },
     ].filter(d => d.value > 0);
   }, [filteredTrees]);
 
@@ -252,7 +222,7 @@ export default function TreeRisk() {
               수목 위험도 분석
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              IQTRI (결함×타겟×충돌) 기반 이천시 수목 위험도 지수 현황
+              이천시 수목 위험도 지수 현황
             </p>
           </div>
           <div className="text-right">
@@ -264,7 +234,7 @@ export default function TreeRisk() {
         {/* ── 수목 ID 검색 ── */}
         <Card className="border-0 shadow-md">
           <CardContent className="pt-6 pb-6">
-            <p className="text-sm font-semibold mb-3">수목 ID로 IQTRI 조회</p>
+            <p className="text-sm font-semibold mb-3">수목 ID로 수목 위험도 조회</p>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -287,7 +257,7 @@ export default function TreeRisk() {
               </button>
             </div>
             <p className="text-[11px] text-muted-foreground mt-2">
-              샘플: IC-0001 (심각) · IC-0004 (높음) · IC-0005 (보통) · IC-0003 (낮음)
+              예: IC-0001, IC-1349 등 수목 ID를 입력하세요
             </p>
           </CardContent>
         </Card>
@@ -295,7 +265,7 @@ export default function TreeRisk() {
         {/* ── 검색 결과: IQTRI 카드 ── */}
         {searchResult === "notfound" && (
           <div className="rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-600 font-medium text-center">
-            수목 ID를 찾을 수 없습니다. (예: IC-0001 ~ IC-0020)
+            수목 ID를 찾을 수 없습니다. 수목 재고 관리 탭에서 ID를 확인해 주세요.
           </div>
         )}
 
@@ -348,8 +318,8 @@ export default function TreeRisk() {
               {/* 해석 */}
               <div className="mt-4 pt-3 border-t" style={{ borderColor: meta.border }}>
                 <p className="text-xs font-medium" style={{ color: meta.color }}>
-                  ⚠ IQTRI = {t.iqtri.D} × {t.iqtri.T} × {t.iqtri.I} = <strong>{t.iqtri.score}</strong> →
-                  {" "}{meta.label} 위험 등급
+                  ⚠ 수목 위험도 = {t.iqtri.D} × {t.iqtri.T} × {t.iqtri.I} = <strong>{t.iqtri.score}</strong> →
+                  {" "}{meta.label} 수목 위험도 등급
                   {t.iqtri.grade === "extreme" && " — 즉각적인 위험 조치 필요"}
                   {t.iqtri.grade === "high"    && " — 조속한 점검 및 처치 권고"}
                   {t.iqtri.grade === "moderate"&& " — 정기 모니터링 실시"}
@@ -364,9 +334,9 @@ export default function TreeRisk() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: "조회 수목", value: stats.total,    unit: "주",  color: "#6366f1", icon: <TreePine className="h-4 w-4" /> },
-            { label: "심각 위험", value: stats.extreme,  unit: "주",  color: "#dc2626", icon: <AlertTriangle className="h-4 w-4" /> },
-            { label: "고위험 이상", value: stats.highRisk, unit: "주",  color: "#ea580c", icon: <TrendingUp className="h-4 w-4" /> },
-            { label: "평균 IQTRI", value: stats.avgScore, unit: "점",  color: "#0ea5e9", icon: <Shield className="h-4 w-4" /> },
+            { label: "극심 위험", value: stats.extreme,  unit: "주",  color: "#dc2626", icon: <AlertTriangle className="h-4 w-4" /> },
+            { label: "심 이상",   value: stats.highRisk, unit: "주",  color: "#ea580c", icon: <TrendingUp className="h-4 w-4" /> },
+            { label: "평균 위험도", value: stats.avgScore, unit: "점", color: "#0ea5e9", icon: <Shield className="h-4 w-4" /> },
           ].map(s => (
             <div key={s.label} className="rounded-2xl bg-white dark:bg-slate-900 border shadow-sm p-4 hover:shadow-md transition-all">
               <div className="flex items-center justify-between mb-1">
@@ -440,7 +410,7 @@ export default function TreeRisk() {
 
               {/* 범례 (우하단 고정) */}
               <div className="absolute bottom-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur rounded-xl border shadow-md px-3 py-2 z-10">
-                <p className="text-[10px] font-bold text-muted-foreground mb-1.5">위험도 등급</p>
+                <p className="text-[10px] font-bold text-muted-foreground mb-1.5">수목 위험도 등급</p>
                 {(["extreme", "high", "moderate", "low"] as const).map(g => (
                   <div key={g} className="flex items-center gap-2 mb-0.5">
                     <div
@@ -476,7 +446,7 @@ export default function TreeRisk() {
               >
                 {f.label}
                 <span className={`ml-1.5 text-[10px] ${filter === f.key ? "opacity-80" : "text-muted-foreground"}`}>
-                  ({filter === f.key && f.key === "산수유" ? filteredTrees.length : f.key === "all" ? MOCK_TREES_WITH_IQTRI.length : MOCK_TREES_WITH_IQTRI.filter(t => t.species === "산수유").length})
+                  ({filter === f.key && f.key === "산수유" ? filteredTrees.length : f.key === "all" ? realTreesWithIQTRI.length : realTreesWithIQTRI.filter(t => t.species === "산수유").length})
                 </span>
               </button>
             ))}
@@ -491,7 +461,7 @@ export default function TreeRisk() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <span className="w-1.5 h-4 rounded-full inline-block bg-indigo-500" />
-                위험도 등급별 수목 수
+                수목 위험도 등급별 수목 수
               </CardTitle>
               <p className="text-[11px] text-muted-foreground">
                 {filter === "all" ? "전체 수목" : "산수유 나무"} · 총 {filteredTrees.length}주
@@ -609,7 +579,7 @@ export default function TreeRisk() {
               위험 수목 목록
             </CardTitle>
             <p className="text-[11px] text-muted-foreground">
-              {filter === "all" ? "전체 수목" : "산수유 나무"} — IQTRI 점수 높은 순 정렬
+              {filter === "all" ? "전체 수목" : "산수유 나무"} — 수목 위험도 점수 높은 순 정렬 (상위 100주)
             </p>
           </CardHeader>
           <CardContent className="p-0">
@@ -617,7 +587,7 @@ export default function TreeRisk() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b bg-slate-50 dark:bg-slate-800/50">
-                    {["수목 ID","수종","위치","흉고직경","D","T","I","IQTRI","등급"].map(h => (
+                    {["수목 ID","수종","위치","흉고직경","D","T","I","위험도","등급"].map(h => (
                       <th key={h} className="text-left px-4 py-2.5 text-[11px] font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -625,6 +595,7 @@ export default function TreeRisk() {
                 <tbody>
                   {[...filteredTrees]
                     .sort((a, b) => b.iqtri.score - a.iqtri.score)
+                    .slice(0, 100)
                     .map((t, i) => {
                       const meta = GRADE_META[t.iqtri.grade];
                       return (

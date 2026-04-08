@@ -358,9 +358,9 @@ export const SOIL_COLORS: Record<SoilGrade, string> = {
 
 export const IQTRI_LABELS: Record<RiskGrade, string> = {
   extreme: "극심",
-  high: "고위험",
-  moderate: "보통",
-  low: "저위험",
+  high: "심",
+  moderate: "중",
+  low: "경",
 };
 
 export const PEST_LABELS: Record<PestGrade, string> = {

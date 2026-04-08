@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { TopNav } from "@/components/TopNav";
 import Dashboard from "./pages/Dashboard";
 import TreeInventory from "./pages/TreeInventory";
@@ -26,7 +26,7 @@ const App = () => (
         <div className="min-h-screen w-full">
           <TopNav />
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Navigate to="/tree-inventory" replace />} />
             <Route path="/tree-inventory" element={<TreeInventory />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:id" element={<ProjectDetail />} />

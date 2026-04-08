@@ -428,9 +428,9 @@ export default function TreeInventory() {
                     <SelectContent>
                       <SelectItem value={ALL_VALUE}>전체</SelectItem>
                       <SelectItem value="extreme">극심</SelectItem>
-                      <SelectItem value="high">고위험</SelectItem>
-                      <SelectItem value="moderate">보통</SelectItem>
-                      <SelectItem value="low">저위험</SelectItem>
+                      <SelectItem value="high">심</SelectItem>
+                      <SelectItem value="moderate">중</SelectItem>
+                      <SelectItem value="low">경</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
