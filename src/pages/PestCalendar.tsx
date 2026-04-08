@@ -219,6 +219,7 @@ type ZoomStep = typeof ZOOM_STEPS[number];
 export default function PestCalendar() {
   const { pestDDs, isRealData, isLoading } = useWeatherData();
   const nowMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
 
   const [selectedPest, setSelectedPest] = useState("복숭아순나방");
   const [peachCardGenIdx, setPeachCardGenIdx] = useState(0);
@@ -259,14 +260,24 @@ export default function PestCalendar() {
   const lineDailyData = useMemo(() => buildDailyDD(linePestObj.baseTemp), [linePestObj]);
 
   const lineChartData = useMemo(() => {
-    const startMonth = Math.max(0, nowMonth - lineRange + 1);
-    const endMonth = Math.min(12, nowMonth + 1);
-    const startDay = MONTH_START_DAY[startMonth];
-    const endDay = endMonth === 12 ? 365 : MONTH_START_DAY[endMonth];
-    return lineDailyData.slice(startDay, endDay).map((pt, i) => ({
-      ...pt,
-      index: startDay + i,
-    }));
+    const annualTotal = lineDailyData[364]?.cumulative ?? 0;
+    const result: (typeof lineDailyData[0] & { index: number; calMonthIdx: number })[] = [];
+    for (let mAbs = nowMonth; mAbs < nowMonth + lineRange; mAbs++) {
+      const mRel = mAbs % 12;
+      const yearOffset = Math.floor(mAbs / 12);
+      const mStart = MONTH_START_DAY[mRel];
+      const mEnd = mRel === 11 ? 365 : MONTH_START_DAY[mRel + 1];
+      for (let d = mStart; d < mEnd; d++) {
+        const pt = lineDailyData[d];
+        result.push({
+          ...pt,
+          calMonthIdx: mAbs,
+          cumulative: pt.cumulative + yearOffset * annualTotal,
+          index: yearOffset * 365 + d,
+        });
+      }
+    }
+    return result;
   }, [lineDailyData, lineRange, nowMonth]);
 
   const lineGenTarget = useMemo(() => {
@@ -298,31 +309,29 @@ export default function PestCalendar() {
 
   // 범위에 맞는 X축 눈금 (1개월: 10일 단위, 그 외: 월 단위)
   const lineXTicks = useMemo(() => {
-    const startMonth = Math.max(0, nowMonth - lineRange + 1);
-    const endMonth = Math.min(12, nowMonth + 1);
-    const startDay = MONTH_START_DAY[startMonth];
-    const endDay = endMonth === 12 ? 365 : MONTH_START_DAY[endMonth];
     const ticks: number[] = [];
-    if (lineRange === 1) {
-      for (let day = startDay; day < endDay; day++) {
-        const pt = lineDailyData[day];
-        if (pt && (pt.dayOfMonth === 1 || pt.dayOfMonth === 11 || pt.dayOfMonth === 21)) ticks.push(day);
-      }
-    } else {
-      for (let m = startMonth; m < endMonth && m < 12; m++) {
-        ticks.push(MONTH_START_DAY[m]);
+    for (const pt of lineChartData) {
+      if (lineRange === 1) {
+        if (pt.dayOfMonth === 1 || pt.dayOfMonth === 11 || pt.dayOfMonth === 21) ticks.push(pt.index);
+      } else {
+        if (pt.dayOfMonth === 1) ticks.push(pt.index);
       }
     }
     return ticks;
-  }, [lineRange, nowMonth, lineDailyData]);
+  }, [lineChartData, lineRange]);
 
   const xTickFormatter = useCallback((idx: number) => {
-    if (idx < 0 || idx >= lineDailyData.length) return "";
-    const pt = lineDailyData[idx];
-    if (lineRange === 1) return `${pt.monthIdx + 1}/${pt.dayOfMonth}`;
-    if (pt.dayOfMonth === 1) return `${pt.monthIdx + 1}월`;
+    const pt = lineChartData.find(d => d.index === idx);
+    if (!pt) return "";
+    const mRel = pt.calMonthIdx % 12;
+    const yearOffset = Math.floor(pt.calMonthIdx / 12);
+    if (lineRange === 1) return `${mRel + 1}/${pt.dayOfMonth}`;
+    if (pt.dayOfMonth === 1) {
+      if (yearOffset > 0) return `${String(currentYear + yearOffset).slice(2)}년 ${mRel + 1}월`;
+      return `${mRel + 1}월`;
+    }
     return "";
-  }, [lineDailyData, lineRange]);
+  }, [lineChartData, lineRange, currentYear]);
 
   // ── 카드 데이터 ──
   const pestCards = useMemo(() => {
@@ -617,9 +626,12 @@ export default function PestCalendar() {
                       content={({ active, payload }) => {
                         if (!active || !payload?.length) return null;
                         const pt = payload[0].payload;
+                        const mRel = (pt.calMonthIdx ?? pt.monthIdx) % 12;
+                        const yearOffset = Math.floor((pt.calMonthIdx ?? 0) / 12);
+                        const yearLabel = yearOffset > 0 ? ` (${currentYear + yearOffset}년)` : "";
                         return (
                           <div className="bg-background border rounded p-2 text-xs shadow">
-                            <p className="font-semibold">{pt.monthIdx + 1}월 {pt.dayOfMonth}일</p>
+                            <p className="font-semibold">{mRel + 1}월 {pt.dayOfMonth}일{yearLabel}</p>
                             <p style={{ color: lineColor }}>누적 DD: {pt.cumulative.toFixed(0)}</p>
                           </div>
                         );

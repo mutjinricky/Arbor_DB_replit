@@ -1,10 +1,14 @@
-import { useState, useMemo } from "react";
-import { Search, AlertTriangle, Shield, Target, Zap, TreePine, TrendingUp } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Search, AlertTriangle, Shield, Target, Zap, TreePine, TrendingUp, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   PieChart, Pie, Cell, Tooltip as ReTooltip, Legend, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from "recharts";
+import MapGL, { NavigationControl } from "react-map-gl";
+import TreeLayer from "@/components/TreeLayer";
+import { MAPBOX_TOKEN } from "@/lib/mapbox";
+import { calculateIQTRI, type TreeFullData } from "@/lib/riskCalculations";
 
 // ─── IQTRI 계산 로직 (riskCalculations.ts 동일 공식) ─────────────────────────
 type RiskGrade = "extreme" | "high" | "moderate" | "low";
@@ -79,6 +83,14 @@ const GRADE_META: Record<RiskGrade, { label: string; color: string; bg: string; 
 
 const PIE_COLORS = ["#dc2626", "#ea580c", "#ca8a04", "#16a34a"];
 
+const RISK_FILTER_OPTIONS = [
+  { key: "all",      label: "전체",  color: "" },
+  { key: "extreme",  label: "심각",  color: "#dc2626" },
+  { key: "high",     label: "높음",  color: "#f97316" },
+  { key: "moderate", label: "보통",  color: "#eab308" },
+  { key: "low",      label: "낮음",  color: "#22c55e" },
+] as const;
+
 // ─── IQTRI 점수 게이지 컴포넌트 ──────────────────────────────────────────────
 function ScoreGauge({ score, grade }: { score: number; grade: RiskGrade }) {
   const meta = GRADE_META[grade];
@@ -142,6 +154,44 @@ export default function TreeRisk() {
   const [searchQuery, setSearchQuery]   = useState("");
   const [searchResult, setSearchResult] = useState<typeof MOCK_TREES_WITH_IQTRI[0] | null | "notfound">(null);
   const [filter, setFilter]             = useState<"all" | "산수유">("all");
+
+  // ── 위험도 지도 상태 ────────────────────────────────────────────────────────
+  const [rawGeoJson, setRawGeoJson]           = useState<any>(null);
+  const [rawTreesJson, setRawTreesJson]       = useState<Record<string, TreeFullData> | null>(null);
+  const [mapState, setMapState]               = useState({ longitude: 127.4704, latitude: 37.34111, zoom: 13 });
+  const [riskGradeFilter, setRiskGradeFilter] = useState<"all" | "extreme" | "high" | "moderate" | "low">("all");
+  const [mapCursor, setMapCursor]             = useState("grab");
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/data/trees.geojson").then(r => r.json()),
+      fetch("/data/trees.json").then(r => r.json()),
+    ]).then(([geojson, treesJson]: [any, Record<string, TreeFullData>]) => {
+      setRawGeoJson(geojson);
+      setRawTreesJson(treesJson);
+    }).catch(e => console.error(e));
+  }, []);
+
+  const riskEnrichedGeoJson = useMemo(() => {
+    if (!rawGeoJson || !rawTreesJson) return null;
+    const features = rawGeoJson.features
+      .filter((f: any) => f.properties && f.geometry)
+      .map((f: any) => {
+        const id = f.properties?.id;
+        const tree = id ? rawTreesJson[id] : null;
+        if (!tree) return f;
+        const { grade } = calculateIQTRI(tree);
+        return { ...f, properties: { ...f.properties, iqtriGrade: grade } };
+      });
+    return { ...rawGeoJson, features };
+  }, [rawGeoJson, rawTreesJson]);
+
+  const riskFilteredIds = useMemo(() => {
+    if (!riskEnrichedGeoJson || riskGradeFilter === "all") return null;
+    return riskEnrichedGeoJson.features
+      .filter((f: any) => f.properties?.iqtriGrade === riskGradeFilter)
+      .map((f: any) => f.properties?.id as string);
+  }, [riskEnrichedGeoJson, riskGradeFilter]);
 
   // 검색 실행
   const handleSearch = () => {
@@ -330,6 +380,80 @@ export default function TreeRisk() {
             </div>
           ))}
         </div>
+
+        {/* ── 수목위험도 지도 ── */}
+        <Card className="border-0 shadow-md">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <span className="w-1.5 h-4 rounded-full bg-red-500 inline-block" />
+                수목위험도 지도
+              </CardTitle>
+              <div className="flex items-center gap-1">
+                {RISK_FILTER_OPTIONS.map(f => (
+                  <button
+                    key={f.key}
+                    onClick={() => setRiskGradeFilter(f.key as any)}
+                    data-testid={`filter-risk-${f.key}`}
+                    className={`text-xs px-3 py-1 rounded-full border font-medium transition-all ${
+                      riskGradeFilter === f.key
+                        ? "text-white border-transparent"
+                        : "bg-white dark:bg-slate-900 text-muted-foreground border-border"
+                    }`}
+                    style={riskGradeFilter === f.key ? { backgroundColor: f.color || "#6366f1" } : {}}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="relative w-full h-[360px] overflow-hidden rounded-b-2xl">
+              {MAPBOX_TOKEN ? (
+                <MapGL
+                  {...mapState}
+                  onMove={(e: any) => setMapState(e.viewState)}
+                  mapStyle="mapbox://styles/mapbox/streets-v12"
+                  mapboxAccessToken={MAPBOX_TOKEN}
+                  interactiveLayerIds={["trees-point"]}
+                  cursor={mapCursor}
+                  onMouseEnter={() => setMapCursor("pointer")}
+                  onMouseLeave={() => setMapCursor("grab")}
+                >
+                  <NavigationControl position="top-right" />
+                  {riskEnrichedGeoJson && (
+                    <TreeLayer
+                      treesData={riskEnrichedGeoJson}
+                      mapMode="risk"
+                      filteredIds={riskFilteredIds}
+                      selectedTreeIds={[]}
+                    />
+                  )}
+                </MapGL>
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/30">
+                  <MapPin className="h-12 w-12 text-muted-foreground mb-3" />
+                  <p className="text-sm text-muted-foreground">VITE_MAPBOX_TOKEN을 설정해주세요</p>
+                </div>
+              )}
+
+              {/* 범례 (우하단 고정) */}
+              <div className="absolute bottom-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur rounded-xl border shadow-md px-3 py-2 z-10">
+                <p className="text-[10px] font-bold text-muted-foreground mb-1.5">위험도 등급</p>
+                {(["extreme", "high", "moderate", "low"] as const).map(g => (
+                  <div key={g} className="flex items-center gap-2 mb-0.5">
+                    <div
+                      className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[8px] font-black"
+                      style={{ backgroundColor: GRADE_META[g].color }}
+                    />
+                    <span className="text-[10px] text-muted-foreground">{GRADE_META[g].label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* ── 필터 토글 ── */}
         <div className="flex items-center gap-2">

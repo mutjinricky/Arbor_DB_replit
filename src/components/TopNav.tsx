@@ -12,8 +12,8 @@ const SUB_MENU_ITEMS = [
 const SUB_URLS = SUB_MENU_ITEMS.map((i) => i.url);
 
 const TOP_NAV_ITEMS = [
+  { title: "수목 지도", url: "/tree-inventory" },
   { title: "대시보드",  url: "/" },
-  { title: "수목 재고", url: "/tree-inventory" },
 ];
 
 export function TopNav() {
@@ -36,7 +36,7 @@ export function TopNav() {
           </div>
 
           <nav className="flex items-center gap-1">
-            {/* 대시보드, 수목 재고 */}
+            {/* 수목 지도, 대시보드 */}
             {TOP_NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.url}

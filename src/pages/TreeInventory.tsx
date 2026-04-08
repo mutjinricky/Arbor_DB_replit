@@ -94,7 +94,7 @@ export default function TreeInventory() {
   const [filterRiskGrade, setFilterRiskGrade] = useState(ALL_VALUE);
   const [filterPestGrade, setFilterPestGrade] = useState(ALL_VALUE);
   const [filterSoilGrade, setFilterSoilGrade] = useState(ALL_VALUE);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   const mapRef = useRef<any>(null);
 
