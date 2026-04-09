@@ -792,9 +792,9 @@ export default function PestCalendar() {
 type BarTooltip = { rowIdx: number; content: { title: string; range: string; color: string }[]; midPct: number };
 
 const BAR_COLORS = {
-  survey:   { bg: "#fef9c3", border: "#fde047", gradient: "linear-gradient(135deg, #fef9c3 0%, #fef08a 100%)" },
-  focus:    { bg: "#fed7aa", gradient: "linear-gradient(135deg, #fdba74 0%, #fb923c 100%)" },
-  control:  { bg: "#fecaca", gradient: "linear-gradient(135deg, #fca5a5 0%, #f87171 100%)" },
+  survey:  "#f59e0b",
+  control: "#ef4444",
+  end:     "#4ade80",
 };
 
 function BarTimeline({
@@ -841,144 +841,143 @@ function BarTimeline({
       rowIdx,
       midPct: (row.p70 + row.p107) / 2,
       content: [
-        { title: "예찰 시기",      range: `${doyToLabel(row.doy70)} ~ ${doyToLabel(row.doy90)}`,   color: "#ca8a04" },
-        { title: "├ 집중 예찰",   range: `${doyToLabel(row.doy85)} ~ ${doyToLabel(row.doy90)}`,   color: "#ea580c" },
-        { title: "방제 시기",      range: `${doyToLabel(row.doy90)} ~ ${doyToLabel(row.doy100)}`,  color: "#ef4444" },
-        { title: "방제 종료",      range: `${doyToLabel(row.doy100)} ~ ${doyToLabel(row.doy107)}`, color: "#dc2626" },
+        { title: "예찰 시기",   range: `${doyToLabel(row.doy70)} ~ ${doyToLabel(row.doy90)}`,   color: BAR_COLORS.survey  },
+        { title: "방제 시기",   range: `${doyToLabel(row.doy90)} ~ ${doyToLabel(row.doy100)}`,  color: BAR_COLORS.control },
+        { title: "방제 종료",   range: `${doyToLabel(row.doy100)} ~ ${doyToLabel(row.doy107)}`, color: BAR_COLORS.end     },
       ],
     });
   };
 
+  const LABEL_W = generations.length > 1 ? 56 : 0;
+
   return (
     <div className="w-full">
       {/* ── 범례 ── */}
-      <div className="flex flex-wrap items-center gap-3 mb-5 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <span className="inline-flex items-center gap-0.5">
-            <span className="inline-block w-6 h-3 rounded-l-full" style={{ background: BAR_COLORS.survey.gradient }} />
-            <span className="inline-block w-3 h-3 rounded-r-full" style={{ background: BAR_COLORS.focus.gradient }} />
+      <div className="flex flex-wrap items-center gap-4 mb-5 text-xs text-muted-foreground">
+        {[
+          { color: BAR_COLORS.survey,  label: "예찰 시기" },
+          { color: BAR_COLORS.control, label: "방제 시기" },
+          { color: BAR_COLORS.end,     label: "방제 종료" },
+        ].map(({ color, label }) => (
+          <span key={label} className="flex items-center gap-1.5">
+            <span className="inline-block w-5 h-3" style={{ backgroundColor: color }} />
+            {label}
           </span>
-          <span>예찰 <span className="opacity-60">(└집중)</span></span>
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block w-8 h-3 rounded-full" style={{ background: BAR_COLORS.control.gradient }} />
-          방제 시기
-        </span>
+        ))}
       </div>
 
       {/* ── 타임라인 본체 ── */}
       <div className="relative">
 
-        {/* 전체 높이 그리드선 레이어 (모든 바 뒤에) */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-          {monthRuler.map(r => (
-            <div
-              key={r.label}
-              className="absolute top-0 bottom-0 border-l border-dashed border-slate-200 dark:border-slate-700"
-              style={{ left: `${r.pct}%` }}
-            />
-          ))}
-        </div>
-
         {/* 월 눈금 헤더 */}
-        <div className="relative h-8 mb-2">
-          {monthRuler.map(r => (
-            <div
-              key={r.label}
-              className="absolute flex flex-col items-center"
-              style={{ left: `${r.pct}%`, transform: "translateX(-50%)" }}
-            >
-              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap tracking-tight">{r.label}</span>
-            </div>
-          ))}
+        <div className="flex items-end mb-1">
+          {LABEL_W > 0 && <div style={{ width: LABEL_W }} className="shrink-0" />}
+          <div className="relative flex-1 h-6">
+            {monthRuler.map(r => (
+              <div
+                key={r.label}
+                className="absolute flex items-end"
+                style={{ left: `${r.pct}%`, transform: "translateX(-50%)" }}
+              >
+                <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">{r.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* ── 바 행들 ── */}
         {rows.map((row, rowIdx) => {
           const isSelected = selectedRow === rowIdx;
           return (
-            <div key={rowIdx} className="mb-4 relative z-10">
+            <div key={rowIdx} className="mb-3 relative">
 
-              {/* 세대 레이블 */}
-              {generations.length > 1 && (
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-sm font-bold" style={{ color: pestColor }}>{row.label}</span>
-                  <span className="text-xs text-slate-400 font-normal">목표 {row.target} DD</span>
-                  {isSelected && <span className="text-[10px] text-slate-400 ml-auto">클릭하여 닫기 ↑</span>}
-                </div>
-              )}
-
-              {/* 클릭 가능한 바 카드 */}
+              {/* 행 레이아웃: 레이블 + 트랙 */}
               <div
-                className={`group relative cursor-pointer rounded-2xl border transition-all duration-200 ${
-                  isSelected
-                    ? "shadow-xl"
-                    : "bg-slate-50/80 dark:bg-slate-800/40 border-slate-100 dark:border-slate-700 hover:-translate-y-[2px] hover:shadow-lg hover:border-slate-200"
-                }`}
-                style={isSelected ? {
-                  backgroundColor: pestColor + "0a",
-                  borderColor: pestColor + "50",
-                  boxShadow: `0 8px 30px ${pestColor}18`,
-                } : {}}
+                className="flex items-center gap-0 cursor-pointer group"
                 onMouseLeave={() => setTooltip(null)}
                 onClick={() => setSelectedRow(r => r === rowIdx ? null : rowIdx)}
               >
-                {/* 프로그레스 트랙 */}
-                <div className="relative h-12 overflow-hidden rounded-2xl">
+                {/* 레이블 */}
+                {generations.length > 1 && (
+                  <div
+                    className="shrink-0 flex items-center pr-2"
+                    style={{ width: LABEL_W }}
+                  >
+                    <span className="text-xs font-bold leading-none" style={{ color: pestColor }}>{row.label}</span>
+                  </div>
+                )}
 
-                  {/* 예찰 구간 (p70 ~ p90) */}
-                  {row.p90 > row.p70 && (
-                    <div
-                      className="absolute top-1.5 bottom-1.5 overflow-hidden transition-opacity duration-150 group-hover:opacity-90"
-                      style={{
-                        left: `${row.p70}%`,
-                        width: `${row.p90 - row.p70}%`,
-                        background: BAR_COLORS.survey.gradient,
-                        borderRadius: "999px 0 0 999px",
-                      }}
-                      onMouseEnter={() => showTooltip(rowIdx, row)}
-                    >
-                      {/* 집중 예찰 (p85 ~ p90) */}
-                      {row.p90 > row.p85 && (
-                        <div
-                          className="absolute top-0 right-0 bottom-0 transition-opacity duration-150"
-                          style={{
-                            width: `${((row.p90 - row.p85) / (row.p90 - row.p70)) * 100}%`,
-                            background: BAR_COLORS.focus.gradient,
-                          }}
-                        />
-                      )}
-                    </div>
-                  )}
+                {/* 트랙 */}
+                <div className="relative flex-1 overflow-visible">
+                  {/* 배경 바 */}
+                  <div className="relative h-8 bg-slate-100 dark:bg-slate-800 overflow-hidden">
 
-                  {/* 방제 시기 (p90 ~ p107) */}
-                  {row.p107 > row.p90 && (
-                    <div
-                      className="absolute top-1.5 bottom-1.5 transition-opacity duration-150 group-hover:opacity-90"
-                      style={{
-                        left: `${row.p90}%`,
-                        width: `${row.p107 - row.p90}%`,
-                        background: BAR_COLORS.control.gradient,
-                        borderRadius: "0 999px 999px 0",
-                      }}
-                      onMouseEnter={() => showTooltip(rowIdx, row)}
-                    />
-                  )}
+                    {/* 그리드선 */}
+                    {monthRuler.map(r => (
+                      <div
+                        key={r.label}
+                        className="absolute top-0 bottom-0 border-l border-slate-200 dark:border-slate-700"
+                        style={{ left: `${r.pct}%` }}
+                      />
+                    ))}
+
+                    {/* ① 예찰 구간 (p70 ~ p90) */}
+                    {row.p90 > row.p70 && (
+                      <div
+                        className="absolute top-1 bottom-1 transition-opacity duration-150 group-hover:opacity-90"
+                        style={{
+                          left: `${row.p70}%`,
+                          width: `${row.p90 - row.p70}%`,
+                          backgroundColor: BAR_COLORS.survey,
+                        }}
+                        onMouseEnter={() => showTooltip(rowIdx, row)}
+                      />
+                    )}
+
+                    {/* ② 방제 시기 (p90 ~ p100) */}
+                    {row.p100 > row.p90 && (
+                      <div
+                        className="absolute top-1 bottom-1 transition-opacity duration-150 group-hover:opacity-90"
+                        style={{
+                          left: `${row.p90}%`,
+                          width: `${row.p100 - row.p90}%`,
+                          backgroundColor: BAR_COLORS.control,
+                        }}
+                        onMouseEnter={() => showTooltip(rowIdx, row)}
+                      />
+                    )}
+
+                    {/* ③ 방제 종료 (p100 ~ p107) */}
+                    {row.p107 > row.p100 && (
+                      <div
+                        className="absolute top-1 bottom-1 transition-opacity duration-150 group-hover:opacity-90"
+                        style={{
+                          left: `${row.p100}%`,
+                          width: `${row.p107 - row.p100}%`,
+                          backgroundColor: BAR_COLORS.end,
+                        }}
+                        onMouseEnter={() => showTooltip(rowIdx, row)}
+                      />
+                    )}
+                  </div>
 
                   {/* Hover 툴팁 */}
                   {tooltip?.rowIdx === rowIdx && (
                     <div
-                      className="absolute bottom-full mb-3 z-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-2xl shadow-2xl px-4 py-3 pointer-events-none min-w-[210px]"
-                      style={{ left: `${Math.min(Math.max(tooltip.midPct, 12), 68)}%`, transform: "translateX(-50%)" }}
+                      className="absolute bottom-full mb-2 z-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl px-3.5 py-2.5 pointer-events-none min-w-[190px]"
+                      style={{ left: `${Math.min(Math.max(tooltip.midPct, 10), 70)}%`, transform: "translateX(-50%)" }}
                     >
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-1.5 mb-1.5">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: pestColor }} />
                         <p className="text-xs font-bold" style={{ color: pestColor }}>{row.label}</p>
                       </div>
                       <div className="space-y-1">
                         {tooltip.content.map((item, ci) => (
-                          <div key={ci} className="flex justify-between gap-4 text-[11px]">
-                            <span className="text-slate-400">{item.title}</span>
+                          <div key={ci} className="flex justify-between gap-3 text-[11px]">
+                            <span className="flex items-center gap-1">
+                              <span className="inline-block w-2 h-2 shrink-0" style={{ backgroundColor: item.color }} />
+                              <span className="text-slate-400">{item.title}</span>
+                            </span>
                             <span className="font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">{item.range}</span>
                           </div>
                         ))}
@@ -991,7 +990,7 @@ function BarTimeline({
               {/* 클릭 상세 패널 */}
               {isSelected && (
                 <div
-                  className="mt-2 rounded-2xl border bg-white dark:bg-slate-900 p-4 text-xs space-y-3 animate-in fade-in slide-in-from-top-2 shadow-lg"
+                  className="mt-2 rounded-xl border bg-white dark:bg-slate-900 p-4 text-xs space-y-3 animate-in fade-in slide-in-from-top-2 shadow-lg"
                   style={{ borderColor: pestColor + "30" }}
                 >
                   <div className="flex items-center gap-2">
@@ -1000,11 +999,11 @@ function BarTimeline({
                   </div>
                   <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                     {[
-                      { label: "예찰 시작",         doy: row.doy70,  color: "#ca8a04" },
-                      { label: "집중 예찰 시작",    doy: row.doy85,  color: "#d97706" },
-                      { label: "방제 시작",         doy: row.doy90,  color: "#f87171" },
-                      { label: "방제 최적 (100%)",  doy: row.doy100, color: "#ef4444" },
-                      { label: "방제 종료",         doy: row.doy107, color: "#dc2626" },
+                      { label: "예찰 시작",         doy: row.doy70,  color: BAR_COLORS.survey  },
+                      { label: "집중 예찰 시작",    doy: row.doy85,  color: "#d97706"           },
+                      { label: "방제 시작",         doy: row.doy90,  color: BAR_COLORS.control  },
+                      { label: "방제 최적 (100%)",  doy: row.doy100, color: "#dc2626"           },
+                      { label: "방제 종료",         doy: row.doy107, color: BAR_COLORS.end      },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center justify-between gap-2 py-0.5">
                         <span className="text-slate-400">{item.label}</span>
