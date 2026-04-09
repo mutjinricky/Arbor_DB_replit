@@ -10,8 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import TreeLayer from "@/components/TreeLayer";
 import { MAPBOX_TOKEN } from "@/lib/mapbox";
 import {
-  calculateTreeRiskGrade, calculateSoilScore, calculatePestControl,
-  calculateSoilCauses,
+  calculateTreeRiskGrade, calculatePestControl,
   SOIL_COLORS, SOIL_LABELS,
   type SoilGrade, type TreeFullData,
   type RiskGrade, type PestGrade,
@@ -19,7 +18,7 @@ import {
 } from "@/lib/riskCalculations";
 import { CauseChips } from "@/components/CauseChips";
 import { useWeatherData } from "@/hooks/useWeatherData";
-import { normalizeZone } from "@/lib/zones";
+import { normalizeZone, getZoneSoilResult, getZoneSoilCauses } from "@/lib/zones";
 
 // ─── 기존 프로젝트 이력 (Projects.tsx / ProjectDetail.tsx 동일 데이터) ──────
 const PROJECT_HISTORY = [
@@ -216,18 +215,19 @@ export default function SoilManagement() {
   const enrichedTrees = useMemo<EnrichedTree[]>(() => {
     if (!rawTreesJson) return [];
     return Object.entries(rawTreesJson).map(([id, tree]) => {
-      const soil  = calculateSoilScore(id, tree);
-      const risk  = calculateTreeRiskGrade(tree);
-      const pest  = calculatePestControl(id, pestDDs as any);
-      const chips = calculateSoilCauses(tree);
-      const works = getRequiredWorks(soil.grade, chips);
+      const zone      = normalizeZone(tree.district || "");
+      const zoneSoil  = getZoneSoilResult(zone);
+      const chips     = getZoneSoilCauses(zone) as CauseChip[];
+      const risk      = calculateTreeRiskGrade(tree);
+      const pest      = calculatePestControl(id, pestDDs as any);
+      const works     = getRequiredWorks(zoneSoil.grade as SoilGrade, chips);
       const priority: EnrichedTree["priority"] =
-        soil.grade === "D" || soil.grade === "E" ? "urgent" :
-        soil.grade === "C" ? "watch" : "normal";
+        zoneSoil.grade === "D" || zoneSoil.grade === "E" ? "urgent" :
+        zoneSoil.grade === "C" ? "watch" : "normal";
       return {
         id, species: tree.species || "", district: tree.district || "",
         lat: tree.lat, lng: tree.lng,
-        soilScore: soil.score, soilGrade: soil.grade,
+        soilScore: Math.round(zoneSoil.score), soilGrade: zoneSoil.grade as SoilGrade,
         causeChips: chips, requiredWorks: works,
         riskGrade: risk.grade,
         pestGrade: pest.grade, pestName: pest.pestName, pestDays: pest.daysUntilControl,
@@ -284,15 +284,16 @@ export default function SoilManagement() {
     return {
       ...rawGeoJson,
       features: rawGeoJson.features.map((f: any) => {
-        const id = f.properties?.id || "";
+        const id   = f.properties?.id || "";
         const tree = rawTreesJson[id];
-        const soil = calculateSoilScore(id, tree);
+        const zone      = normalizeZone(f.properties?.district || tree?.district || "");
+        const zoneSoil  = getZoneSoilResult(zone);
         const risk = tree ? calculateTreeRiskGrade(tree) : { grade: "low" as RiskGrade };
         const pest = calculatePestControl(id, pestDDs as any);
         return {
           ...f, properties: {
             ...f.properties,
-            soilScore: soil.score, soilGrade: soil.grade,
+            soilScore: Math.round(zoneSoil.score), soilGrade: zoneSoil.grade,
             riskGrade: risk.grade,
             pestGrade: pest.grade, pestName: pest.pestName, pestDays: pest.daysUntilControl,
           },

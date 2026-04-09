@@ -27,7 +27,6 @@ import { MAPBOX_TOKEN } from "@/lib/mapbox";
 import {
   calculateTreeRiskGrade,
   calculatePestControl,
-  calculateSoilScore,
   RISK_COLORS,
   RISK_LABELS,
   PEST_COLORS,
@@ -40,6 +39,7 @@ import {
   type TreeFullData,
 } from "@/lib/riskCalculations";
 import { useWeatherData } from "@/hooks/useWeatherData";
+import { normalizeZone, getZoneSoilResult } from "@/lib/zones";
 
 type MapMode = "basic" | "risk" | "pest" | "soil";
 
@@ -119,7 +119,8 @@ export default function TreeInventory() {
         ? calculateTreeRiskGrade(fullData)
         : { grade: "low" as RiskGrade };
       const pest = calculatePestControl(id, pestDDs as any);
-      const soil = calculateSoilScore(id, fullData);
+      const zone = normalizeZone(props.district || fullData?.district || "");
+      const zoneSoil = getZoneSoilResult(zone);
 
       return {
         ...feature,
@@ -129,8 +130,8 @@ export default function TreeInventory() {
           pestGrade: pest.grade,
           pestName: pest.pestName,
           pestDays: pest.daysUntilControl,
-          soilScore: soil.score,
-          soilGrade: soil.grade,
+          soilScore: Math.round(zoneSoil.score),
+          soilGrade: zoneSoil.grade,
         },
       };
     });
