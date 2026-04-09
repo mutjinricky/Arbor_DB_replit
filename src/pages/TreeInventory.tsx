@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Map, { NavigationControl } from "react-map-gl";
+import Map, { NavigationControl, Source, Layer } from "react-map-gl";
 import { MAPBOX_TOKEN } from "@/lib/mapbox";
 import {
   calculateTreeRiskGrade,
@@ -531,6 +531,30 @@ export default function TreeInventory() {
                     cursor={cursor}
                   >
                     <NavigationControl position="top-right" />
+
+                    {/* ── 토양 모드: 구역 폴리곤 레이어 (SoilManagement와 동일) ── */}
+                    {mapMode === "soil" && (
+                      <Source id="zones" type="geojson" data="/data/zones.geojson">
+                        <Layer
+                          id="zones-fill"
+                          type="fill"
+                          paint={{
+                            "fill-color": ["get", "color"],
+                            "fill-opacity": 0.18,
+                          }}
+                        />
+                        <Layer
+                          id="zones-stroke"
+                          type="line"
+                          paint={{
+                            "line-color": ["get", "color"],
+                            "line-width": 2,
+                            "line-opacity": 0.7,
+                          }}
+                        />
+                      </Source>
+                    )}
+
                     {enrichedGeoJson && (
                       <TreeLayer
                         treesData={enrichedGeoJson}

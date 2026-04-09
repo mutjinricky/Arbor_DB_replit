@@ -1,8 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Sprout, Search, Download, MapPin, CheckCircle2, Eye, AlertTriangle,
   Star, ChevronRight, Info, History, BarChart3,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { TreeProfileModal } from "@/components/TreeProfileModal";
 import Map, { NavigationControl, Source, Layer } from "react-map-gl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import TreeLayer from "@/components/TreeLayer";
@@ -17,6 +19,7 @@ import {
 } from "@/lib/riskCalculations";
 import { CauseChips } from "@/components/CauseChips";
 import { useWeatherData } from "@/hooks/useWeatherData";
+import { normalizeZone } from "@/lib/zones";
 
 // ─── 기존 프로젝트 이력 (Projects.tsx / ProjectDetail.tsx 동일 데이터) ──────
 const PROJECT_HISTORY = [
@@ -26,7 +29,7 @@ const PROJECT_HISTORY = [
     period: "2024-03-01 ~ 2024-05-31",
     contractor: "그린케어 수목병원", budget: 45000000,
     result: "시행 중 — 1~2단계 완료",
-    zoneKeywords: ["주거", "마을"],
+    zoneKeywords: ["마을"],
   },
   {
     id: "P-002", name: "병해충 방제",
@@ -34,7 +37,7 @@ const PROJECT_HISTORY = [
     period: "2024-04-01 ~ 2024-04-30",
     contractor: "에코페스트 솔루션", budget: 28000000,
     result: "입찰 진행 중",
-    zoneKeywords: ["도로", "간선"],
+    zoneKeywords: ["도로"],
   },
   {
     id: "P-003", name: "수목 건강 조사 1분기",
@@ -50,7 +53,7 @@ const PROJECT_HISTORY = [
     period: "2024-04-15 ~ 2024-04-25",
     contractor: "세이프트리 긴급 서비스", budget: 12000000,
     result: "계획 중",
-    zoneKeywords: ["학교"],
+    zoneKeywords: ["농가"],
   },
 ];
 
@@ -113,27 +116,17 @@ const STATUS_ORDER: Record<string, number> = {
   bidding: 0, in_progress: 1, planning: 2, completed: 3,
 };
 
-// ─── 구역명 정규화 ───────────────────────────────────────────────────────────
-function normalizeZone(district: string): string {
-  if (!district) return "기타";
-  if (district.includes("아파트") || district.includes("단지")) return "아파트 단지";
-  if (district.includes("주거") || district.includes("마을")) return "주거지역";
-  if (district.includes("간선") || district.includes("대로")) return "간선도로";
-  if (district.includes("도로") || district.includes("도로변")) return "도로변";
-  if (district.includes("학교") || district.includes("놀이터")) return "학교·놀이터";
-  if (district.includes("공원") || district.includes("산책")) return "공원·산책로";
-  return district.slice(0, 8);
-}
+// normalizeZone → src/lib/zones.ts에서 import
 
 function isHighTrafficZone(zoneName: string): boolean {
-  return ["아파트 단지", "주거지역", "간선도로", "학교·놀이터"].includes(zoneName);
+  return ["마을", "도로", "축제장"].includes(zoneName);
 }
 
 function getLinkedProjects(zoneName: string) {
   return PROJECT_HISTORY
     .filter((p) =>
       p.zoneKeywords.length === 0 ||
-      p.zoneKeywords.some((kw) => zoneName.includes(kw) || kw.includes(zoneName.slice(0, 2)))
+      p.zoneKeywords.includes(zoneName)
     )
     .sort((a, b) => {
       const so = (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
@@ -166,7 +159,48 @@ export default function SoilManagement() {
   const [zoneTab, setZoneTab] = useState<"overview" | "history">("overview");
   const [treeSearch, setTreeSearch] = useState("");
   const [cursor, setCursor] = useState("grab");
+
+  // ── TreeInventory와 동일한 hover / click 상태 ──────────────────────────────
+  const [selectedTreeId, setSelectedTreeId] = useState<string | null>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [hoveredTree, setHoveredTree] = useState<{
+    id: string; species: string; soilGrade: SoilGrade;
+    position: { x: number; y: number };
+  } | null>(null);
+
   const { pestDDs } = useWeatherData();
+
+  // ── TreeInventory와 동일한 이벤트 핸들러 ──────────────────────────────────
+  const onTreeLayerClick = useCallback((event: any) => {
+    if (event.features && event.features.length > 0) {
+      const id = event.features[0].properties?.id;
+      if (id) { setSelectedTreeId(id); setProfileModalOpen(true); }
+    }
+  }, []);
+
+  const onTreeLayerHover = useCallback((event: any) => {
+    if (event.features && event.features.length > 0) {
+      const p    = event.features[0].properties || {};
+      const rect = event.target.getContainer().getBoundingClientRect();
+      setCursor("pointer");
+      setHoveredTree({
+        id: p.id || "", species: p.species || "",
+        soilGrade: (p.soilGrade || "C") as SoilGrade,
+        position: {
+          x: (event.point.x / rect.width)  * 100,
+          y: (event.point.y / rect.height) * 100,
+        },
+      });
+    } else {
+      setCursor("grab");
+      setHoveredTree(null);
+    }
+  }, []);
+
+  const onTreeLayerLeave = useCallback(() => {
+    setHoveredTree(null);
+    setCursor("grab");
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -396,8 +430,9 @@ export default function SoilManagement() {
                       mapboxAccessToken={MAPBOX_TOKEN}
                       interactiveLayerIds={["trees-point"]}
                       cursor={cursor}
-                      onMouseEnter={() => setCursor("pointer")}
-                      onMouseLeave={() => setCursor("grab")}
+                      onClick={onTreeLayerClick}
+                      onMouseMove={onTreeLayerHover}
+                      onMouseLeave={onTreeLayerLeave}
                     >
                       <NavigationControl position="top-right" />
 
@@ -427,7 +462,7 @@ export default function SoilManagement() {
                           treesData={enrichedGeoJson}
                           mapMode="soil"
                           filteredIds={gradeFilteredIds}
-                          selectedTreeIds={[]}
+                          selectedTreeIds={selectedTreeId ? [selectedTreeId] : []}
                         />
                       )}
                     </Map>
@@ -467,6 +502,28 @@ export default function SoilManagement() {
                       ))}
                     </div>
                   </div>
+
+                  {/* ── hover 툴팁 (TreeInventory 토양 모드와 동일) ── */}
+                  {hoveredTree && (
+                    <div
+                      className="absolute z-20 bg-card border border-border rounded-lg shadow-xl p-3 pointer-events-none min-w-[180px]"
+                      style={{
+                        left: `${hoveredTree.position.x}%`,
+                        top:  `${hoveredTree.position.y}%`,
+                        transform: "translate(-50%, -120%)",
+                      }}
+                    >
+                      <p className="font-semibold text-sm mb-1">
+                        {hoveredTree.species} – Tree ID: {hoveredTree.id}
+                      </p>
+                      <Badge
+                        className="mt-1 text-xs text-white"
+                        style={{ backgroundColor: SOIL_COLORS[hoveredTree.soilGrade] }}
+                      >
+                        토양 {hoveredTree.soilGrade}등급 – {SOIL_LABELS[hoveredTree.soilGrade]}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -765,6 +822,13 @@ export default function SoilManagement() {
           </div>
         </div>
       </div>
+
+      {/* ── 수목 상세 모달 (TreeInventory와 동일 컴포넌트) ── */}
+      <TreeProfileModal
+        treeId={selectedTreeId}
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+      />
     </div>
   );
 }
