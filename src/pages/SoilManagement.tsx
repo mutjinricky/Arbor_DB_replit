@@ -3,7 +3,7 @@ import {
   Sprout, Search, Download, MapPin, CheckCircle2, Eye, AlertTriangle,
   Star, ChevronRight, Info, History, BarChart3,
 } from "lucide-react";
-import Map, { NavigationControl } from "react-map-gl";
+import Map, { NavigationControl, Source, Layer } from "react-map-gl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import TreeLayer from "@/components/TreeLayer";
 import { MAPBOX_TOKEN } from "@/lib/mapbox";
@@ -400,6 +400,28 @@ export default function SoilManagement() {
                       onMouseLeave={() => setCursor("grab")}
                     >
                       <NavigationControl position="top-right" />
+
+                      {/* ── 구역 폴리곤 레이어 ── */}
+                      <Source id="zones" type="geojson" data="/data/zones.geojson">
+                        <Layer
+                          id="zones-fill"
+                          type="fill"
+                          paint={{
+                            "fill-color": ["get", "color"],
+                            "fill-opacity": 0.18,
+                          }}
+                        />
+                        <Layer
+                          id="zones-stroke"
+                          type="line"
+                          paint={{
+                            "line-color": ["get", "color"],
+                            "line-width": 2,
+                            "line-opacity": 0.7,
+                          }}
+                        />
+                      </Source>
+
                       {enrichedGeoJson && (
                         <TreeLayer
                           treesData={enrichedGeoJson}
@@ -417,15 +439,33 @@ export default function SoilManagement() {
                   )}
 
                   {/* 범례 (우하단 고정) */}
-                  <div className="absolute bottom-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur rounded-xl border shadow-md px-3 py-2 z-10">
-                    <p className="text-[10px] font-bold text-muted-foreground mb-1.5">토양 등급</p>
-                    {(["A", "B", "C", "D", "E"] as SoilGrade[]).map((g) => (
-                      <div key={g} className="flex items-center gap-2 mb-0.5">
-                        <div className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-black"
-                          style={{ backgroundColor: SOIL_COLORS[g] }}>{g}</div>
-                        <span className="text-[10px] text-muted-foreground">{SOIL_LABELS[g].split(" ")[0]}</span>
-                      </div>
-                    ))}
+                  <div className="absolute bottom-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur rounded-xl border shadow-md px-3 py-2 z-10 space-y-2">
+                    <div>
+                      <p className="text-[10px] font-bold text-muted-foreground mb-1.5">토양 등급</p>
+                      {(["A", "B", "C", "D", "E"] as SoilGrade[]).map((g) => (
+                        <div key={g} className="flex items-center gap-2 mb-0.5">
+                          <div className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-black"
+                            style={{ backgroundColor: SOIL_COLORS[g] }}>{g}</div>
+                          <span className="text-[10px] text-muted-foreground">{SOIL_LABELS[g].split(" ")[0]}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="pt-1.5 border-t">
+                      <p className="text-[10px] font-bold text-muted-foreground mb-1.5">식재 위치</p>
+                      {[
+                        { type: "도로",   color: "#64748B" },
+                        { type: "마을",   color: "#22C55E" },
+                        { type: "축제장", color: "#A855F7" },
+                        { type: "전답",   color: "#EAB308" },
+                        { type: "농가",   color: "#F97316" },
+                      ].map(({ type, color }) => (
+                        <div key={type} className="flex items-center gap-2 mb-0.5">
+                          <div className="w-3 h-3 rounded-sm border"
+                            style={{ backgroundColor: color + "40", borderColor: color }} />
+                          <span className="text-[10px] text-muted-foreground">{type}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </CardContent>
