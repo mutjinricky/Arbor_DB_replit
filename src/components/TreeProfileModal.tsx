@@ -681,12 +681,15 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                       ))}
                     </div>
 
-                    {/* 원인 칩 — 구역 기반 */}
+                    {/* 원인분류 — 구역 기반, 심>중>경 정렬 */}
                     {(() => {
-                      const chips = getZoneSoilCauses(treeZone);
+                      const sevOrder: Record<string, number> = { 심: 0, 중: 1, 경: 2 };
+                      const chips = [...getZoneSoilCauses(treeZone)].sort(
+                        (a, b) => (sevOrder[a.severity] ?? 3) - (sevOrder[b.severity] ?? 3)
+                      );
                       return chips.length > 0 ? (
                         <div>
-                          <p className="text-xs font-semibold text-muted-foreground mb-1.5">원인 분류</p>
+                          <p className="text-xs font-semibold text-muted-foreground mb-1.5">원인분류</p>
                           <CauseChips chips={chips as any} size="md" />
                         </div>
                       ) : null;

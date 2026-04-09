@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  Sprout, Search, MapPin, CheckCircle2, Eye, AlertTriangle,
-  Star, ChevronRight, Info, History, BarChart3,
+  Sprout, MapPin, CheckCircle2, Eye, AlertTriangle,
+  Star, ChevronRight, Info, History,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TreeProfileModal } from "@/components/TreeProfileModal";
@@ -156,7 +156,6 @@ export default function SoilManagement() {
   const [gradeFilter, setGradeFilter] = useState<"all" | "normal" | "watch" | "action">("all");
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [zoneTab, setZoneTab] = useState<"overview" | "history">("overview");
-  const [treeSearch, setTreeSearch] = useState("");
   const [cursor, setCursor] = useState("grab");
 
   // ── TreeInventory와 동일한 hover / click 상태 ──────────────────────────────
@@ -319,20 +318,6 @@ export default function SoilManagement() {
   const actionCount = enrichedTrees.filter((t) => ["D", "E"].includes(t.soilGrade)).length;
   const topZone = zones[0]?.name ?? "—";
 
-  // ── tree list with search/filter ──────────────────────────────────────────
-  const filteredTreeList = useMemo(() => {
-    const q = treeSearch.trim().toLowerCase();
-    let list = enrichedTrees;
-    if (selectedZone) list = list.filter((t) => normalizeZone(t.district) === selectedZone);
-    if (q) list = list.filter((t) =>
-      t.id.toLowerCase().includes(q) ||
-      normalizeZone(t.district).includes(q) ||
-      t.species.toLowerCase().includes(q) ||
-      t.causeChips.map((c) => c.causeName).join(" ").includes(q)
-    );
-    return [...list].sort((a, b) => a.soilScore - b.soilScore).slice(0, 80);
-  }, [enrichedTrees, selectedZone, treeSearch]);
-
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -405,7 +390,7 @@ export default function SoilManagement() {
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="relative w-full h-[360px] overflow-hidden rounded-b-2xl">
+                <div className="relative w-full h-[500px] overflow-hidden rounded-b-2xl">
                   {MAPBOX_TOKEN ? (
                     <Map
                       {...mapState}
@@ -512,88 +497,7 @@ export default function SoilManagement() {
               </CardContent>
             </Card>
 
-            {/* ② 수목 상세 목록 */}
-            <Card className="border-0 shadow-md">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <CardTitle className="text-sm font-bold flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-slate-500" />
-                    수목 상세 목록
-                    {selectedZone && <span className="text-[11px] text-muted-foreground font-normal">— {selectedZone}</span>}
-                  </CardTitle>
-                  {selectedZone && (
-                    <button onClick={() => setSelectedZone(null)} className="text-xs text-muted-foreground hover:text-foreground">
-                      구역 필터 해제
-                    </button>
-                  )}
-                </div>
-                <div className="relative mt-2">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <input
-                    type="text" value={treeSearch}
-                    onChange={(e) => setTreeSearch(e.target.value)}
-                    placeholder="수목 ID / 구역명 / 수종 / 원인 검색"
-                    data-testid="input-tree-list-search"
-                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-input bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-primary/40"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto max-h-80 overflow-y-auto">
-                  <table className="w-full text-xs">
-                    <thead className="sticky top-0 z-10">
-                      <tr className="border-b bg-slate-50 dark:bg-slate-800/80">
-                        {["수목 ID", "위치", "등급", "원인", "필요 사업", "우선순위"].map((h) => (
-                          <th key={h} className="text-left px-3 py-2 text-[11px] font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTreeList.length === 0 ? (
-                        <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground text-xs">로딩 중…</td></tr>
-                      ) : filteredTreeList.map((t) => (
-                        <tr
-                          key={t.id}
-                          data-testid={`row-soil-tree-${t.id}`}
-                          className="border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
-                        >
-                          <td className="px-3 py-2 font-mono font-semibold text-primary">{t.id}</td>
-                          <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">{normalizeZone(t.district)}</td>
-                          <td className="px-3 py-2"><SoilBadge grade={t.soilGrade} /></td>
-                          <td className="px-3 py-2">
-                            <CauseChips
-                              chips={[...t.causeChips.filter((c) => c.severity !== "경")].sort(
-                                (a, b) => (a.severity === "심" ? 0 : 1) - (b.severity === "심" ? 0 : 1)
-                              )}
-                              maxVisible={3}
-                            />
-                          </td>
-                          <td className="px-3 py-2 text-muted-foreground">{t.requiredWorks[0]}</td>
-                          <td className="px-3 py-2">
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
-                              t.priority === "urgent" ? "bg-red-100 text-red-700" :
-                              t.priority === "watch"  ? "bg-amber-100 text-amber-700" :
-                              "bg-green-100 text-green-700"
-                            }`}>
-                              {t.priority === "urgent" ? "긴급" : t.priority === "watch" ? "관찰" : "정상"}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {filteredTreeList.length >= 80 && (
-                  <p className="text-[10px] text-center text-muted-foreground py-1.5 border-t">검색으로 범위를 좁혀 전체 결과를 확인하세요</p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* ══ 우측 컬럼 ══════════════════════════════════════════════ */}
-          <div className="space-y-5">
-
-            {/* ① 점검대상구역 카드 목록 */}
+            {/* ② 점검대상구역 카드 목록 */}
             <Card className="border-0 shadow-md">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -643,8 +547,12 @@ export default function SoilManagement() {
                 })}
               </CardContent>
             </Card>
+          </div>
 
-            {/* ② 선택 구역 상세 */}
+          {/* ══ 우측 컬럼 ══════════════════════════════════════════════ */}
+          <div className="space-y-5">
+
+            {/* ① 선택 구역 상세 */}
             {selectedZoneData && (
               <Card className="border-0 shadow-md">
                 <CardHeader className="pb-0">
@@ -711,19 +619,21 @@ export default function SoilManagement() {
                         </div>
                       </div>
 
-                      {/* 원인코드 현황: 구역 내 수목 chips 집계 */}
+                      {/* 원인분류: 구역 내 수목 chips 집계 */}
                       {(() => {
                         const dedup: Record<string, CauseChip> = {};
-                        const sev: Record<string, number> = { "심": 0, "중": 1, "경": 2 };
+                        const sevOrder: Record<string, number> = { "심": 0, "중": 1, "경": 2 };
                         selectedZoneData.trees.forEach((t) => t.causeChips.forEach((c) => {
                           const ex = dedup[c.displayCode];
-                          if (!ex || sev[c.severity] < sev[ex.severity]) dedup[c.displayCode] = c;
+                          if (!ex || sevOrder[c.severity] < sevOrder[ex.severity]) dedup[c.displayCode] = c;
                         }));
-                        const zoneChips = Object.values(dedup);
+                        const zoneChips = Object.values(dedup).sort(
+                          (a, b) => (sevOrder[a.severity] ?? 3) - (sevOrder[b.severity] ?? 3)
+                        );
                         return (
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
-                              <p className="text-xs font-semibold">원인코드 현황</p>
+                              <p className="text-xs font-semibold">원인분류</p>
                               <span className="text-[10px] text-muted-foreground">{zoneChips.length}종 원인</span>
                             </div>
                             <CauseChips chips={zoneChips} size="md" />
