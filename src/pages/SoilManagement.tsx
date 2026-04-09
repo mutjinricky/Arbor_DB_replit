@@ -367,30 +367,13 @@ export default function SoilManagement() {
             {/* ① 토양 등급 지도 */}
             <Card className="border-0 shadow-md">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <CardTitle className="text-sm font-bold flex items-center gap-2">
-                    <span className="w-1.5 h-4 rounded-full bg-green-500 inline-block" />
-                    토양 등급 지도
-                  </CardTitle>
-                  <div className="flex items-center gap-1">
-                    {GRADE_FILTER_OPTIONS.map((f) => (
-                      <button
-                        key={f.key}
-                        onClick={() => setGradeFilter(f.key as any)}
-                        data-testid={`filter-soil-${f.key}`}
-                        className={`text-xs px-3 py-1 rounded-full border font-medium transition-all ${
-                          gradeFilter === f.key ? "text-white border-transparent" : "bg-white dark:bg-slate-900 text-muted-foreground border-border"
-                        }`}
-                        style={gradeFilter === f.key ? { backgroundColor: f.color || "#6366f1" } : {}}
-                      >
-                        {f.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <span className="w-1.5 h-4 rounded-full bg-green-500 inline-block" />
+                  토양 등급 지도
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="relative w-full h-[500px] overflow-hidden rounded-b-2xl">
+                <div className="relative w-full h-[360px] overflow-hidden rounded-b-2xl">
                   {MAPBOX_TOKEN ? (
                     <Map
                       {...mapState}
@@ -497,56 +480,85 @@ export default function SoilManagement() {
               </CardContent>
             </Card>
 
-            {/* ② 점검대상구역 카드 목록 */}
-            <Card className="border-0 shadow-md">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Star className="h-4 w-4 text-amber-500" />
-                  점검대상구역
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 space-y-2">
-                {zones.slice(0, 6).map((z, i) => {
-                  const isSelected = selectedZone === z.name;
-                  return (
-                    <div
-                      key={z.name}
-                      onClick={() => { setSelectedZone(z.name); setZoneTab("overview"); }}
-                      data-testid={`card-zone-${z.name}`}
-                      className={`relative rounded-xl border p-3 cursor-pointer transition-all hover:shadow-md flex flex-col justify-between min-h-[68px] ${
-                        isSelected ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 shadow-md" : "bg-white dark:bg-slate-900 border-border"
+            {/* ② 필터탭 + 점검대상구역 — 2열 동일높이 */}
+            <div className="grid grid-cols-[auto_1fr] gap-5 items-stretch">
+
+              {/* 등급 필터 카드 */}
+              <Card className="border-0 shadow-md flex flex-col">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-bold flex items-center gap-2">
+                    <span className="w-1.5 h-4 rounded-full bg-green-500 inline-block" />
+                    등급 필터
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 flex flex-col gap-2 flex-1 justify-start">
+                  {GRADE_FILTER_OPTIONS.map((f) => (
+                    <button
+                      key={f.key}
+                      onClick={() => setGradeFilter(f.key as any)}
+                      data-testid={`filter-soil-${f.key}`}
+                      className={`text-xs px-4 py-2 rounded-full border font-medium transition-all whitespace-nowrap ${
+                        gradeFilter === f.key ? "text-white border-transparent" : "bg-white dark:bg-slate-900 text-muted-foreground border-border"
                       }`}
+                      style={gradeFilter === f.key ? { backgroundColor: f.color || "#6366f1" } : {}}
                     >
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-sm ${
-                          i === 0 ? "bg-red-500" : i === 1 ? "bg-orange-500" : "bg-amber-400"
-                        }`}>{i + 1}</span>
-                        <p className="text-sm font-bold leading-none">{z.name}</p>
-                        {z.linkedProjects.some((p) => p.status === "in_progress") && (
-                          <span className="text-[9px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full ml-1">진행 중 사업</span>
-                        )}
-                      </div>
+                      {f.label}
+                    </button>
+                  ))}
+                </CardContent>
+              </Card>
 
-                      <div className="flex items-end gap-2 flex-wrap">
-                        {(["A", "B", "C", "D", "E"] as SoilGrade[]).map((g) => {
-                          const cnt = g === "A" ? z.aCount : g === "B" ? z.bCount : g === "C" ? z.cCount : g === "D" ? z.dCount : z.eCount;
-                          if (cnt === 0) return null;
-                          return (
-                            <span key={g} className="flex items-center gap-0.5">
-                              <SoilBadge grade={g} />
-                              <span className="text-[10px] text-muted-foreground">{cnt}주</span>
-                            </span>
-                          );
-                        })}
-                        <span className="text-[10px] text-muted-foreground ml-auto">총 {z.total}주</span>
-                      </div>
+              {/* 점검대상구역 카드 */}
+              <Card className="border-0 shadow-md flex flex-col">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-bold flex items-center gap-2">
+                    <Star className="h-4 w-4 text-amber-500" />
+                    점검대상구역
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 space-y-2 flex-1 overflow-y-auto">
+                  {zones.slice(0, 6).map((z, i) => {
+                    const isSelected = selectedZone === z.name;
+                    return (
+                      <div
+                        key={z.name}
+                        onClick={() => { setSelectedZone(z.name); setZoneTab("overview"); }}
+                        data-testid={`card-zone-${z.name}`}
+                        className={`relative rounded-xl border p-3 cursor-pointer transition-all hover:shadow-md flex flex-col justify-between min-h-[68px] ${
+                          isSelected ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 shadow-md" : "bg-white dark:bg-slate-900 border-border"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-sm ${
+                            i === 0 ? "bg-red-500" : i === 1 ? "bg-orange-500" : "bg-amber-400"
+                          }`}>{i + 1}</span>
+                          <p className="text-sm font-bold leading-none">{z.name}</p>
+                          {z.linkedProjects.some((p) => p.status === "in_progress") && (
+                            <span className="text-[9px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full ml-1">진행 중 사업</span>
+                          )}
+                        </div>
 
-                      {isSelected && <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />}
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
+                        <div className="flex items-end gap-2 flex-wrap">
+                          {(["A", "B", "C", "D", "E"] as SoilGrade[]).map((g) => {
+                            const cnt = g === "A" ? z.aCount : g === "B" ? z.bCount : g === "C" ? z.cCount : g === "D" ? z.dCount : z.eCount;
+                            if (cnt === 0) return null;
+                            return (
+                              <span key={g} className="flex items-center gap-0.5">
+                                <SoilBadge grade={g} />
+                                <span className="text-[10px] text-muted-foreground">{cnt}주</span>
+                              </span>
+                            );
+                          })}
+                          <span className="text-[10px] text-muted-foreground ml-auto">총 {z.total}주</span>
+                        </div>
+
+                        {isSelected && <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />}
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           {/* ══ 우측 컬럼 ══════════════════════════════════════════════ */}
