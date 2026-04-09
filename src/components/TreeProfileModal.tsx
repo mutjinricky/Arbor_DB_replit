@@ -595,7 +595,7 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                     <div className="flex items-center justify-between">
                       <h3 className="font-semibold flex items-center gap-2 text-sm">
                         <Leaf className="h-4 w-4 text-green-600" />
-                        K-UTSI 토양 건전성 지수
+                        토양 건전성 지수
                       </h3>
                       <div className="flex items-center gap-2">
                         <span className="text-xl font-bold" style={{ color: SOIL_COLORS[soil.grade] }}>
@@ -648,7 +648,7 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                         );
                       })}
                       <p className="text-[10px] text-muted-foreground border-t pt-1.5">
-                        K-UTSI = (총점 {zoneSoilData?.totalScore ?? "—"} / 30점) × 100 ={" "}
+                        (총점 {zoneSoilData?.totalScore ?? "—"} / 30점) × 100 ={" "}
                         {zoneSoilData ? zoneSoilData.kutsi.toFixed(1) : Math.round(soil.score)}점
                       </p>
                     </div>

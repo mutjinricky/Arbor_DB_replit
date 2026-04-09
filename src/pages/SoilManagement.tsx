@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  Sprout, Search, Download, MapPin, CheckCircle2, Eye, AlertTriangle,
+  Sprout, Search, MapPin, CheckCircle2, Eye, AlertTriangle,
   Star, ChevronRight, Info, History, BarChart3,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -346,25 +346,8 @@ export default function SoilManagement() {
               토양 관리
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              K-UTSI 기반 이천시 수목 토양 건전성 현황 및 우선 점검 구역 선정
+              이천시 수목 토양 건전성 현황 및 우선 점검 구역 선정
             </p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <select className="text-sm rounded-lg border border-input px-3 py-1.5 bg-white dark:bg-slate-900">
-              <option>이천시 전체</option>
-              <option>부발읍</option>
-              <option>신둔면</option>
-            </select>
-            <span className="text-xs text-muted-foreground px-2 py-1.5 rounded-lg border border-input bg-white dark:bg-slate-900">
-              기준일: 2026-04-06
-            </span>
-            <button
-              data-testid="button-excel-download"
-              className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border border-input bg-white dark:bg-slate-900 hover:bg-slate-50 transition-colors font-medium"
-            >
-              <Download className="h-4 w-4 text-green-600" />
-              엑셀 다운로드
-            </button>
           </div>
         </div>
 
@@ -626,7 +609,7 @@ export default function SoilManagement() {
                       key={z.name}
                       onClick={() => { setSelectedZone(z.name); setZoneTab("overview"); }}
                       data-testid={`card-zone-${z.name}`}
-                      className={`rounded-xl border p-3 cursor-pointer transition-all hover:shadow-md ${
+                      className={`relative rounded-xl border p-3 cursor-pointer transition-all hover:shadow-md flex flex-col justify-between min-h-[68px] ${
                         isSelected ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 shadow-md" : "bg-white dark:bg-slate-900 border-border"
                       }`}
                     >
@@ -635,11 +618,14 @@ export default function SoilManagement() {
                           i === 0 ? "bg-red-500" : i === 1 ? "bg-orange-500" : "bg-amber-400"
                         }`}>{i + 1}</span>
                         <p className="text-sm font-bold leading-none">{z.name}</p>
+                        {z.linkedProjects.some((p) => p.status === "in_progress") && (
+                          <span className="text-[9px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full ml-1">진행 중 사업</span>
+                        )}
                       </div>
 
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {(["C", "D", "E"] as SoilGrade[]).map((g) => {
-                          const cnt = g === "C" ? z.cCount : g === "D" ? z.dCount : z.eCount;
+                      <div className="flex items-end gap-2 flex-wrap">
+                        {(["A", "B", "C", "D", "E"] as SoilGrade[]).map((g) => {
+                          const cnt = g === "A" ? z.aCount : g === "B" ? z.bCount : g === "C" ? z.cCount : g === "D" ? z.dCount : z.eCount;
                           if (cnt === 0) return null;
                           return (
                             <span key={g} className="flex items-center gap-0.5">
@@ -649,9 +635,6 @@ export default function SoilManagement() {
                           );
                         })}
                         <span className="text-[10px] text-muted-foreground ml-auto">총 {z.total}주</span>
-                        {z.linkedProjects.some((p) => p.status === "in_progress") && (
-                          <span className="text-[9px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full">진행 중 사업</span>
-                        )}
                       </div>
 
                       {isSelected && <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />}

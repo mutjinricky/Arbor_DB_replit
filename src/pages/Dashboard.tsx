@@ -20,10 +20,11 @@ const expenditureData = [
   { name: "제거", amount: 12000000 },
 ];
 
-const healthData = [
-  { name: "양호", value: 89.4, color: "hsl(var(--success))" },
-  { name: "보통", value: 6.2, color: "hsl(var(--warning))" },
-  { name: "불량", value: 4.4, color: "hsl(var(--destructive))" },
+const riskData = [
+  { name: "경 (정상)", value: 80.0, color: "#22c55e" },
+  { name: "중 (주의)", value: 16.0, color: "#eab308" },
+  { name: "심 (위험)", value: 3.5,  color: "#f97316" },
+  { name: "극심",      value: 0.5,  color: "#dc2626" },
 ];
 
 const speciesData = [
@@ -82,13 +83,13 @@ export default function Dashboard() {
           <AlertsList onViewTree={handleTreeClick} />
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">수목 건강도 분포</CardTitle>
+              <CardTitle className="text-base">수목 위험도 분포</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
-                    data={healthData}
+                    data={riskData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -96,7 +97,7 @@ export default function Dashboard() {
                     paddingAngle={2}
                     dataKey="value"
                   >
-                    {healthData.map((entry, index) => (
+                    {riskData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -104,7 +105,7 @@ export default function Dashboard() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="mt-4 space-y-2">
-                {healthData.map((item) => (
+                {riskData.map((item) => (
                   <div key={item.name} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />

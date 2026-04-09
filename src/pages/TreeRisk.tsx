@@ -379,17 +379,6 @@ export default function TreeRisk() {
                 </div>
               </div>
 
-              {/* 해석 */}
-              <div className="mt-4 pt-3 border-t" style={{ borderColor: meta.border }}>
-                <p className="text-xs font-medium" style={{ color: meta.color }}>
-                  ⚠ 최종 위험도 = MAX(육안진단 {GRADE_META[t.visualGrade].label}, 부후도 {GRADE_META[t.decayGrade].label}, 기울기 {GRADE_META[t.tiltGrade].label}) →
-                  {" "}<strong>{meta.label}</strong> 위험도 등급
-                  {t.riskGrade === "extreme" && " — 즉각적인 위험 조치 필요"}
-                  {t.riskGrade === "high"    && " — 조속한 점검 및 처치 권고"}
-                  {t.riskGrade === "moderate"&& " — 정기 모니터링 실시"}
-                  {t.riskGrade === "low"     && " — 현상 유지, 연 1회 예찰"}
-                </p>
-              </div>
             </div>
           );
         })()}
