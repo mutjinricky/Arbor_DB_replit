@@ -344,6 +344,7 @@ function ProjectDetailModal({
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
           {/* 헤더 */}
           <div className="p-6 pb-4 border-b sticky top-0 bg-background z-10">
+            <p className="text-[11px] font-semibold text-muted-foreground mb-2">상세이력</p>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
