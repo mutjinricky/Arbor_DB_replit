@@ -3,7 +3,7 @@ import {
   Search, Filter, X, ChevronRight, FileText, Download, FileSpreadsheet,
   BarChart3, Upload, MapPin, TreePine, Image, Building2, Calendar,
   Wallet, TrendingUp, CheckCircle2, Clock3, AlertCircle, Eye,
-  ChevronLeft, ChevronDown,
+  ChevronLeft, ChevronDown, FolderDown,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -333,7 +333,6 @@ function ProjectDetailModal({
   project: BusinessProject;
   onClose: () => void;
 }) {
-  const [detailTab, setDetailTab] = useState<"map" | "trees" | "photos" | "contractors">("map");
   const [photoIdx, setPhotoIdx] = useState(0);
   const [selectedTree, setSelectedTree] = useState<ConnectedTree | null>(null);
   const spentRate = project.budget > 0 ? Math.round((project.spent / project.budget) * 100) : 0;
@@ -357,7 +356,7 @@ function ProjectDetailModal({
             </div>
           </div>
 
-          <div className="p-6 space-y-5">
+          <div className="p-6 space-y-6">
             {/* 요약 카드 3개 */}
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-xl border bg-slate-50 dark:bg-slate-800/50 p-3">
@@ -380,147 +379,143 @@ function ProjectDetailModal({
               </div>
             </div>
 
-            {/* 탭 */}
-            <div className="flex gap-1 border-b">
-              {(["map", "trees", "photos", "contractors"] as const).map((tab) => {
-                const labels = { map: "사업 지도", trees: `연결 수목 (${project.connectedTrees.length})`, photos: `준공사진 (${project.completionPhotos.length})`, contractors: "계약업체" };
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => setDetailTab(tab)}
-                    className={cn(
-                      "px-3 py-2 text-xs font-medium border-b-2 transition-colors -mb-px",
-                      detailTab === tab ? "border-indigo-600 text-indigo-600" : "border-transparent text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {labels[tab]}
-                  </button>
-                );
-              })}
+            {/* ① 사업 지도 */}
+            <div>
+              <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-indigo-500" /> 사업 지도
+              </p>
+              <div className="rounded-xl border bg-slate-50 dark:bg-slate-800/40 h-52 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                <MapPin className="h-8 w-8 opacity-30" />
+                <p className="text-sm">지도 표시 영역</p>
+                <p className="text-xs opacity-60">이천시 {project.region} 일대 · {project.treeCount}주 · 구역 {project.mapCount}개</p>
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                <div className="rounded-lg border p-2 text-center">
+                  <p className="text-muted-foreground text-[10px]">지역</p>
+                  <p className="font-semibold">{project.region}</p>
+                </div>
+                <div className="rounded-lg border p-2 text-center">
+                  <p className="text-muted-foreground text-[10px]">수목 수</p>
+                  <p className="font-semibold">{project.treeCount.toLocaleString()}주</p>
+                </div>
+                <div className="rounded-lg border p-2 text-center">
+                  <p className="text-muted-foreground text-[10px]">구역 수</p>
+                  <p className="font-semibold">{project.mapCount}개</p>
+                </div>
+              </div>
             </div>
 
-            {/* 탭 콘텐츠 */}
-            {detailTab === "map" && (
-              <div>
-                <div className="rounded-xl border bg-slate-50 dark:bg-slate-800/40 h-64 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                  <MapPin className="h-10 w-10 opacity-30" />
-                  <p className="text-sm">지도 표시 영역</p>
-                  <p className="text-xs opacity-60">이천시 {project.region} 일대 · {project.treeCount}주 · 구역 {project.mapCount}개</p>
-                </div>
-                <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-                  <div className="rounded-lg border p-2 text-center">
-                    <p className="text-muted-foreground text-[10px]">지역</p>
-                    <p className="font-semibold">{project.region}</p>
-                  </div>
-                  <div className="rounded-lg border p-2 text-center">
-                    <p className="text-muted-foreground text-[10px]">수목 수</p>
-                    <p className="font-semibold">{project.treeCount.toLocaleString()}주</p>
-                  </div>
-                  <div className="rounded-lg border p-2 text-center">
-                    <p className="text-muted-foreground text-[10px]">구역 수</p>
-                    <p className="font-semibold">{project.mapCount}개</p>
-                  </div>
-                </div>
-              </div>
-            )}
+            <Separator />
 
-            {detailTab === "trees" && (
-              <div className="space-y-2">
-                {project.connectedTrees.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">연결된 수목이 없습니다</div>
-                ) : project.connectedTrees.map((t) => (
-                  <div
-                    key={t.id}
-                    onClick={() => setSelectedTree(t)}
-                    className="flex items-center gap-3 p-3 rounded-xl border hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                      <TreePine className="h-4 w-4 text-green-600" />
+            {/* ② 연결 수목 */}
+            <div>
+              <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+                <TreePine className="h-3.5 w-3.5 text-green-600" /> 연결 수목
+                <span className="text-[10px] text-muted-foreground font-normal">({project.connectedTrees.length}주)</span>
+              </p>
+              {project.connectedTrees.length === 0 ? (
+                <div className="text-center py-6 text-muted-foreground text-sm border rounded-xl">연결된 수목이 없습니다</div>
+              ) : (
+                <div className="space-y-2">
+                  {project.connectedTrees.map((t) => (
+                    <div
+                      key={t.id}
+                      onClick={() => setSelectedTree(t)}
+                      className="flex items-center gap-3 p-3 rounded-xl border hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <TreePine className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold">{t.id}</p>
+                        <p className="text-[10px] text-muted-foreground font-mono">{t.coord}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {t.photoUrl ? (
+                          <span className="text-[10px] text-blue-600 flex items-center gap-0.5"><Image className="h-3 w-3" />사진있음</span>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground">사진 없음</span>
+                        )}
+                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold">{t.id}</p>
-                      <p className="text-[10px] text-muted-foreground font-mono">{t.coord}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      {t.photoUrl ? (
-                        <span className="text-[10px] text-blue-600 flex items-center gap-0.5"><Image className="h-3 w-3" />사진있음</span>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground">사진 없음</span>
-                      )}
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
 
-            {detailTab === "photos" && (
-              <div>
-                {project.completionPhotos.length === 0 ? (
-                  <div className="rounded-xl border bg-slate-50 dark:bg-slate-800/40 h-48 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                    <Image className="h-8 w-8 opacity-30" />
-                    <p className="text-sm">준공사진 없음</p>
+            <Separator />
+
+            {/* ③ 준공사진 */}
+            <div>
+              <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+                <Image className="h-3.5 w-3.5 text-sky-500" /> 준공사진
+                <span className="text-[10px] text-muted-foreground font-normal">({project.completionPhotos.length}장)</span>
+              </p>
+              {project.completionPhotos.length === 0 ? (
+                <div className="rounded-xl border bg-slate-50 dark:bg-slate-800/40 h-36 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                  <Image className="h-7 w-7 opacity-30" />
+                  <p className="text-sm">준공사진 없음</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex gap-1 flex-wrap">
+                    {project.completionPhotos.map((ph, i) => (
+                      <button
+                        key={ph.id}
+                        onClick={() => setPhotoIdx(i)}
+                        className={cn(
+                          "text-xs px-3 py-1 rounded-full border transition-colors",
+                          photoIdx === i ? "bg-indigo-600 text-white border-transparent" : "text-muted-foreground border-border hover:text-foreground"
+                        )}
+                      >
+                        {ph.label}
+                      </button>
+                    ))}
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {/* 탭 버튼 */}
-                    <div className="flex gap-1 flex-wrap">
-                      {project.completionPhotos.map((ph, i) => (
-                        <button
-                          key={ph.id}
-                          onClick={() => setPhotoIdx(i)}
-                          className={cn(
-                            "text-xs px-3 py-1 rounded-full border transition-colors",
-                            photoIdx === i ? "bg-indigo-600 text-white border-transparent" : "text-muted-foreground border-border hover:text-foreground"
-                          )}
-                        >
-                          {ph.label}
-                        </button>
-                      ))}
-                    </div>
-                    {/* 사진 표시 */}
-                    <div className="rounded-xl border overflow-hidden">
-                      {project.completionPhotos[photoIdx].photoUrl ? (
-                        <img
-                          src={project.completionPhotos[photoIdx].photoUrl}
-                          alt={project.completionPhotos[photoIdx].label}
-                          className="w-full h-56 object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-56 bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                          <Image className="h-8 w-8 opacity-30" />
-                          <p className="text-xs">사진 없음</p>
-                        </div>
-                      )}
-                      <div className="p-3 border-t bg-white dark:bg-slate-900">
+                  <div className="rounded-xl border overflow-hidden">
+                    {project.completionPhotos[photoIdx].photoUrl ? (
+                      <img
+                        src={project.completionPhotos[photoIdx].photoUrl}
+                        alt={project.completionPhotos[photoIdx].label}
+                        className="w-full h-48 object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                        <Image className="h-7 w-7 opacity-30" />
+                        <p className="text-xs">사진 없음</p>
+                      </div>
+                    )}
+                    <div className="p-3 border-t bg-white dark:bg-slate-900 flex items-center justify-between">
+                      <div>
                         <p className="text-xs font-semibold">{project.completionPhotos[photoIdx].label}</p>
                         <p className="text-[10px] text-muted-foreground">{project.completionPhotos[photoIdx].date}</p>
                       </div>
-                    </div>
-                    {/* 이전/다음 */}
-                    <div className="flex justify-between items-center">
-                      <button
-                        onClick={() => setPhotoIdx((i) => Math.max(0, i - 1))}
-                        disabled={photoIdx === 0}
-                        className="text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                      >
-                        <ChevronLeft className="h-3.5 w-3.5" /> 이전
-                      </button>
-                      <span className="text-[10px] text-muted-foreground">{photoIdx + 1} / {project.completionPhotos.length}</span>
-                      <button
-                        onClick={() => setPhotoIdx((i) => Math.min(project.completionPhotos.length - 1, i + 1))}
-                        disabled={photoIdx === project.completionPhotos.length - 1}
-                        className="text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                      >
-                        다음 <ChevronRight className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => setPhotoIdx((i) => Math.max(0, i - 1))} disabled={photoIdx === 0}
+                          className="text-xs flex items-center gap-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30">
+                          <ChevronLeft className="h-3.5 w-3.5" /> 이전
+                        </button>
+                        <span className="text-[10px] text-muted-foreground">{photoIdx + 1} / {project.completionPhotos.length}</span>
+                        <button onClick={() => setPhotoIdx((i) => Math.min(project.completionPhotos.length - 1, i + 1))}
+                          disabled={photoIdx === project.completionPhotos.length - 1}
+                          className="text-xs flex items-center gap-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30">
+                          다음 <ChevronRight className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
 
-            {detailTab === "contractors" && (
+            <Separator />
+
+            {/* ④ 계약업체 */}
+            <div>
+              <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5 text-slate-500" /> 지정된 계약업체
+              </p>
               <div className="space-y-2">
                 {project.contractors.map((c, i) => (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-xl border">
@@ -535,10 +530,11 @@ function ProjectDetailModal({
                   </div>
                 ))}
               </div>
-            )}
+            </div>
+
+            <Separator />
 
             {/* 기본 정보 */}
-            <Separator />
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
                 <p className="text-[10px] text-muted-foreground">사업유형</p>
@@ -1036,7 +1032,7 @@ export default function BusinessHistory() {
                 <table className="w-full text-xs">
                   <thead className="sticky top-0 z-10">
                     <tr className="border-b bg-slate-50 dark:bg-slate-800/80">
-                      {["사업명", "지역", "유형", "시행사", "공기", "예산", "집행률", "상태", ""].map((h) => (
+                      {["사업명", "지역", "유형", "시행사", "공기", "예산", "상태", "설계서", ""].map((h) => (
                         <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
@@ -1049,7 +1045,6 @@ export default function BusinessHistory() {
                         </td>
                       </tr>
                     ) : filtered.map((p) => {
-                      const rate = p.budget > 0 ? Math.round((p.spent / p.budget) * 100) : 0;
                       return (
                         <tr
                           key={p.id}
@@ -1066,18 +1061,18 @@ export default function BusinessHistory() {
                           <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{p.vendor}</td>
                           <td className="px-4 py-3 text-muted-foreground whitespace-nowrap text-[10px]">{p.period}</td>
                           <td className="px-4 py-3 whitespace-nowrap">{fmt(p.budget)}</td>
-                          <td className="px-4 py-3 min-w-[90px]">
-                            <div className="flex items-center gap-1.5">
-                              <div className="flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                                <div
-                                  className="h-full rounded-full bg-indigo-500"
-                                  style={{ width: `${Math.min(rate, 100)}%` }}
-                                />
-                              </div>
-                              <span className="text-[10px] text-muted-foreground w-7 shrink-0">{rate}%</span>
-                            </div>
-                          </td>
                           <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); }}
+                              data-testid={`button-download-${p.id}`}
+                              title="설계서 다운로드"
+                              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-indigo-600 transition-colors px-2 py-1 rounded-lg border border-transparent hover:border-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                            >
+                              <FolderDown className="h-3.5 w-3.5" />
+                              설계서
+                            </button>
+                          </td>
                           <td className="px-4 py-3">
                             <Eye className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
                           </td>
