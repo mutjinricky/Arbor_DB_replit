@@ -6,10 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TopNav } from "@/components/TopNav";
 import Dashboard from "./pages/Dashboard";
 import TreeInventory from "./pages/TreeInventory";
-import Projects from "./pages/Projects";
-import ProjectDetail from "./pages/ProjectDetail";
-import CreateProject from "./pages/CreateProject";
-import RequestForm from "./pages/RequestForm";
+import BusinessHistory from "./pages/BusinessHistory";
 import PestCalendar from "./pages/PestCalendar";
 import TreeRisk from "./pages/TreeRisk";
 import SoilManagement from "./pages/SoilManagement";
@@ -29,10 +26,7 @@ const App = () => (
             <Route path="/" element={<TreeInventory />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/tree-inventory" element={<TreeInventory />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/projects/:id" element={<ProjectDetail />} />
-            <Route path="/projects/create" element={<CreateProject />} />
-            <Route path="/projects/request" element={<RequestForm />} />
+            <Route path="/business-history" element={<BusinessHistory />} />
             <Route path="/soil-management" element={<SoilManagement />} />
             <Route path="/tree-risk" element={<TreeRisk />} />
             <Route path="/pest-calendar" element={<PestCalendar />} />

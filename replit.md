@@ -25,9 +25,7 @@ src/
   pages/
     Dashboard.tsx            — Main dashboard with KPIs, alerts, work notifications
     TreeInventory.tsx        — Tree map with filters, search, multi-mode view
-    Projects.tsx             — Projects list
-    ProjectDetail.tsx        — Project detail
-    CreateProject.tsx        — Create project form
+    BusinessHistory.tsx      — 사업이력 page: admin table, summary cards, detail modal, file upload (replaces Projects)
     RequestForm.tsx          — Work request form
     PestCalendar.tsx         — 방제 달력 (degree-day pest calendar)
   components/

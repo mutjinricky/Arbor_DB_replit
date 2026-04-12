@@ -105,9 +105,9 @@ export function TopNav() {
               )}
             </div>
 
-            {/* 프로젝트 */}
+            {/* 사업이력 */}
             <NavLink
-              to="/projects"
+              to="/business-history"
               end
               className={({ isActive }) =>
                 cn(
@@ -118,7 +118,7 @@ export function TopNav() {
                 )
               }
             >
-              프로젝트
+              사업이력
             </NavLink>
           </nav>
         </div>
