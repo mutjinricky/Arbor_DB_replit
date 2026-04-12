@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   Search, Filter, X, ChevronRight, FileText, Download, FileSpreadsheet,
   BarChart3, Upload, MapPin, TreePine, Image, Building2, Calendar,
-  Wallet, TrendingUp, CheckCircle2, Clock3, AlertCircle, Eye,
+  Wallet, TrendingUp, CheckCircle2, Clock3, AlertCircle,
   ChevronLeft, ChevronDown, FolderDown,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1032,7 +1032,7 @@ export default function BusinessHistory() {
                 <table className="w-full text-xs">
                   <thead className="sticky top-0 z-10">
                     <tr className="border-b bg-slate-50 dark:bg-slate-800/80">
-                      {["사업명", "지역", "유형", "시행사", "공기", "예산", "상태", "설계서", ""].map((h) => (
+                      {["사업명", "지역", "유형", "시행사", "공기", "예산", "상태", "설계서"].map((h) => (
                         <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
@@ -1072,9 +1072,6 @@ export default function BusinessHistory() {
                               <FolderDown className="h-3.5 w-3.5" />
                               설계서
                             </button>
-                          </td>
-                          <td className="px-4 py-3">
-                            <Eye className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
                           </td>
                         </tr>
                       );
