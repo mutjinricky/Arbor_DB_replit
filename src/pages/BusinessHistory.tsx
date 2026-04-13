@@ -652,28 +652,48 @@ function UploadModal({
     onClose();
   }
 
+  const previewFields: [string, string][] = preview ? [
+    ["사업명",   String(preview.name ?? "미상")],
+    ["연도",     String(preview.year ?? "미상")],
+    ["지역",     String(preview.region ?? "미상")],
+    ["사업유형", String(preview.type ?? "미상")],
+    ["사업상태", String(preview.status ?? "계획중")],
+    ["공기",     String(preview.period || "미상")],
+    ["총예산",   preview.budget ? fmtFull(preview.budget as number) : "₩0.0M"],
+    ["집행액",   "₩0.0M"],
+    ["수목 수",  preview.treeCount ? `${preview.treeCount}주` : "0주"],
+  ] : [];
+
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-sm">
-            <Upload className="h-4 w-4 text-indigo-600" />
-            사업설계서 등록
+      <DialogContent className="max-w-[660px] w-full p-0 gap-0 overflow-hidden rounded-2xl">
+        {/* 헤더 */}
+        <div className="px-6 pt-5 pb-4 border-b">
+          <p className="text-[11px] text-muted-foreground mb-0.5">사업설계서 등록</p>
+          <DialogTitle className="text-base font-semibold leading-tight">
+            설계서 파일 업로드 기반 자동 등록
           </DialogTitle>
-        </DialogHeader>
-        <div className="grid grid-cols-[1fr_1fr] gap-5 mt-2">
-          {/* 좌측: 업로드 */}
-          <div className="space-y-3">
+        </div>
+
+        {/* 본문 2단 */}
+        <div className="grid grid-cols-2 gap-4 p-5">
+          {/* ── 좌측: 파일 업로드 카드 ── */}
+          <div className="rounded-xl border bg-white dark:bg-slate-900 p-4 flex flex-col gap-3">
             <div>
-              <p className="text-xs font-semibold mb-1">파일 업로드</p>
-              <p className="text-[11px] text-muted-foreground">PDF, TXT, MD 파일을 업로드하면 사업 정보를 자동으로 추출합니다.</p>
+              <p className="text-[13px] font-semibold mb-0.5">파일 업로드</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                사업설계서 PDF 또는 TXT 파일을 업로드하면 시스템이 내용을 읽어 목록에 필요한 정보를 자동 추출합니다.
+              </p>
             </div>
+
+            {/* 드래그 업로드 박스 */}
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-border rounded-xl p-6 flex flex-col items-center gap-2 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/30 transition-colors"
+              className="flex-1 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center gap-2 py-8 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/20 dark:hover:bg-indigo-900/10 transition-colors"
             >
-              <Upload className="h-8 w-8 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground text-center">클릭하여 파일 선택<br /><span className="text-[10px]">PDF · TXT · MD</span></p>
+              <Upload className="h-7 w-7 text-slate-400" />
+              <p className="text-[12px] font-medium text-slate-600 dark:text-slate-300 text-center">설계서 파일 선택</p>
+              <p className="text-[10px] text-muted-foreground">PDF, TXT 지원</p>
             </div>
             <input
               ref={fileInputRef}
@@ -682,59 +702,68 @@ function UploadModal({
               className="hidden"
               onChange={(e) => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }}
             />
-            {fileName && (
-              <div className="flex items-center gap-2 text-xs p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border">
-                <FileText className="h-3.5 w-3.5 text-indigo-500" />
-                <span className="truncate">{fileName}</span>
+
+            {/* 선택 파일명 */}
+            {fileName ? (
+              <div className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed break-all">
+                <span className="text-muted-foreground">선택 파일: </span>{fileName}
               </div>
+            ) : (
+              <div className="h-[18px]" />
             )}
+
             {analyzing && (
-              <div className="text-xs text-indigo-600 flex items-center gap-2 animate-pulse">
+              <div className="text-[11px] text-indigo-600 flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
                 분석 중...
               </div>
             )}
-            {error && <p className="text-xs text-red-600">{error}</p>}
+            {error && <p className="text-[11px] text-red-600">{error}</p>}
           </div>
 
-          {/* 우측: 미리보기 */}
-          <div className="space-y-2">
-            <p className="text-xs font-semibold">자동 추출 미리보기</p>
-            {!preview ? (
-              <div className="rounded-xl border bg-slate-50 dark:bg-slate-800/40 h-48 flex items-center justify-center text-xs text-muted-foreground">
-                파일 업로드 후 표시됩니다
-              </div>
-            ) : (
-              <div className="rounded-xl border divide-y text-xs">
-                {[
-                  ["사업명", preview.name],
-                  ["연도", preview.year],
-                  ["지역", preview.region],
-                  ["사업유형", preview.type],
-                  ["사업상태", preview.status],
-                  ["공기", preview.period],
-                  ["총예산", preview.budget ? fmtFull(preview.budget as number) : "미상"],
-                  ["집행액", "0원"],
-                  ["수목 수", preview.treeCount ? `${preview.treeCount}주` : "미상"],
-                  ["시행사", preview.vendor],
-                ].map(([label, value]) => (
-                  <div key={label as string} className="flex gap-2 px-3 py-1.5">
-                    <span className="text-muted-foreground w-16 shrink-0">{label}</span>
-                    <span className="font-medium truncate">{String(value ?? "미상")}</span>
+          {/* ── 우측: 자동 추출 미리보기 카드 ── */}
+          <div className="rounded-xl border bg-white dark:bg-slate-900 p-4 flex flex-col gap-3">
+            <p className="text-[13px] font-semibold flex items-center gap-1.5">
+              <FileText className="h-3.5 w-3.5 text-slate-400" />
+              자동 추출 미리보기
+            </p>
+
+            {/* 분석 상태 배지 */}
+            <div className={`rounded-lg px-3 py-2 text-[11px] font-medium flex items-center gap-2 ${
+              preview
+                ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400"
+                : "bg-slate-50 dark:bg-slate-800 text-muted-foreground"
+            }`}>
+              <div className={`h-2 w-2 rounded-full ${preview ? "bg-green-500" : "bg-slate-300"}`} />
+              {preview ? "파일 분석 완료" : "파일을 업로드하면 항목이 추출됩니다"}
+            </div>
+
+            {/* 추출 항목 그리드 */}
+            {preview ? (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 flex-1">
+                {previewFields.map(([label, value]) => (
+                  <div key={label} className={label === "사업명" ? "col-span-2" : ""}>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">{label}</p>
+                    <p className="text-[13px] font-medium leading-snug break-words">{value}</p>
                   </div>
                 ))}
+              </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-[11px] text-muted-foreground py-8">
+                추출 항목이 여기에 표시됩니다
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
-          <Button variant="outline" size="sm" onClick={onClose}>취소</Button>
+        {/* 하단 버튼 */}
+        <div className="flex justify-end gap-2 px-5 pb-5">
+          <Button variant="outline" size="sm" className="text-xs px-4" onClick={onClose}>취소</Button>
           <Button
             size="sm"
             disabled={!preview}
             onClick={handleRegister}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="text-xs px-4 bg-indigo-600 hover:bg-indigo-700 text-white"
           >
             사업 등록
           </Button>
