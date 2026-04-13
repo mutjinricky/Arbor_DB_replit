@@ -3,12 +3,16 @@ import {
   Search, Filter, X, ChevronRight, FileText, Download, FileSpreadsheet,
   BarChart3, Upload, MapPin, TreePine, Image, Building2, Calendar,
   Wallet, TrendingUp, CheckCircle2, Clock3, AlertCircle,
-  ChevronLeft, ChevronDown, FolderDown,
+  ChevronLeft, ChevronDown, FolderDown, Pencil, Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
@@ -562,6 +566,162 @@ function ProjectDetailModal({
   );
 }
 
+// ── 사업이력 편집 팝업 ─────────────────────────────────────────────────────────
+function EditProjectModal({
+  project,
+  onClose,
+  onSave,
+}: {
+  project: BusinessProject;
+  onClose: () => void;
+  onSave: (updated: BusinessProject) => void;
+}) {
+  const [form, setForm] = useState<BusinessProject>({ ...project });
+
+  function set<K extends keyof BusinessProject>(key: K, value: BusinessProject[K]) {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function handleSave() {
+    onSave(form);
+    onClose();
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-[560px] w-full rounded-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-base font-semibold">사업 정보 편집</DialogTitle>
+          <p className="text-[11px] text-muted-foreground">수정 후 저장을 누르면 목록에 반영됩니다.</p>
+        </DialogHeader>
+
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-1">
+          {/* 사업명 — 전체 너비 */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-[11px]">사업명</Label>
+            <Input
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
+              className="h-8 text-xs"
+              data-testid="input-edit-name"
+            />
+          </div>
+
+          {/* 연도 */}
+          <div className="space-y-1">
+            <Label className="text-[11px]">연도</Label>
+            <Input
+              type="number"
+              value={form.year}
+              onChange={(e) => set("year", Number(e.target.value))}
+              className="h-8 text-xs"
+              data-testid="input-edit-year"
+            />
+          </div>
+
+          {/* 지역 */}
+          <div className="space-y-1">
+            <Label className="text-[11px]">지역</Label>
+            <Select value={form.region} onValueChange={(v) => set("region", v)}>
+              <SelectTrigger className="h-8 text-xs" data-testid="select-edit-region">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ALL_REGIONS.map((r) => <SelectItem key={r} value={r} className="text-xs">{r}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 사업유형 */}
+          <div className="space-y-1">
+            <Label className="text-[11px]">사업유형</Label>
+            <Select value={form.type} onValueChange={(v) => set("type", v)}>
+              <SelectTrigger className="h-8 text-xs" data-testid="select-edit-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ALL_TYPES.map((t) => <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 사업상태 */}
+          <div className="space-y-1">
+            <Label className="text-[11px]">사업상태</Label>
+            <Select value={form.status} onValueChange={(v) => set("status", v as ProjectStatus)}>
+              <SelectTrigger className="h-8 text-xs" data-testid="select-edit-status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ALL_STATUSES.map((s) => <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 공기 */}
+          <div className="space-y-1">
+            <Label className="text-[11px]">공기</Label>
+            <Input
+              value={form.period}
+              onChange={(e) => set("period", e.target.value)}
+              placeholder="예: 2024-03-01 ~ 2024-06-30"
+              className="h-8 text-xs"
+              data-testid="input-edit-period"
+            />
+          </div>
+
+          {/* 총예산 (원) */}
+          <div className="space-y-1">
+            <Label className="text-[11px]">총예산 (원)</Label>
+            <Input
+              type="number"
+              value={form.budget}
+              onChange={(e) => set("budget", Number(e.target.value))}
+              className="h-8 text-xs"
+              data-testid="input-edit-budget"
+            />
+          </div>
+
+          {/* 집행액 (원) */}
+          <div className="space-y-1">
+            <Label className="text-[11px]">집행액 (원)</Label>
+            <Input
+              type="number"
+              value={form.spent}
+              onChange={(e) => set("spent", Number(e.target.value))}
+              className="h-8 text-xs"
+              data-testid="input-edit-spent"
+            />
+          </div>
+
+          {/* 시행사 */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-[11px]">시행사</Label>
+            <Input
+              value={form.vendor}
+              onChange={(e) => set("vendor", e.target.value)}
+              className="h-8 text-xs"
+              data-testid="input-edit-vendor"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4 border-t mt-2">
+          <Button variant="outline" size="sm" className="text-xs px-4" onClick={onClose}>취소</Button>
+          <Button
+            size="sm"
+            className="text-xs px-4 bg-indigo-600 hover:bg-indigo-700 text-white"
+            onClick={handleSave}
+            data-testid="button-save-edit"
+          >
+            저장
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ── 설계서 업로드 팝업 ─────────────────────────────────────────────────────────
 function UploadModal({
   onClose,
@@ -784,6 +944,8 @@ export default function BusinessHistory() {
   const [statusFilter, setStatusFilter] = useState<ProjectStatus[]>([]);
   const [selectedProject, setSelectedProject] = useState<BusinessProject | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<BusinessProject | null>(null);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
 
   useEffect(() => { saveToStorage(projects); }, [projects]);
 
@@ -812,6 +974,23 @@ export default function BusinessHistory() {
       saveToStorage(next);
       return next;
     });
+  }
+
+  function handleSaveEdit(updated: BusinessProject) {
+    setProjects((prev) => {
+      const next = prev.map((p) => p.id === updated.id ? updated : p);
+      saveToStorage(next);
+      return next;
+    });
+  }
+
+  function handleConfirmDelete(id: string) {
+    setProjects((prev) => {
+      const next = prev.filter((p) => p.id !== id);
+      saveToStorage(next);
+      return next;
+    });
+    setDeletingProjectId(null);
   }
 
   function clearFilters() {
@@ -1061,7 +1240,7 @@ export default function BusinessHistory() {
                 <table className="w-full text-xs">
                   <thead className="sticky top-0 z-10">
                     <tr className="border-b bg-slate-50 dark:bg-slate-800/80">
-                      {["사업명", "지역", "유형", "시행사", "공기", "예산", "상태", "설계서"].map((h) => (
+                      {["사업명", "지역", "유형", "시행사", "공기", "예산", "상태", "설계서", "관리"].map((h) => (
                         <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold text-muted-foreground whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
@@ -1102,6 +1281,26 @@ export default function BusinessHistory() {
                               설계서
                             </button>
                           </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setEditingProject(p); }}
+                                data-testid={`button-edit-${p.id}`}
+                                title="편집"
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setDeletingProjectId(p.id); }}
+                                data-testid={`button-delete-${p.id}`}
+                                title="삭제"
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       );
                     })}
@@ -1123,6 +1322,32 @@ export default function BusinessHistory() {
       {uploadOpen && (
         <UploadModal onClose={() => setUploadOpen(false)} onRegister={handleRegister} />
       )}
+      {editingProject && (
+        <EditProjectModal
+          project={editingProject}
+          onClose={() => setEditingProject(null)}
+          onSave={handleSaveEdit}
+        />
+      )}
+      <AlertDialog open={!!deletingProjectId} onOpenChange={(open) => { if (!open) setDeletingProjectId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>사업 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              이 사업을 삭제하면 복구할 수 없습니다. 정말 삭제하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => deletingProjectId && handleConfirmDelete(deletingProjectId)}
+            >
+              삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
