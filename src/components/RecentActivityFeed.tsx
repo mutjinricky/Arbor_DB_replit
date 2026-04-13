@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Clock, ChevronDown, CheckCircle2 } from "lucide-react";
+import { Clock, ChevronDown, CheckCircle2, ExternalLink } from "lucide-react";
 
 // ── 타입 ───────────────────────────────────────────────────────────────────────
 type ProjectStatus = "계획중" | "진행중" | "완료";
@@ -25,7 +26,7 @@ interface BizProject {
 }
 
 // ── 상수 ───────────────────────────────────────────────────────────────────────
-const BIZ_KEY = "dryad_business_history_v3";
+const BIZ_KEY = "dryad_business_history_v4";
 const ACT_KEY = "dryad_activity_status_v1";
 
 const VALID_REGIONS = ["도로", "마을", "축제장", "전답", "농가"];
@@ -100,11 +101,18 @@ function calcDDay(period: string): { daysLeft: number; progress: number } {
 
 // ── 컴포넌트 ──────────────────────────────────────────────────────────────────
 export function RecentActivityFeed() {
+  const navigate = useNavigate();
+
   const [projects] = useState<BizProject[]>(() =>
     loadProjects()
       .filter((p) => VALID_REGIONS.includes(p.region))
       .sort((a, b) => b.id.localeCompare(a.id))
   );
+
+  function openProjectDetail(projectId: string) {
+    sessionStorage.setItem("open_project_id", projectId);
+    navigate("/business-history");
+  }
 
   const [actStatuses, setActStatuses] = useState<Record<string, ActivityStatus>>(() => {
     const stored = loadActivityStatuses();
@@ -146,7 +154,14 @@ export function RecentActivityFeed() {
                       {actStatus}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[13px] font-medium leading-snug truncate">{p.name}</p>
+                      <button
+                        onClick={() => openProjectDetail(p.id)}
+                        className="flex items-center gap-1 text-[13px] font-medium leading-snug text-left hover:text-indigo-600 hover:underline transition-colors w-full"
+                        data-testid={`link-project-${p.id}`}
+                      >
+                        <span className="truncate">{p.name}</span>
+                        <ExternalLink className="h-3 w-3 shrink-0 opacity-50" />
+                      </button>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
                         {p.region} · {p.type} · {p.vendor}
                       </p>

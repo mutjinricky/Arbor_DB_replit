@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -43,6 +44,7 @@ interface BusinessProject {
   name: string;
   year: number;
   region: string;
+  location?: string;
   type: string;
   status: ProjectStatus;
   period: string;
@@ -66,6 +68,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     name: "이천시 장호원읍 노거수 생육기반 개선사업",
     year: 2024,
     region: "마을",
+    location: "경기도 이천시 장호원읍",
     type: "토양개량",
     status: "진행중",
     period: "2026-03-01 ~ 2026-06-30",
@@ -92,6 +95,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     name: "이천시 신둔면 가로수 전정 및 수형조절 사업",
     year: 2024,
     region: "도로",
+    location: "경기도 이천시 신둔면",
     type: "가지치기",
     status: "계획중",
     period: "2026-07-01 ~ 2026-09-30",
@@ -117,6 +121,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     name: "이천시 도립리 솔껍질깍지벌레 방제사업",
     year: 2024,
     region: "마을",
+    location: "경기도 이천시 설성면 도립리",
     type: "병해충방제",
     status: "완료",
     period: "2026-02-01 ~ 2026-03-31",
@@ -147,6 +152,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     name: "이천시 산수유마을 안전진단 사업",
     year: 2023,
     region: "마을",
+    location: "경기도 이천시 백사면 도립리",
     type: "정밀진단",
     status: "완료",
     period: "2025-10-01 ~ 2025-11-30",
@@ -175,6 +181,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     name: "이천시 백사면 수세회복 사업",
     year: 2023,
     region: "마을",
+    location: "경기도 이천시 백사면",
     type: "시비관리",
     status: "완료",
     period: "2025-05-01 ~ 2025-08-31",
@@ -204,6 +211,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     name: "이천시 관고동 위험수목 제거사업",
     year: 2023,
     region: "도로",
+    location: "경기도 이천시 관고동",
     type: "위험목제거",
     status: "완료",
     period: "2025-04-01 ~ 2025-05-31",
@@ -243,7 +251,8 @@ const ALL_REGIONS = ["도로", "마을", "축제장", "전답", "농가"];
 const ALL_TYPES   = ["가지치기", "토양개량", "병해충방제", "위험목제거", "외과수술", "정밀진단", "시비관리"];
 const ALL_STATUSES: ProjectStatus[] = ["계획중", "진행중", "완료"];
 
-const STORAGE_KEY = "dryad_business_history_v3";
+const STORAGE_KEY = "dryad_business_history_v4";
+const ACT_STATUS_KEY = "dryad_activity_status_v1";
 
 // ── 유틸 ──────────────────────────────────────────────────────────────────────
 const fmt = (n: number) =>
@@ -274,6 +283,35 @@ function loadFromStorage(): BusinessProject[] {
 function saveToStorage(data: BusinessProject[]) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
 }
+
+// ── 활동상태 유틸 ──────────────────────────────────────────────────────────────
+type ActivityStatus = "착공" | "작업중" | "작업완료" | "준공";
+const ALL_ACTIVITY_STATUSES: ActivityStatus[] = ["착공", "작업중", "작업완료", "준공"];
+
+function defaultActivityStatus(status: ProjectStatus): ActivityStatus {
+  if (status === "진행중") return "작업중";
+  if (status === "완료") return "준공";
+  return "착공";
+}
+
+function loadActivityStatuses(): Record<string, ActivityStatus> {
+  try {
+    const raw = localStorage.getItem(ACT_STATUS_KEY);
+    if (raw) return JSON.parse(raw) as Record<string, ActivityStatus>;
+  } catch {}
+  return {};
+}
+
+function saveActivityStatuses(s: Record<string, ActivityStatus>) {
+  try { localStorage.setItem(ACT_STATUS_KEY, JSON.stringify(s)); } catch {}
+}
+
+const ACT_STATUS_STYLE: Record<ActivityStatus, string> = {
+  착공:   "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+  작업중: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+  작업완료: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
+  준공:   "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
+};
 
 // ── 상태 배지 컴포넌트 ─────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: ProjectStatus }) {
@@ -332,13 +370,36 @@ function TreePopup({
 function ProjectDetailModal({
   project,
   onClose,
+  onUpdate,
 }: {
   project: BusinessProject;
   onClose: () => void;
+  onUpdate?: (updated: BusinessProject) => void;
 }) {
   const [photoIdx, setPhotoIdx] = useState(0);
   const [selectedTree, setSelectedTree] = useState<ConnectedTree | null>(null);
   const spentRate = project.budget > 0 ? Math.round((project.spent / project.budget) * 100) : 0;
+
+  // 활동상태 관리
+  const [actStatus, setActStatus] = useState<ActivityStatus>(() => {
+    const stored = loadActivityStatuses();
+    return stored[project.id] ?? defaultActivityStatus(project.status);
+  });
+
+  function handleActStatusChange(s: ActivityStatus) {
+    setActStatus(s);
+    const stored = loadActivityStatuses();
+    const updated = { ...stored, [project.id]: s };
+    saveActivityStatuses(updated);
+    // 준공 선택 시 사업 상태를 "완료"로 자동 전환
+    if (s === "준공" && project.status !== "완료") {
+      onUpdate?.({ ...project, status: "완료" });
+    }
+    // 착공/작업중/작업완료 선택 시 완료→진행중으로 복원
+    if (s !== "준공" && project.status === "완료") {
+      onUpdate?.({ ...project, status: "진행중" });
+    }
+  }
 
   return (
     <>
@@ -348,14 +409,44 @@ function ProjectDetailModal({
           <div className="p-6 pb-4 border-b sticky top-0 bg-background z-10">
             <p className="text-[11px] font-semibold text-muted-foreground mb-2">상세이력</p>
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="text-[11px] font-mono text-muted-foreground">{project.id}</span>
                   <StatusBadge status={project.status} />
+                  {project.location && (
+                    <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
+                      <MapPin className="h-3 w-3" />{project.location}
+                    </span>
+                  )}
                 </div>
                 <h2 className="text-lg font-bold leading-tight">{project.name}</h2>
                 <p className="text-xs text-muted-foreground mt-1">{project.summary}</p>
               </div>
+            </div>
+
+            {/* 활동상태 변경 바 */}
+            <div className="mt-4 flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] text-muted-foreground font-medium shrink-0">활동상태:</span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {ALL_ACTIVITY_STATUSES.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => handleActStatusChange(s)}
+                    className={cn(
+                      "px-3 py-1 rounded-full text-[11px] font-semibold border transition-all",
+                      actStatus === s
+                        ? `${ACT_STATUS_STYLE[s]} border-transparent shadow-sm scale-105`
+                        : "border-border text-muted-foreground hover:border-indigo-300 hover:text-foreground"
+                    )}
+                    data-testid={`button-act-status-detail-${s}`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+              {actStatus === "준공" && project.status !== "완료" && (
+                <span className="text-[10px] text-indigo-600 italic">준공 선택 시 사업 상태가 '완료'로 변경됩니다</span>
+              )}
             </div>
           </div>
 
@@ -603,6 +694,18 @@ function EditProjectModal({
               onChange={(e) => set("name", e.target.value)}
               className="h-8 text-xs"
               data-testid="input-edit-name"
+            />
+          </div>
+
+          {/* 상세 위치 — 전체 너비 */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-[11px]">상세 위치 (행정구역)</Label>
+            <Input
+              value={form.location ?? ""}
+              onChange={(e) => set("location", e.target.value)}
+              placeholder="예: 경기도 이천시 장호원읍"
+              className="h-8 text-xs"
+              data-testid="input-edit-location"
             />
           </div>
 
@@ -948,6 +1051,16 @@ export default function BusinessHistory() {
 
   useEffect(() => { saveToStorage(projects); }, [projects]);
 
+  // 대시보드 최근 활동 클릭 시 자동 오픈
+  useEffect(() => {
+    const pendingId = sessionStorage.getItem("open_project_id");
+    if (pendingId) {
+      sessionStorage.removeItem("open_project_id");
+      const found = projects.find((p) => p.id === pendingId);
+      if (found) setSelectedProject(found);
+    }
+  }, []);
+
   // 필터 적용 + 정렬
   const filtered = sortProjects(
     projects.filter((p) => {
@@ -981,6 +1094,16 @@ export default function BusinessHistory() {
       saveToStorage(next);
       return next;
     });
+  }
+
+  function handleProjectUpdate(updated: BusinessProject) {
+    setProjects((prev) => {
+      const next = prev.map((p) => p.id === updated.id ? updated : p);
+      saveToStorage(next);
+      return next;
+    });
+    // selectedProject가 열려 있는 경우 동기화
+    setSelectedProject((prev) => (prev && prev.id === updated.id ? updated : prev));
   }
 
   function handleConfirmDelete(id: string) {
@@ -1263,7 +1386,7 @@ export default function BusinessHistory() {
                             <p className="font-semibold text-foreground">{p.name}</p>
                             <p className="text-[10px] text-muted-foreground font-mono">{p.id} · {p.year}년</p>
                           </td>
-                          <td className="px-4 py-3 text-muted-foreground">{p.region}</td>
+                          <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{p.location || p.region}</td>
                           <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{p.type}</td>
                           <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{p.vendor}</td>
                           <td className="px-4 py-3 text-muted-foreground whitespace-nowrap text-[10px]">{p.period}</td>
@@ -1316,7 +1439,11 @@ export default function BusinessHistory() {
 
       {/* ── 모달들 ── */}
       {selectedProject && (
-        <ProjectDetailModal project={selectedProject} onClose={() => setSelectedProject(null)} />
+        <ProjectDetailModal
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+          onUpdate={handleProjectUpdate}
+        />
       )}
       {uploadOpen && (
         <UploadModal onClose={() => setUploadOpen(false)} onRegister={handleRegister} />
