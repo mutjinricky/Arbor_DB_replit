@@ -73,7 +73,7 @@ export default function Dashboard() {
             value="40%"
             icon={DollarSign}
             variant="warning"
-            trend={{ value: "₩100M / ₩250M", isPositive: true }}
+            trend={{ value: "1억원 / 2억5천만원", isPositive: true }}
           />
         </div>
 

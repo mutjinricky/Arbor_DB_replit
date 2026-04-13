@@ -53,6 +53,16 @@ export function ExpenditureChart({ data }: ExpenditureChartProps) {
 
   const total = data.reduce((sum, item) => sum + item.amount, 0);
 
+  function fmtKRW(amount: number): string {
+    if (amount >= 100_000_000) {
+      const eok = Math.floor(amount / 100_000_000);
+      const man = Math.floor((amount % 100_000_000) / 10_000);
+      return man > 0 ? `${eok}억${man}만원` : `${eok}억원`;
+    }
+    const man = Math.floor(amount / 10_000);
+    return `${man}만원`;
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -73,7 +83,7 @@ export function ExpenditureChart({ data }: ExpenditureChartProps) {
                     <Icon className={`h-4 w-4 ${colorClass}`} />
                     <span className="text-sm font-medium">{item.name}</span>
                   </div>
-                  <Badge variant="secondary">₩{(item.amount / 1000000).toFixed(0)}M</Badge>
+                  <Badge variant="secondary">{fmtKRW(item.amount)}</Badge>
                 </div>
                 <div className="w-full bg-secondary rounded-full h-2">
                   <div
