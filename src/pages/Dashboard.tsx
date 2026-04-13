@@ -7,7 +7,6 @@ import { ExpenditureChart } from "@/components/ExpenditureChart";
 import { RecentActivityFeed } from "@/components/RecentActivityFeed";
 import { TreeProfileModal } from "@/components/TreeProfileModal";
 import { WorkOrderDialog } from "@/components/WorkOrderDialog";
-import { WorkNotifications } from "@/components/WorkNotifications";
 import { PestAlertBanner } from "@/components/PestAlertBanner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pie, PieChart, Cell, ResponsiveContainer, Tooltip, Text } from "recharts";
@@ -146,12 +145,6 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Row 4: Work Notifications */}
-        <div className="grid gap-6 lg:grid-cols-2 mb-8">
-          <WorkNotifications role="official" />
-          <WorkNotifications role="worker" />
         </div>
 
         {/* Row 4: Work Order Status and Expenditure */}
