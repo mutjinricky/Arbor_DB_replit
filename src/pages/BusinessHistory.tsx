@@ -68,7 +68,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     region: "마을",
     type: "토양개량",
     status: "진행중",
-    period: "2024-03-01 ~ 2024-06-30",
+    period: "2026-03-01 ~ 2026-06-30",
     budget: 45000000,
     spent: 32000000,
     vendor: "화산나무병원",
@@ -94,7 +94,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     region: "도로",
     type: "가지치기",
     status: "계획중",
-    period: "2024-07-01 ~ 2024-09-30",
+    period: "2026-07-01 ~ 2026-09-30",
     budget: 28000000,
     spent: 0,
     vendor: "강산나무병원",
@@ -119,7 +119,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     region: "마을",
     type: "병해충방제",
     status: "완료",
-    period: "2024-02-01 ~ 2024-03-31",
+    period: "2026-02-01 ~ 2026-03-31",
     budget: 18000000,
     spent: 17500000,
     vendor: "한수나무병원",
@@ -149,7 +149,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     region: "마을",
     type: "정밀진단",
     status: "완료",
-    period: "2023-10-01 ~ 2023-11-30",
+    period: "2025-10-01 ~ 2025-11-30",
     budget: 12000000,
     spent: 11800000,
     vendor: "솔향나무병원",
@@ -177,7 +177,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     region: "마을",
     type: "시비관리",
     status: "완료",
-    period: "2023-05-01 ~ 2023-08-31",
+    period: "2025-05-01 ~ 2025-08-31",
     budget: 35000000,
     spent: 34200000,
     vendor: "한산나무병원",
@@ -206,7 +206,7 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     region: "도로",
     type: "위험목제거",
     status: "완료",
-    period: "2023-04-01 ~ 2023-05-31",
+    period: "2025-04-01 ~ 2025-05-31",
     budget: 8000000,
     spent: 7800000,
     vendor: "나무잇나무병원",
@@ -243,7 +243,7 @@ const ALL_REGIONS = ["도로", "마을", "축제장", "전답", "농가"];
 const ALL_TYPES   = ["가지치기", "토양개량", "병해충방제", "위험목제거", "외과수술", "정밀진단", "시비관리"];
 const ALL_STATUSES: ProjectStatus[] = ["계획중", "진행중", "완료"];
 
-const STORAGE_KEY = "dryad_business_history_v2";
+const STORAGE_KEY = "dryad_business_history_v3";
 
 // ── 유틸 ──────────────────────────────────────────────────────────────────────
 const fmt = (n: number) =>
