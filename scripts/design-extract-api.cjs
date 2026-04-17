@@ -13,6 +13,7 @@ const UPLOAD_DIR = process.env.DESIGN_UPLOAD_DIR || path.join(os.tmpdir(), "smar
 const CHUNK_DIR = path.join(UPLOAD_DIR, "chunks");
 const EXTRACTOR = path.join(ROOT, "scripts", "extract_tree_design_pdf.py");
 const REQUIREMENTS = path.join(ROOT, "requirements.txt");
+const jobs = new Map();
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 fs.mkdirSync(CHUNK_DIR, { recursive: true });
@@ -44,6 +45,56 @@ function ensureSupportedFile(fileName) {
   if (![".pdf", ".txt", ".md"].includes(ext)) {
     throw new Error("PDF, TXT, MD 파일만 지원합니다.");
   }
+}
+
+function publicJob(job) {
+  if (!job) return null;
+  return {
+    ok: job.ok,
+    done: job.done,
+    status: job.status,
+    error: job.error,
+    fileName: job.fileName,
+    textLength: job.textLength,
+    warnings: job.warnings,
+    extracted: job.extracted,
+  };
+}
+
+function startExtractionJob({ jobId, fileName, savedPath }) {
+  jobs.set(jobId, {
+    ok: true,
+    done: false,
+    status: "processing",
+    fileName,
+    startedAt: Date.now(),
+  });
+
+  console.log(`[design-extract] job started ${jobId} ${fileName}`);
+
+  runExtractor(savedPath)
+    .then((result) => {
+      jobs.set(jobId, {
+        ...result,
+        ok: true,
+        done: true,
+        status: "completed",
+        completedAt: Date.now(),
+      });
+      console.log(`[design-extract] job completed ${jobId}`);
+    })
+    .catch((error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      jobs.set(jobId, {
+        ok: false,
+        done: true,
+        status: "failed",
+        fileName,
+        error: message,
+        completedAt: Date.now(),
+      });
+      console.error(`[design-extract] job failed ${jobId}`, error);
+    });
 }
 
 function pythonCandidates() {
@@ -172,6 +223,7 @@ app.get("/api/design-documents/diagnostics", (_req, res) => {
     uploadDirExists: fs.existsSync(UPLOAD_DIR),
     extractorExists: fs.existsSync(EXTRACTOR),
     requirementsExists: fs.existsSync(REQUIREMENTS),
+    jobs: jobs.size,
     python: [],
   };
 
@@ -188,6 +240,15 @@ app.get("/api/design-documents/diagnostics", (_req, res) => {
   }
 
   res.json(diagnostics);
+});
+
+app.get("/api/design-documents/jobs/:jobId", (req, res) => {
+  const job = publicJob(jobs.get(safeId(req.params.jobId)));
+  if (!job) {
+    res.status(404).json({ ok: false, done: true, status: "failed", error: "추출 작업을 찾지 못했습니다." });
+    return;
+  }
+  res.json(job);
 });
 
 app.post("/api/design-documents/extract", async (req, res) => {
@@ -270,6 +331,72 @@ app.post("/api/design-documents/extract-chunk", async (req, res) => {
     });
   }
 });
+
+app.post(
+  "/api/design-documents/upload-chunk",
+  express.raw({ type: "application/octet-stream", limit: "2mb" }),
+  async (req, res) => {
+    try {
+      const { uploadId, fileName } = req.query || {};
+      const chunkIndex = Number(req.query?.chunkIndex);
+      const totalChunks = Number(req.query?.totalChunks);
+
+      if (!uploadId || !fileName || !Buffer.isBuffer(req.body) || !Number.isInteger(chunkIndex) || !Number.isInteger(totalChunks)) {
+        res.status(400).json({ ok: false, error: "chunk 업로드 정보가 올바르지 않습니다." });
+        return;
+      }
+      if (chunkIndex < 0 || totalChunks < 1 || chunkIndex >= totalChunks) {
+        res.status(400).json({ ok: false, error: "chunk 순서 정보가 올바르지 않습니다." });
+        return;
+      }
+
+      const cleanFileName = String(fileName);
+      ensureSupportedFile(cleanFileName);
+
+      const cleanUploadId = safeId(uploadId);
+      const uploadDir = path.join(CHUNK_DIR, cleanUploadId);
+      fs.mkdirSync(uploadDir, { recursive: true });
+      fs.writeFileSync(path.join(uploadDir, `${String(chunkIndex).padStart(6, "0")}.part`), req.body);
+
+      if (chunkIndex < totalChunks - 1) {
+        res.json({ ok: true, done: false, received: chunkIndex + 1, totalChunks });
+        return;
+      }
+
+      const savedPath = path.join(UPLOAD_DIR, safeFileName(cleanFileName));
+      const output = fs.createWriteStream(savedPath);
+
+      try {
+        for (let index = 0; index < totalChunks; index += 1) {
+          const chunkPath = path.join(uploadDir, `${String(index).padStart(6, "0")}.part`);
+          if (!fs.existsSync(chunkPath)) {
+            output.close();
+            res.status(400).json({ ok: false, error: `${index + 1}번째 파일 조각이 누락되었습니다.` });
+            return;
+          }
+          output.write(fs.readFileSync(chunkPath));
+        }
+
+        await new Promise((resolve, reject) => {
+          output.end(resolve);
+          output.on("error", reject);
+        });
+      } finally {
+        fs.rmSync(uploadDir, { recursive: true, force: true });
+      }
+
+      const jobId = safeId(`${cleanUploadId}-${Date.now()}`);
+      startExtractionJob({ jobId, fileName: cleanFileName, savedPath });
+      res.json({ ok: true, done: false, status: "processing", jobId });
+    } catch (error) {
+      console.error("[design-extract] upload-chunk failed", error);
+      res.status(500).json({
+        ok: false,
+        error: error instanceof Error ? error.message : "업로드 중 오류가 발생했습니다.",
+      });
+    }
+  }
+);
 
 if (serveStatic) {
   app.use(express.static(DIST_DIR));

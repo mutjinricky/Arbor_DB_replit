@@ -20,25 +20,13 @@ export interface DesignExtractionResponse {
 }
 
 const UPLOAD_CHUNK_SIZE = 96 * 1024;
+const MAX_JOB_POLLS = 180;
 
 function makeUploadId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = "";
-  const step = 0x8000;
-
-  for (let i = 0; i < bytes.length; i += step) {
-    const chunk = bytes.subarray(i, i + step);
-    binary += String.fromCharCode(...chunk);
-  }
-
-  return btoa(binary);
 }
 
 async function readJsonResponse(response: Response) {
@@ -50,6 +38,33 @@ async function readJsonResponse(response: Response) {
   }
 }
 
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function pollExtractionJob(jobId: string): Promise<DesignExtractionResponse> {
+  for (let attempt = 0; attempt < MAX_JOB_POLLS; attempt += 1) {
+    const response = await fetch(`/api/design-documents/jobs/${encodeURIComponent(jobId)}`);
+    const data = await readJsonResponse(response);
+
+    if (!response.ok || !data) {
+      throw new Error(data?.error || `사업설계서 추출 상태 확인에 실패했습니다. (${response.status})`);
+    }
+
+    if (data.status === "failed" || data.ok === false) {
+      throw new Error(data.error || "사업설계서 추출에 실패했습니다.");
+    }
+
+    if (data.done) {
+      return data as DesignExtractionResponse;
+    }
+
+    await wait(1000);
+  }
+
+  throw new Error("사업설계서 추출 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.");
+}
+
 export async function extractDesignDocument(file: File): Promise<DesignExtractionResponse> {
   const uploadId = makeUploadId();
   const totalChunks = Math.max(1, Math.ceil(file.size / UPLOAD_CHUNK_SIZE));
@@ -57,19 +72,18 @@ export async function extractDesignDocument(file: File): Promise<DesignExtractio
   for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
     const start = chunkIndex * UPLOAD_CHUNK_SIZE;
     const end = Math.min(file.size, start + UPLOAD_CHUNK_SIZE);
-    const contentBase64 = arrayBufferToBase64(await file.slice(start, end).arrayBuffer());
+    const params = new URLSearchParams({
+      uploadId,
+      fileName: file.name,
+      mimeType: file.type || "application/octet-stream",
+      chunkIndex: String(chunkIndex),
+      totalChunks: String(totalChunks),
+    });
 
-    const response = await fetch("/api/design-documents/extract-chunk", {
+    const response = await fetch(`/api/design-documents/upload-chunk?${params.toString()}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        uploadId,
-        fileName: file.name,
-        mimeType: file.type || "application/octet-stream",
-        chunkIndex,
-        totalChunks,
-        contentBase64,
-      }),
+      headers: { "Content-Type": "application/octet-stream" },
+      body: file.slice(start, end),
     });
 
     const data = await readJsonResponse(response);
@@ -78,8 +92,8 @@ export async function extractDesignDocument(file: File): Promise<DesignExtractio
       throw new Error(data?.error || `사업설계서 추출에 실패했습니다. (${response.status})`);
     }
 
-    if (data.done) {
-      return data as DesignExtractionResponse;
+    if (data.jobId) {
+      return pollExtractionJob(data.jobId);
     }
   }
 
