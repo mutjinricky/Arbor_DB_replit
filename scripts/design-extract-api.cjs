@@ -1,13 +1,16 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const { spawn } = require("child_process");
+const { spawn, spawnSync } = require("child_process");
 
 const app = express();
-const PORT = Number(process.env.DESIGN_EXTRACT_API_PORT || 5174);
+const serveStatic = process.argv.includes("--serve-static");
+const PORT = Number(process.env.PORT || (serveStatic ? 5000 : process.env.DESIGN_EXTRACT_API_PORT || 5174));
 const ROOT = path.resolve(__dirname, "..");
+const DIST_DIR = path.join(ROOT, "dist");
 const UPLOAD_DIR = path.join(ROOT, ".tmp", "design-documents");
 const EXTRACTOR = path.join(ROOT, "scripts", "extract_tree_design_pdf.py");
+const REQUIREMENTS = path.join(ROOT, "requirements.txt");
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
@@ -29,7 +32,18 @@ function safeFileName(name) {
   return `${Date.now()}_${base || "design-document"}${ext || ".pdf"}`;
 }
 
-function runExtractor(filePath) {
+function installPythonDependencies(python) {
+  const result = spawnSync(python, ["-m", "pip", "install", "--user", "-r", REQUIREMENTS], {
+    cwd: ROOT,
+    stdio: "inherit",
+    windowsHide: true,
+  });
+  if (result.status !== 0) {
+    throw new Error("Python PDF 추출 의존성 설치에 실패했습니다.");
+  }
+}
+
+function runPythonExtractor(filePath) {
   const python = process.env.PYTHON || (process.platform === "win32" ? "py" : "python3");
 
   return new Promise((resolve, reject) => {
@@ -78,6 +92,21 @@ function runExtractor(filePath) {
   });
 }
 
+async function runExtractor(filePath) {
+  try {
+    return await runPythonExtractor(filePath);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.includes("pypdf")) {
+      throw error;
+    }
+
+    const python = process.env.PYTHON || (process.platform === "win32" ? "py" : "python3");
+    installPythonDependencies(python);
+    return runPythonExtractor(filePath);
+  }
+}
+
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "design-extract-api" });
 });
@@ -109,6 +138,20 @@ app.post("/api/design-documents/extract", async (req, res) => {
   }
 });
 
+if (serveStatic) {
+  app.use(express.static(DIST_DIR));
+  app.use((req, res, next) => {
+    if (req.method !== "GET") {
+      next();
+      return;
+    }
+    res.sendFile(path.join(DIST_DIR, "index.html"));
+  });
+}
+
 app.listen(PORT, () => {
-  console.log(`Design extract API listening on http://localhost:${PORT}`);
+  console.log(`Design extract server listening on http://localhost:${PORT}`);
+  if (serveStatic) {
+    console.log(`Serving static app from ${DIST_DIR}`);
+  }
 });

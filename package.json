@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "node scripts/design-extract-api.cjs",
-    "build": "vite build",
+    "dev:full": "node scripts/dev-full.cjs",
+    "setup:python": "node scripts/setup-python.cjs",
+    "start": "node scripts/design-extract-api.cjs --serve-static",
+    "build": "npm run setup:python && vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
