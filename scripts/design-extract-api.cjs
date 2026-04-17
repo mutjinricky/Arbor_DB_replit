@@ -1,5 +1,6 @@
 const express = require("express");
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { spawn, spawnSync } = require("child_process");
 
@@ -8,7 +9,7 @@ const serveStatic = process.argv.includes("--serve-static");
 const PORT = Number(process.env.PORT || (serveStatic ? 5000 : process.env.DESIGN_EXTRACT_API_PORT || 5174));
 const ROOT = path.resolve(__dirname, "..");
 const DIST_DIR = path.join(ROOT, "dist");
-const UPLOAD_DIR = path.join(ROOT, ".tmp", "design-documents");
+const UPLOAD_DIR = process.env.DESIGN_UPLOAD_DIR || path.join(os.tmpdir(), "smart-tree-design-documents");
 const CHUNK_DIR = path.join(UPLOAD_DIR, "chunks");
 const EXTRACTOR = path.join(ROOT, "scripts", "extract_tree_design_pdf.py");
 const REQUIREMENTS = path.join(ROOT, "requirements.txt");
@@ -45,20 +46,54 @@ function ensureSupportedFile(fileName) {
   }
 }
 
+function pythonCandidates() {
+  const candidates = [];
+  if (process.env.PYTHON) candidates.push(process.env.PYTHON);
+  if (process.platform === "win32") {
+    candidates.push("py", "python", "python3");
+  } else {
+    candidates.push("python3", "python");
+  }
+  return [...new Set(candidates)];
+}
+
+function runSync(command, args) {
+  return spawnSync(command, args, {
+    cwd: ROOT,
+    encoding: "utf8",
+    windowsHide: true,
+  });
+}
+
+function findPython() {
+  const errors = [];
+  for (const command of pythonCandidates()) {
+    const result = runSync(command, ["-c", "import sys; print(sys.executable)"]);
+    if (result.status === 0) {
+      return command;
+    }
+    errors.push(`${command}: ${(result.stderr || result.error?.message || "failed").trim()}`);
+  }
+  throw new Error(`Python 실행 파일을 찾지 못했습니다. ${errors.join(" | ")}`);
+}
+
+function hasPypdf(python) {
+  return runSync(python, ["-c", "import pypdf"]).status === 0;
+}
+
 function installPythonDependencies(python) {
   const result = spawnSync(python, ["-m", "pip", "install", "--user", "-r", REQUIREMENTS], {
     cwd: ROOT,
-    stdio: "inherit",
+    encoding: "utf8",
     windowsHide: true,
   });
   if (result.status !== 0) {
-    throw new Error("Python PDF 추출 의존성 설치에 실패했습니다.");
+    const detail = (result.stderr || result.stdout || result.error?.message || "").trim();
+    throw new Error(`Python PDF 추출 의존성 설치에 실패했습니다. ${detail}`);
   }
 }
 
-function runPythonExtractor(filePath) {
-  const python = process.env.PYTHON || (process.platform === "win32" ? "py" : "python3");
-
+function runPythonExtractor(filePath, python) {
   return new Promise((resolve, reject) => {
     const child = spawn(python, [EXTRACTOR, filePath], {
       cwd: ROOT,
@@ -84,7 +119,7 @@ function runPythonExtractor(filePath) {
         .find((line) => line.startsWith("{"));
 
       if (!firstJsonLine) {
-        reject(new Error(stderr || "추출기 응답을 읽지 못했습니다."));
+        reject(new Error(`추출기 응답을 읽지 못했습니다. python=${python}, code=${code}, stderr=${stderr || "empty"}`));
         return;
       }
 
@@ -106,22 +141,53 @@ function runPythonExtractor(filePath) {
 }
 
 async function runExtractor(filePath) {
+  const python = findPython();
   try {
-    return await runPythonExtractor(filePath);
+    if (!hasPypdf(python)) {
+      installPythonDependencies(python);
+    }
+    return await runPythonExtractor(filePath, python);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (!message.includes("pypdf")) {
       throw error;
     }
 
-    const python = process.env.PYTHON || (process.platform === "win32" ? "py" : "python3");
     installPythonDependencies(python);
-    return runPythonExtractor(filePath);
+    return runPythonExtractor(filePath, python);
   }
 }
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "design-extract-api" });
+});
+
+app.get("/api/design-documents/diagnostics", (_req, res) => {
+  const diagnostics = {
+    ok: true,
+    node: process.version,
+    platform: process.platform,
+    root: ROOT,
+    uploadDir: UPLOAD_DIR,
+    uploadDirExists: fs.existsSync(UPLOAD_DIR),
+    extractorExists: fs.existsSync(EXTRACTOR),
+    requirementsExists: fs.existsSync(REQUIREMENTS),
+    python: [],
+  };
+
+  for (const command of pythonCandidates()) {
+    const version = runSync(command, ["--version"]);
+    const pypdf = runSync(command, ["-c", "import pypdf; print(pypdf.__version__)"]);
+    diagnostics.python.push({
+      command,
+      versionOk: version.status === 0,
+      version: (version.stdout || version.stderr || "").trim(),
+      pypdfOk: pypdf.status === 0,
+      pypdf: (pypdf.stdout || pypdf.stderr || pypdf.error?.message || "").trim(),
+    });
+  }
+
+  res.json(diagnostics);
 });
 
 app.post("/api/design-documents/extract", async (req, res) => {
@@ -140,6 +206,7 @@ app.post("/api/design-documents/extract", async (req, res) => {
     const result = await runExtractor(savedPath);
     res.json(result);
   } catch (error) {
+    console.error("[design-extract] extract failed", error);
     res.status(500).json({
       ok: false,
       error: error instanceof Error ? error.message : "추출 중 오류가 발생했습니다.",
@@ -196,6 +263,7 @@ app.post("/api/design-documents/extract-chunk", async (req, res) => {
     const result = await runExtractor(savedPath);
     res.json({ ...result, done: true });
   } catch (error) {
+    console.error("[design-extract] extract-chunk failed", error);
     res.status(500).json({
       ok: false,
       error: error instanceof Error ? error.message : "추출 중 오류가 발생했습니다.",

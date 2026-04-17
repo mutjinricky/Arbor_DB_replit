@@ -19,7 +19,7 @@ export interface DesignExtractionResponse {
   extracted: DesignExtractionPayload;
 }
 
-const UPLOAD_CHUNK_SIZE = 512 * 1024;
+const UPLOAD_CHUNK_SIZE = 96 * 1024;
 
 function makeUploadId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -46,7 +46,7 @@ async function readJsonResponse(response: Response) {
   try {
     return text ? JSON.parse(text) : null;
   } catch {
-    return { error: text };
+    return { error: text ? text.slice(0, 500) : "" };
   }
 }
 
