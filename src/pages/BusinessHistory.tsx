@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { extractDesignDocument } from "@/lib/designExtraction";
 
 // ── 타입 ──────────────────────────────────────────────────────────────────────
 type ProjectStatus = "계획중" | "진행중" | "완료";
@@ -59,6 +60,7 @@ interface BusinessProject {
   connectedTrees: ConnectedTree[];
   contractors: Contractor[];
   completionPhotos: CompletionPhoto[];
+  designDocumentName?: string;
 }
 
 // ── 초기 더미 데이터 ──────────────────────────────────────────────────────────
@@ -835,116 +837,107 @@ function UploadModal({
   const [fileName, setFileName] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState("");
-  const [preview, setPreview] = useState<Partial<BusinessProject> | null>(null);
+  const [form, setForm] = useState<Partial<BusinessProject> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  function parseText(text: string): Partial<BusinessProject> {
-    const find = (keys: string[]) => {
-      for (const k of keys) {
-        const m = text.match(new RegExp(`${k}[:\\s：]+([^\n\r]+)`, "i"));
-        if (m) return m[1].trim();
-      }
-      return "";
-    };
-    const budgetRaw = find(["예산", "사업비", "총액", "금액"]);
-    const budget = parseInt(budgetRaw.replace(/[^0-9]/g, "")) || 0;
-    const treeRaw = find(["수목 수", "수목수", "대상 수목", "그루"]);
-    const treeCount = parseInt(treeRaw.replace(/[^0-9]/g, "")) || 0;
-    const yearRaw = find(["연도", "사업연도", "년도"]);
-    const year = parseInt(yearRaw) || new Date().getFullYear();
-    return {
-      name:    find(["사업명", "공사명", "과업명"]) || "미상",
-      year,
-      region:  find(["지역", "위치", "구역"]) || "미상",
-      type:    find(["사업유형", "공사종류", "유형"]) || "미상",
-      status:  "계획중",
-      period:  find(["공기", "기간", "공사기간"]) || "",
-      budget:  budget > 0 ? budget : 0,
-      spent:   0,
-      vendor:  find(["시행사", "업체", "도급사", "수급인"]) || "미상",
-      treeCount,
-    };
+  function setFormValue(key: keyof BusinessProject, value: string | number | ProjectStatus) {
+    setForm((prev) => ({ ...(prev ?? {}), [key]: value } as Partial<BusinessProject>));
+  }
+
+  function parseNumberInput(value: string) {
+    return parseInt(value.replace(/[^0-9]/g, ""), 10) || 0;
+  }
+
+  function formatInputNumber(value: unknown) {
+    return typeof value === "number" && value > 0 ? value.toLocaleString() : "";
   }
 
   async function handleFile(file: File) {
     setError("");
-    setPreview(null);
+    setForm(null);
     setFileName(file.name);
     setAnalyzing(true);
     try {
-      let text = "";
-      if (file.type === "application/pdf") {
-        text = `사업명: ${file.name.replace(".pdf", "")}\n연도: ${new Date().getFullYear()}\n`;
-      } else {
-        text = await file.text();
-      }
-      await new Promise((r) => setTimeout(r, 800));
-      const parsed = parseText(text);
-      setPreview(parsed);
-    } catch {
-      setError("파일을 읽는 중 오류가 발생했습니다. 다시 시도해주세요.");
+      const result = await extractDesignDocument(file);
+      const extracted = result.extracted;
+      const fallbackName = file.name.replace(/\.(pdf|txt|md)$/i, "");
+
+      setForm({
+        name: extracted.businessName || fallbackName || "신규 사업",
+        year: extracted.year ?? new Date().getFullYear(),
+        region: extracted.region || extracted.location || "미상",
+        location: extracted.location || "",
+        type: extracted.businessTypes.length ? extracted.businessTypes.join(", ") : "미상",
+        status: "계획중",
+        period: extracted.durationText || (extracted.durationDays ? `${extracted.durationDays}일` : ""),
+        budget: extracted.totalBudget ?? 0,
+        spent: 0,
+        vendor: extracted.designer || "",
+        treeCount: extracted.totalTreeCount ?? 0,
+        designDocumentName: file.name,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "파일을 읽는 중 오류가 발생했습니다.";
+      setError(
+        message.includes("Failed to fetch")
+          ? "추출 서버가 실행 중인지 확인해주세요. 별도 터미널에서 npm run dev:api를 실행해야 합니다."
+          : message
+      );
     } finally {
       setAnalyzing(false);
     }
   }
 
   function handleRegister() {
-    if (!preview) return;
+    if (!form) return;
+    const year = Number(form.year) || new Date().getFullYear();
+    const name = String(form.name || "신규 사업").trim();
+    const vendor = String(form.vendor || "").trim();
     const newProject: BusinessProject = {
-      id: `BH-${preview.year ?? new Date().getFullYear()}-${String(Date.now()).slice(-4)}`,
-      name: preview.name ?? "신규 사업",
-      year: preview.year ?? new Date().getFullYear(),
-      region: preview.region ?? "미상",
-      type: preview.type ?? "미상",
-      status: "계획중",
-      period: preview.period ?? "",
-      budget: preview.budget ?? 0,
-      spent: 0,
-      vendor: preview.vendor ?? "미상",
+      id: `BH-${year}-${String(Date.now()).slice(-4)}`,
+      name,
+      year,
+      region: String(form.region || "미상").trim(),
+      location: form.location ? String(form.location) : undefined,
+      type: String(form.type || "미상").trim(),
+      status: (form.status as ProjectStatus) ?? "계획중",
+      period: String(form.period || "").trim(),
+      budget: Number(form.budget) || 0,
+      spent: Number(form.spent) || 0,
+      vendor: vendor || "미상",
       vendorEmail: "",
       department: "공원녹지과",
-      summary: `${preview.name ?? "신규 사업"} — 설계서 기반 자동 등록`,
-      treeCount: preview.treeCount ?? 0,
+      summary: `${name} — 설계서 기반 등록`,
+      treeCount: Number(form.treeCount) || 0,
       mapCount: 0,
       connectedTrees: [],
-      contractors: preview.vendor ? [{ name: preview.vendor, email: "", initial: preview.vendor.slice(0, 1) }] : [],
+      contractors: vendor ? [{ name: vendor, email: "", initial: vendor.slice(0, 1) }] : [],
       completionPhotos: [],
+      designDocumentName: fileName || form.designDocumentName,
     };
     onRegister(newProject);
     onClose();
   }
 
-  const previewFields: [string, string][] = preview ? [
-    ["사업명",   String(preview.name ?? "미상")],
-    ["연도",     String(preview.year ?? "미상")],
-    ["지역",     String(preview.region ?? "미상")],
-    ["사업유형", String(preview.type ?? "미상")],
-    ["사업상태", String(preview.status ?? "계획중")],
-    ["공기",     String(preview.period || "미상")],
-    ["총예산",   preview.budget ? fmtFull(preview.budget as number) : "₩0.0M"],
-    ["집행액",   "₩0.0M"],
-    ["수목 수",  preview.treeCount ? `${preview.treeCount}주` : "0주"],
-  ] : [];
-
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-[660px] w-full p-0 gap-0 overflow-hidden rounded-2xl">
+      <DialogContent className="max-w-[860px] w-full p-0 gap-0 overflow-hidden rounded-2xl">
         {/* 헤더 */}
         <div className="px-6 pt-5 pb-4 border-b">
           <p className="text-[11px] text-muted-foreground mb-0.5">사업설계서 등록</p>
           <DialogTitle className="text-base font-semibold leading-tight">
-            설계서 파일 업로드 기반 자동 등록
+            설계서 자동 입력 후 직접 수정
           </DialogTitle>
         </div>
 
         {/* 본문 2단 */}
-        <div className="grid grid-cols-2 gap-4 p-5">
+        <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-4 p-5">
           {/* ── 좌측: 파일 업로드 카드 ── */}
           <div className="rounded-xl border bg-white dark:bg-slate-900 p-4 flex flex-col gap-3">
             <div>
               <p className="text-[13px] font-semibold mb-0.5">파일 업로드</p>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                사업설계서 PDF 또는 TXT 파일을 업로드하면 시스템이 내용을 읽어 목록에 필요한 정보를 자동 추출합니다.
+                나무병원 사업설계서 PDF를 업로드하면 등록 폼에 필요한 값을 자동으로 채웁니다. 추출 후 오른쪽에서 바로 수정할 수 있습니다.
               </p>
             </div>
 
@@ -983,36 +976,134 @@ function UploadModal({
             {error && <p className="text-[11px] text-red-600">{error}</p>}
           </div>
 
-          {/* ── 우측: 자동 추출 미리보기 카드 ── */}
+          {/* ── 우측: 자동 입력 수정 폼 ── */}
           <div className="rounded-xl border bg-white dark:bg-slate-900 p-4 flex flex-col gap-3">
             <p className="text-[13px] font-semibold flex items-center gap-1.5">
               <FileText className="h-3.5 w-3.5 text-slate-400" />
-              자동 추출 미리보기
+              자동 입력된 사업 정보
             </p>
 
             {/* 분석 상태 배지 */}
             <div className={`rounded-lg px-3 py-2 text-[11px] font-medium flex items-center gap-2 ${
-              preview
+              form
                 ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400"
                 : "bg-slate-50 dark:bg-slate-800 text-muted-foreground"
             }`}>
-              <div className={`h-2 w-2 rounded-full ${preview ? "bg-green-500" : "bg-slate-300"}`} />
-              {preview ? "파일 분석 완료" : "파일을 업로드하면 항목이 추출됩니다"}
+              <div className={`h-2 w-2 rounded-full ${form ? "bg-green-500" : "bg-slate-300"}`} />
+              {form ? "자동 입력 완료. 필요한 값을 수정한 뒤 등록하세요." : "파일을 업로드하면 입력 폼이 채워집니다."}
             </div>
 
-            {/* 추출 항목 그리드 */}
-            {preview ? (
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3 flex-1">
-                {previewFields.map(([label, value]) => (
-                  <div key={label} className={label === "사업명" ? "col-span-2" : ""}>
-                    <p className="text-[10px] text-muted-foreground mb-0.5">{label}</p>
-                    <p className="text-[13px] font-medium leading-snug break-words">{value}</p>
-                  </div>
-                ))}
+            {/* 자동 입력 폼 */}
+            {form ? (
+              <div className="grid grid-cols-2 gap-3 flex-1">
+                <div className="col-span-2">
+                  <Label className="text-[10px] text-muted-foreground mb-1 block">사업명</Label>
+                  <Input
+                    value={String(form.name ?? "")}
+                    onChange={(e) => setFormValue("name", e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-1 block">설계사</Label>
+                  <Input
+                    value={String(form.vendor ?? "")}
+                    onChange={(e) => setFormValue("vendor", e.target.value)}
+                    className="h-8 text-xs"
+                    placeholder="미확인"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-1 block">연도</Label>
+                  <Input
+                    value={form.year ? String(form.year) : ""}
+                    onChange={(e) => setFormValue("year", parseNumberInput(e.target.value))}
+                    className="h-8 text-xs"
+                    inputMode="numeric"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-1 block">지역</Label>
+                  <Input
+                    value={String(form.region ?? "")}
+                    onChange={(e) => setFormValue("region", e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-1 block">사업상태</Label>
+                  <Select value={(form.status as ProjectStatus) ?? "계획중"} onValueChange={(value) => setFormValue("status", value as ProjectStatus)}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ALL_STATUSES.map((status) => (
+                        <SelectItem key={status} value={status}>{status}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="col-span-2">
+                  <Label className="text-[10px] text-muted-foreground mb-1 block">사업유형</Label>
+                  <Input
+                    value={String(form.type ?? "")}
+                    onChange={(e) => setFormValue("type", e.target.value)}
+                    className="h-8 text-xs"
+                    placeholder="예: 재선충 방제, 수목정비"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-1 block">공기</Label>
+                  <Input
+                    value={String(form.period ?? "")}
+                    onChange={(e) => setFormValue("period", e.target.value)}
+                    className="h-8 text-xs"
+                    placeholder="착공일로부터 120일"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-1 block">총예산</Label>
+                  <Input
+                    value={formatInputNumber(form.budget)}
+                    onChange={(e) => setFormValue("budget", parseNumberInput(e.target.value))}
+                    className="h-8 text-xs"
+                    inputMode="numeric"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-1 block">전체수목수</Label>
+                  <Input
+                    value={formatInputNumber(form.treeCount)}
+                    onChange={(e) => setFormValue("treeCount", parseNumberInput(e.target.value))}
+                    className="h-8 text-xs"
+                    inputMode="numeric"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-1 block">집행액</Label>
+                  <Input
+                    value={formatInputNumber(form.spent)}
+                    onChange={(e) => setFormValue("spent", parseNumberInput(e.target.value))}
+                    className="h-8 text-xs"
+                    inputMode="numeric"
+                    placeholder="0"
+                  />
+                </div>
               </div>
             ) : (
               <div className="flex-1 flex items-center justify-center text-[11px] text-muted-foreground py-8">
-                추출 항목이 여기에 표시됩니다
+                자동 입력 폼이 여기에 표시됩니다
               </div>
             )}
           </div>
@@ -1023,11 +1114,11 @@ function UploadModal({
           <Button variant="outline" size="sm" className="text-xs px-4" onClick={onClose}>취소</Button>
           <Button
             size="sm"
-            disabled={!preview}
+            disabled={!form || analyzing}
             onClick={handleRegister}
             className="text-xs px-4 bg-indigo-600 hover:bg-indigo-700 text-white"
           >
-            사업 등록
+            수정값으로 사업 등록
           </Button>
         </div>
       </DialogContent>

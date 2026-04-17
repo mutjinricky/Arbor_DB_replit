@@ -14,6 +14,10 @@ export default defineConfig(({ mode }) => ({
         rewrite: (path) => path.replace(/^\/api\/kma/, ""),
         secure: true,
       },
+      "/api/design-documents": {
+        target: "http://localhost:5174",
+        changeOrigin: true,
+      },
     },
   },
   plugins: [react()],
