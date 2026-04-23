@@ -1,5 +1,5 @@
-import { useCallback, useState, useEffect, useRef, useMemo } from "react";
-import { Map as MapIcon, List, TreeDeciduous, Search, X, SlidersHorizontal, Bug, Sprout, ShieldAlert, Layers } from "lucide-react";
+﻿import { useCallback, useState, useEffect, useRef, useMemo } from "react";
+import { Map as MapIcon, List, TreeDeciduous, Search, X, SlidersHorizontal, Bug, Sprout, ShieldAlert, Layers, Filter, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -92,7 +92,7 @@ export default function TreeInventory() {
   const [filterRiskGrade, setFilterRiskGrade] = useState(ALL_VALUE);
   const [filterPestGrade, setFilterPestGrade] = useState(ALL_VALUE);
   const [filterSoilGrade, setFilterSoilGrade] = useState(ALL_VALUE);
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
 
   const mapRef = useRef<any>(null);
 
@@ -269,6 +269,12 @@ export default function TreeInventory() {
     filterPestGrade !== ALL_VALUE ||
     filterSoilGrade !== ALL_VALUE;
 
+  const activeFilterCount =
+    Number(filterSpecies !== ALL_VALUE) +
+    Number(filterRiskGrade !== ALL_VALUE) +
+    Number(filterPestGrade !== ALL_VALUE) +
+    Number(filterSoilGrade !== ALL_VALUE);
+
   const getRiskBadgeVariant = (risk: string): "default" | "secondary" | "destructive" | "warning" | "success" => {
     if (risk === "low") return "success";
     if (risk === "medium") return "warning";
@@ -335,150 +341,273 @@ export default function TreeInventory() {
             </Button>
           </div>
         </div>
-
-        {/* Search & Filter Bar */}
-        <Card className="mb-4">
-          <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-3 flex-wrap">
-              {/* Tree ID Search */}
-              <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="수목 ID 검색 (예: 1349)"
-                    value={searchId}
-                    onChange={(e) => setSearchId(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearchAndZoom()}
-                    className="pl-9"
-                    data-testid="input-tree-search"
-                  />
+        {view === "list" && (
+          <Card className="mb-4">
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Tree ID Search */}
+                <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="수목 ID 검색 (예: 1349)"
+                      value={searchId}
+                      onChange={(e) => setSearchId(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSearchAndZoom()}
+                      className="pl-9"
+                      data-testid="input-tree-search"
+                    />
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSearchAndZoom}
+                    data-testid="button-search-zoom"
+                  >
+                    지도 이동
+                  </Button>
                 </div>
+
+                {/* Filter toggle */}
                 <Button
                   size="sm"
-                  variant="outline"
-                  onClick={handleSearchAndZoom}
-                  data-testid="button-search-zoom"
+                  variant={showFilters ? "default" : "outline"}
+                  className="gap-2"
+                  onClick={() => setShowFilters((v) => !v)}
+                  data-testid="button-toggle-filters"
                 >
-                  지도 이동
+                  <SlidersHorizontal className="h-4 w-4" />
+                  필터
+                  {hasActiveFilters && (
+                    <Badge variant="destructive" className="ml-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                      !
+                    </Badge>
+                  )}
                 </Button>
-              </div>
 
-              {/* Filter toggle */}
-              <Button
-                size="sm"
-                variant={showFilters ? "default" : "outline"}
-                className="gap-2"
-                onClick={() => setShowFilters((v) => !v)}
-                data-testid="button-toggle-filters"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                필터
                 {hasActiveFilters && (
-                  <Badge variant="destructive" className="ml-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-                    !
-                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="gap-1 text-muted-foreground"
+                    onClick={clearFilters}
+                    data-testid="button-clear-filters"
+                  >
+                    <X className="h-3 w-3" />
+                    초기화
+                  </Button>
                 )}
-              </Button>
 
-              {hasActiveFilters && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="gap-1 text-muted-foreground"
-                  onClick={clearFilters}
-                  data-testid="button-clear-filters"
-                >
-                  <X className="h-3 w-3" />
-                  초기화
-                </Button>
-              )}
-
-              <span className="text-sm text-muted-foreground ml-auto">
-                {filteredIds !== null
-                  ? `${filteredTrees.length}/${treesListData.length}그루`
-                  : `총 ${treesListData.length}그루`}
-              </span>
-            </div>
-
-            {showFilters && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 pt-3 border-t">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">수종</p>
-                  <Select value={filterSpecies} onValueChange={setFilterSpecies}>
-                    <SelectTrigger className="h-8 text-sm" data-testid="select-species">
-                      <SelectValue placeholder="전체" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={ALL_VALUE}>전체</SelectItem>
-                      {allSpecies.map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">위험 등급</p>
-                  <Select value={filterRiskGrade} onValueChange={setFilterRiskGrade}>
-                    <SelectTrigger className="h-8 text-sm" data-testid="select-risk-grade">
-                      <SelectValue placeholder="전체" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={ALL_VALUE}>전체</SelectItem>
-                      <SelectItem value="extreme">극심</SelectItem>
-                      <SelectItem value="high">심</SelectItem>
-                      <SelectItem value="moderate">중</SelectItem>
-                      <SelectItem value="low">경</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">해충 방제</p>
-                  <Select value={filterPestGrade} onValueChange={setFilterPestGrade}>
-                    <SelectTrigger className="h-8 text-sm" data-testid="select-pest-grade">
-                      <SelectValue placeholder="전체" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={ALL_VALUE}>전체</SelectItem>
-                      <SelectItem value="execute">실행 (D-0)</SelectItem>
-                      <SelectItem value="ready">방제준비 (D-1~7)</SelectItem>
-                      <SelectItem value="survey">예찰 (D-8~14)</SelectItem>
-                      <SelectItem value="prepare">사전준비 (D-14~30)</SelectItem>
-                      <SelectItem value="stable">안정 (D-31+)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">토양 등급</p>
-                  <Select value={filterSoilGrade} onValueChange={setFilterSoilGrade}>
-                    <SelectTrigger className="h-8 text-sm" data-testid="select-soil-grade">
-                      <SelectValue placeholder="전체" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={ALL_VALUE}>전체</SelectItem>
-                      {(["A", "B", "C", "D", "E"] as SoilGrade[]).map((g) => (
-                        <SelectItem key={g} value={g}>{SOIL_LABELS[g]}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <span className="text-sm text-muted-foreground ml-auto">
+                  {filteredIds !== null
+                    ? `${filteredTrees.length}/${treesListData.length}그루`
+                    : `총 ${treesListData.length}그루`}
+                </span>
               </div>
-            )}
-          </CardContent>
-        </Card>
 
+              {showFilters && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 pt-3 border-t">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">수종</p>
+                    <Select value={filterSpecies} onValueChange={setFilterSpecies}>
+                      <SelectTrigger className="h-8 text-sm" data-testid="select-species">
+                        <SelectValue placeholder="전체" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={ALL_VALUE}>전체</SelectItem>
+                        {allSpecies.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">위험 등급</p>
+                    <Select value={filterRiskGrade} onValueChange={setFilterRiskGrade}>
+                      <SelectTrigger className="h-8 text-sm" data-testid="select-risk-grade">
+                        <SelectValue placeholder="전체" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={ALL_VALUE}>전체</SelectItem>
+                        <SelectItem value="extreme">극심</SelectItem>
+                        <SelectItem value="high">높음</SelectItem>
+                        <SelectItem value="moderate">중간</SelectItem>
+                        <SelectItem value="low">낮음</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">해충 방제</p>
+                    <Select value={filterPestGrade} onValueChange={setFilterPestGrade}>
+                      <SelectTrigger className="h-8 text-sm" data-testid="select-pest-grade">
+                        <SelectValue placeholder="전체" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={ALL_VALUE}>전체</SelectItem>
+                        <SelectItem value="execute">실행 (D-0)</SelectItem>
+                        <SelectItem value="ready">방제준비 (D-1~7)</SelectItem>
+                        <SelectItem value="survey">예찰 (D-8~14)</SelectItem>
+                        <SelectItem value="prepare">사전준비 (D-14~30)</SelectItem>
+                        <SelectItem value="stable">안정 (D-31+)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">토양 등급</p>
+                    <Select value={filterSoilGrade} onValueChange={setFilterSoilGrade}>
+                      <SelectTrigger className="h-8 text-sm" data-testid="select-soil-grade">
+                        <SelectValue placeholder="전체" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={ALL_VALUE}>전체</SelectItem>
+                        {(["A", "B", "C", "D", "E"] as SoilGrade[]).map((g) => (
+                          <SelectItem key={g} value={g}>{SOIL_LABELS[g]}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
         {view === "map" ? (
           <Card className="col-span-full">
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
                 <CardTitle className="flex items-center gap-2">
                   <TreeDeciduous className="h-5 w-5 text-primary" />
                   수목 지도
                 </CardTitle>
-                <div className="flex items-center gap-2">
-                  {/* Map Mode Selector */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={searchId}
+                      onChange={(e) => setSearchId(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSearchAndZoom()}
+                      placeholder="수목 ID 검색"
+                      data-testid="input-tree-search"
+                      className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-input bg-white dark:bg-slate-900 w-52 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                    />
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSearchAndZoom}
+                    data-testid="button-search-zoom"
+                    className="text-xs"
+                  >
+                    지도 이동
+                  </Button>
+                  <button
+                    onClick={() => setShowFilters((v) => !v)}
+                    data-testid="button-toggle-filters"
+                    className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                      activeFilterCount > 0
+                        ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700"
+                        : "border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Filter className="h-3.5 w-3.5" />
+                    필터
+                    {activeFilterCount > 0 && (
+                      <span className="bg-indigo-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                    <ChevronDown className={`h-3 w-3 transition-transform ${showFilters ? "rotate-180" : ""}`} />
+                  </button>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-0.5"
+                      data-testid="button-clear-filters"
+                    >
+                      <X className="h-3 w-3" /> 초기화
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {showFilters && (
+                <div className="mt-3 pt-3 border-t grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                  <div>
+                    <p className="font-semibold mb-1.5 text-[11px] text-muted-foreground">수종</p>
+                    <Select value={filterSpecies} onValueChange={setFilterSpecies}>
+                      <SelectTrigger className="h-8 text-sm" data-testid="select-species">
+                        <SelectValue placeholder="전체" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={ALL_VALUE}>전체</SelectItem>
+                        {allSpecies.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <p className="font-semibold mb-1.5 text-[11px] text-muted-foreground">위험 등급</p>
+                    <Select value={filterRiskGrade} onValueChange={setFilterRiskGrade}>
+                      <SelectTrigger className="h-8 text-sm" data-testid="select-risk-grade">
+                        <SelectValue placeholder="전체" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={ALL_VALUE}>전체</SelectItem>
+                        <SelectItem value="extreme">극심</SelectItem>
+                        <SelectItem value="high">높음</SelectItem>
+                        <SelectItem value="moderate">중간</SelectItem>
+                        <SelectItem value="low">낮음</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <p className="font-semibold mb-1.5 text-[11px] text-muted-foreground">해충 방제</p>
+                    <Select value={filterPestGrade} onValueChange={setFilterPestGrade}>
+                      <SelectTrigger className="h-8 text-sm" data-testid="select-pest-grade">
+                        <SelectValue placeholder="전체" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={ALL_VALUE}>전체</SelectItem>
+                        <SelectItem value="execute">실행 (D-0)</SelectItem>
+                        <SelectItem value="ready">방제준비 (D-1~7)</SelectItem>
+                        <SelectItem value="survey">예찰 (D-8~14)</SelectItem>
+                        <SelectItem value="prepare">사전준비 (D-14~30)</SelectItem>
+                        <SelectItem value="stable">안정 (D-31+)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <p className="font-semibold mb-1.5 text-[11px] text-muted-foreground">토양 등급</p>
+                    <Select value={filterSoilGrade} onValueChange={setFilterSoilGrade}>
+                      <SelectTrigger className="h-8 text-sm" data-testid="select-soil-grade">
+                        <SelectValue placeholder="전체" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={ALL_VALUE}>전체</SelectItem>
+                        {(["A", "B", "C", "D", "E"] as SoilGrade[]).map((g) => (
+                          <SelectItem key={g} value={g}>{SOIL_LABELS[g]}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between gap-3 flex-wrap pt-3 border-t">
+                <span className="text-sm text-muted-foreground">
+                  {filteredIds !== null
+                    ? `${filteredTrees.length}/${treesListData.length}그루`
+                    : `총 ${treesListData.length}그루`}
+                </span>
+                <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
                     {(Object.entries(mapModeConfig) as [MapMode, typeof mapModeConfig.risk][]).map(
                       ([mode, cfg]) => {
@@ -501,7 +630,6 @@ export default function TreeInventory() {
                       }
                     )}
                   </div>
-                  {/* 기상 데이터 상태 */}
                   <span
                     data-testid="status-weather-source"
                     className={`text-xs px-2 py-1 rounded-full font-medium ${
@@ -512,7 +640,7 @@ export default function TreeInventory() {
                         : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
                     }`}
                   >
-                    {weatherLoading ? "기상 로딩 중…" : weatherIsReal ? "기상청 실측 ●" : "평년값 시뮬레이션"}
+                    {weatherLoading ? "기상 로딩 중" : weatherIsReal ? "기상청 연동" : "평년값 시뮬레이션"}
                   </span>
                 </div>
               </div>
