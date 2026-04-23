@@ -326,7 +326,7 @@ export default function TreeRisk() {
         {/* ── 검색 결과: 위험도 카드 ── */}
         {searchResult === "notfound" && (
           <div className="rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/20 p-4 text-sm text-red-600 font-medium text-center">
-            수목 ID를 찾을 수 없습니다. 수목 재고 관리 탭에서 ID를 확인해 주세요.
+            수목 ID를 찾을 수 없습니다. 수목 현황 탭에서 ID를 확인해 주세요.
           </div>
         )}
 

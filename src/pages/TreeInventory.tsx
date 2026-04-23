@@ -307,7 +307,7 @@ export default function TreeInventory() {
       <div className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">수목 재고 관리</h1>
+            <h1 className="text-3xl font-bold">수목 현황</h1>
             <p className="text-muted-foreground">
               시스템의 모든 수목을 관리하고 조회합니다
             </p>
