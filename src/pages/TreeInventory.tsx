@@ -475,7 +475,7 @@ export default function TreeInventory() {
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <CardTitle className="flex items-center gap-2">
                   <TreeDeciduous className="h-5 w-5 text-primary" />
-                  인터랙티브 수목 지도
+                  수목 지도
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   {/* Map Mode Selector */}
