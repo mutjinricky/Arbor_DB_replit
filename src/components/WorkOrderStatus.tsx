@@ -24,7 +24,7 @@ export function WorkOrderStatus({ data }: WorkOrderStatusProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">작업 지시서 상태</CardTitle>
+        <CardTitle className="text-base">작업 진행 상태</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

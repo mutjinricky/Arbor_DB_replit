@@ -66,7 +66,7 @@ export function ExpenditureChart({ data }: ExpenditureChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">작업 유형별 지출</CardTitle>
+        <CardTitle className="text-base">공사별 지출 현황</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

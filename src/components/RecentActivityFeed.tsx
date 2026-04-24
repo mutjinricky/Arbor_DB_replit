@@ -132,7 +132,7 @@ export function RecentActivityFeed() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">최근 활동</CardTitle>
+        <CardTitle className="text-base">최근 사업</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <div className="divide-y">
