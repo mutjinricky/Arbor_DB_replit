@@ -24,3 +24,9 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Claude Code 로컬 설정
+.claude/
+
+# package-lock.json
+package-lock.json
