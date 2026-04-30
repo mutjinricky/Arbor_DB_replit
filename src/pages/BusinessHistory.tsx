@@ -150,6 +150,27 @@ const INITIAL_PROJECTS: BusinessProject[] = [
     ],
   },
   {
+    id: "BH-2024-004",
+    name: "황산공원 예찰",
+    year: 2024,
+    region: "공원",
+    location: "황산공원",
+    type: "예찰",
+    status: "계획중",
+    period: "2026-05-01 ~ 2026-06-30",
+    budget: 0,
+    spent: 0,
+    vendor: "",
+    vendorEmail: "",
+    department: "공원녹지과",
+    summary: "황산공원 내 수목 생육상태 및 병해충 발생 여부를 확인하기 위한 예찰 사업",
+    treeCount: 0,
+    mapCount: 0,
+    connectedTrees: [],
+    contractors: [],
+    completionPhotos: [],
+  },
+  {
     id: "BH-2023-001",
     name: "이천시 산수유마을 안전진단 사업",
     year: 2023,
@@ -249,8 +270,8 @@ const STATUS_STYLE: Record<ProjectStatus, { bg: string; text: string; icon: type
 };
 
 const ALL_YEARS   = [2024, 2023, 2022];
-const ALL_REGIONS = ["도로", "마을", "축제장", "전답", "농가"];
-const ALL_TYPES   = ["가지치기", "토양개량", "병해충방제", "위험목제거", "외과수술", "정밀진단", "시비관리"];
+const ALL_REGIONS = ["도로", "마을", "공원", "축제장", "전답", "농가"];
+const ALL_TYPES   = ["가지치기", "토양개량", "병해충방제", "위험목제거", "외과수술", "정밀진단", "시비관리", "예찰"];
 const ALL_STATUSES: ProjectStatus[] = ["계획중", "진행중", "완료"];
 
 const STORAGE_KEY = "dryad_business_history_v4";
@@ -277,7 +298,13 @@ function sortProjects(list: BusinessProject[]): BusinessProject[] {
 function loadFromStorage(): BusinessProject[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as BusinessProject[];
+    if (raw) {
+      const stored = JSON.parse(raw) as BusinessProject[];
+      const missingDefaults = INITIAL_PROJECTS.filter(
+        (project) => !stored.some((item) => item.id === project.id)
+      );
+      return missingDefaults.length > 0 ? [...missingDefaults, ...stored] : stored;
+    }
   } catch {}
   return INITIAL_PROJECTS;
 }

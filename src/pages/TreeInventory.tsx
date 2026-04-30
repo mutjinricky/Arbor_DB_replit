@@ -1,5 +1,5 @@
 ﻿import { useCallback, useState, useEffect, useRef, useMemo } from "react";
-import { Map as MapIcon, List, TreeDeciduous, Search, X, SlidersHorizontal, Bug, Sprout, ShieldAlert, Layers, Filter, ChevronDown } from "lucide-react";
+import { Map as MapIcon, List, TreeDeciduous, Search, X, SlidersHorizontal, Bug, Sprout, ShieldAlert, Layers, Filter, ChevronDown, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +40,13 @@ import {
 } from "@/lib/riskCalculations";
 import { useWeatherData } from "@/hooks/useWeatherData";
 import { normalizeZone, getZoneSoilResult } from "@/lib/zones";
+import {
+  loadBusinessProjectOptions,
+  loadProjectMapData,
+  type BusinessProjectOption,
+  type ProjectMapData,
+  type ProjectMapTree,
+} from "@/lib/projectMapData";
 
 type MapMode = "basic" | "risk" | "pest" | "soil";
 
@@ -93,6 +100,10 @@ export default function TreeInventory() {
   const [filterPestGrade, setFilterPestGrade] = useState(ALL_VALUE);
   const [filterSoilGrade, setFilterSoilGrade] = useState(ALL_VALUE);
   const [showFilters, setShowFilters] = useState(false);
+  const [projectListOpen, setProjectListOpen] = useState(false);
+  const [businessProjects, setBusinessProjects] = useState<BusinessProjectOption[]>([]);
+  const [activeProjectMap, setActiveProjectMap] = useState<ProjectMapData | null>(null);
+  const [activeProjectName, setActiveProjectName] = useState("");
 
   const mapRef = useRef<any>(null);
 
@@ -106,6 +117,10 @@ export default function TreeInventory() {
         setRawTreesJson(treesJson);
       })
       .catch((err) => console.error("Error loading tree data:", err));
+  }, []);
+
+  useEffect(() => {
+    setBusinessProjects(loadBusinessProjectOptions());
   }, []);
 
   const enrichedGeoJson = useMemo(() => {
@@ -137,6 +152,64 @@ export default function TreeInventory() {
     });
     return { ...rawGeoJson, features: enrichedFeatures };
   }, [rawGeoJson, rawTreesJson, pestDDs]);
+
+  const activeProjectGeoJson = useMemo(() => {
+    if (!activeProjectMap) return null;
+
+    return {
+      type: "FeatureCollection",
+      features: activeProjectMap.trees.map((tree) => {
+        const normalizedTree: TreeFullData = {
+          id: tree.id,
+          diameter: tree.diameter ?? 0,
+          height: tree.height ?? 0,
+          lat: tree.lat,
+          lng: tree.lng,
+          district: tree.district || activeProjectName || "",
+          damage_area: tree.damage_area ?? 0,
+          cavity_depth: tree.cavity_depth ?? 0,
+          ice_damage: tree.ice_damage ?? false,
+          need_nutrient: tree.need_nutrient ?? false,
+          risk: tree.risk || "low",
+          age: tree.age ?? 0,
+          inspection: tree.inspection || "",
+          species: tree.species || "미지정 수목",
+        };
+        const riskResult = calculateTreeRiskGrade(normalizedTree);
+        const pest = calculatePestControl(tree.id, pestDDs as any);
+        const zone = normalizeZone(normalizedTree.district);
+        const zoneSoil = getZoneSoilResult(zone);
+
+        return {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [tree.lng, tree.lat],
+          },
+          properties: {
+            id: tree.id,
+            species: tree.species || "미지정 수목",
+            district: normalizedTree.district,
+            height: tree.height ?? 0,
+            risk: tree.risk || "low",
+            inspection: tree.inspection || "",
+            riskGrade: riskResult.grade,
+            pestGrade: pest.grade,
+            pestName: pest.pestName,
+            pestDays: pest.daysUntilControl,
+            soilScore: Math.round(zoneSoil.score),
+            soilGrade: zoneSoil.grade,
+          },
+        };
+      }),
+    };
+  }, [activeProjectMap, activeProjectName, pestDDs]);
+
+  const mapGeoJson = activeProjectGeoJson || enrichedGeoJson;
+  const selectedProjectTree = useMemo<ProjectMapTree | null>(() => {
+    if (!activeProjectMap || !selectedTreeId) return null;
+    return activeProjectMap.trees.find((tree) => tree.id === selectedTreeId) || null;
+  }, [activeProjectMap, selectedTreeId]);
 
   const treesListData = useMemo<EnrichedTreeData[]>(() => {
     if (!enrichedGeoJson) return [];
@@ -190,9 +263,19 @@ export default function TreeInventory() {
     return hasFilter ? filteredTrees.map((t) => t.id) : null;
   }, [filteredTrees, searchId, filterSpecies, filterRiskGrade, filterPestGrade, filterSoilGrade]);
 
+  const mapFilteredIds = activeProjectMap ? null : filteredIds;
+
   const handleSearchAndZoom = useCallback(() => {
     const id = searchId.trim();
-    if (!id || !enrichedGeoJson) return;
+    if (!id) return;
+    if (activeProjectMap) {
+      const tree = activeProjectMap.trees.find((item) => item.id === id);
+      if (tree) {
+        setMapState({ longitude: tree.lng, latitude: tree.lat, zoom: 19 });
+      }
+      return;
+    }
+    if (!enrichedGeoJson) return;
     const feature = enrichedGeoJson.features.find(
       (f: any) => f.properties?.id === id
     );
@@ -200,7 +283,42 @@ export default function TreeInventory() {
       const [lng, lat] = feature.geometry.coordinates;
       setMapState({ longitude: lng, latitude: lat, zoom: 19 });
     }
-  }, [searchId, enrichedGeoJson]);
+  }, [searchId, enrichedGeoJson, activeProjectMap]);
+
+  const handleProjectSelect = useCallback(async (project: BusinessProjectOption | null) => {
+    if (!project) {
+      setActiveProjectMap(null);
+      setActiveProjectName("");
+      setSelectedTreeId(null);
+      setHoveredTree(null);
+      setProjectListOpen(false);
+      return;
+    }
+
+    const projectMap = await loadProjectMapData(project.id);
+    if (!projectMap || projectMap.trees.length === 0) {
+      setProjectListOpen(false);
+      return;
+    }
+
+    const center = projectMap.center || {
+      lat: projectMap.trees.reduce((sum, tree) => sum + tree.lat, 0) / projectMap.trees.length,
+      lng: projectMap.trees.reduce((sum, tree) => sum + tree.lng, 0) / projectMap.trees.length,
+      zoom: projectMap.trees.length > 1 ? 17 : 19,
+    };
+
+    setActiveProjectMap(projectMap);
+    setActiveProjectName(project.name);
+    setSelectedTreeId(null);
+    setHoveredTree(null);
+    setView("map");
+    setMapState({
+      longitude: center.lng,
+      latitude: center.lat,
+      zoom: center.zoom ?? (projectMap.trees.length > 1 ? 17 : 19),
+    });
+    setProjectListOpen(false);
+  }, []);
 
   const handleTreeClick = useCallback((treeId: string) => {
     setSelectedTreeId(treeId);
@@ -318,7 +436,47 @@ export default function TreeInventory() {
               시스템의 모든 수목을 관리하고 조회합니다
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <div className="relative">
+              <Button
+                variant={activeProjectMap ? "default" : "outline"}
+                size="sm"
+                onClick={() => setProjectListOpen((v) => !v)}
+                className="gap-2"
+                data-testid="button-project-list"
+              >
+                <Briefcase className="h-4 w-4" />
+                사업목록
+              </Button>
+              {projectListOpen && (
+                <div className="absolute right-0 top-full z-40 mt-2 w-[min(320px,calc(100vw-2rem))] rounded-lg border bg-background shadow-lg">
+                  <div className="border-b px-3 py-2 text-xs font-semibold text-muted-foreground">
+                    사업목록
+                  </div>
+                  <div className="max-h-72 overflow-y-auto py-1">
+                    <button
+                      type="button"
+                      onClick={() => handleProjectSelect(null)}
+                      className="block w-full px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                      data-testid="button-project-all"
+                    >
+                      전체 사업
+                    </button>
+                    {businessProjects.map((project) => (
+                      <button
+                        key={project.id}
+                        type="button"
+                        onClick={() => handleProjectSelect(project)}
+                        className="block w-full px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                        data-testid={`button-project-${project.id}`}
+                      >
+                        {project.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             <Button
               variant={view === "map" ? "default" : "outline"}
               size="sm"
@@ -603,7 +761,9 @@ export default function TreeInventory() {
 
               <div className="flex items-center justify-between gap-3 flex-wrap pt-3 border-t">
                 <span className="text-sm text-muted-foreground">
-                  {filteredIds !== null
+                  {activeProjectMap
+                    ? `${activeProjectName} · ${activeProjectMap.trees.length}그루`
+                    : filteredIds !== null
                     ? `${filteredTrees.length}/${treesListData.length}그루`
                     : `총 ${treesListData.length}그루`}
                 </span>
@@ -684,12 +844,12 @@ export default function TreeInventory() {
                       </Source>
                     )}
 
-                    {enrichedGeoJson && (
+                    {mapGeoJson && (
                       <TreeLayer
-                        treesData={enrichedGeoJson}
+                        treesData={mapGeoJson}
                         selectedTreeIds={selectedTreeId ? [selectedTreeId] : []}
                         mapMode={mapMode}
-                        filteredIds={filteredIds}
+                        filteredIds={mapFilteredIds}
                       />
                     )}
                   </Map>
@@ -775,7 +935,7 @@ export default function TreeInventory() {
                   </div>
                 )}
 
-                {filteredIds !== null && filteredIds.length === 0 && (
+                {mapFilteredIds !== null && mapFilteredIds.length === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="bg-card/90 backdrop-blur-sm border border-border rounded-lg p-4 shadow-lg text-center">
                       <p className="font-medium text-sm">조건에 맞는 나무 없음</p>
@@ -863,6 +1023,7 @@ export default function TreeInventory() {
         isOpen={profileModalOpen}
         onClose={() => setProfileModalOpen(false)}
         onCreateWorkOrder={handleAddToProject}
+        treeOverride={selectedProjectTree}
       />
 
       <WorkOrderDialog

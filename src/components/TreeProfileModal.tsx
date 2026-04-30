@@ -44,11 +44,12 @@ import {
 } from "@/lib/riskCalculations";
 import { CauseChips } from "@/components/CauseChips";
 import { normalizeZone, getZoneSoilResult, getZoneSoilCauses, ZONE_SOIL_DATA } from "@/lib/zones";
+import type { ProjectMapTree } from "@/lib/projectMapData";
 
 interface TreeData {
   id: string;
-  diameter: number;
-  height: number;
+  diameter?: number;
+  height?: number;
   lat: number;
   lng: number;
   district: string;
@@ -60,6 +61,11 @@ interface TreeData {
   age: number;
   inspection: string;
   species: string;
+  altitude?: number;
+  observedAtUtc?: string;
+  observedAtLocal?: string;
+  photoUrl?: string;
+  photos?: ProjectMapTree["photos"];
 }
 
 interface TreeProfileModalProps {
@@ -67,6 +73,7 @@ interface TreeProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateWorkOrder?: (treeId: string) => void;
+  treeOverride?: ProjectMapTree | null;
 }
 
 interface EditOverride {
@@ -81,7 +88,7 @@ interface EditOverride {
 const OVERRIDE_KEY = (id: string) => `tree_override_${id}`;
 const TAGS_KEY     = (id: string) => `tree_tags_${id}`;
 
-export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }: TreeProfileModalProps) {
+export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder, treeOverride }: TreeProfileModalProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const [historyFilter, setHistoryFilter] = useState<"all" | "management" | "observation">("all");
   const [treeData, setTreeData] = useState<TreeData | null>(null);
@@ -107,6 +114,45 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
       setTagInput("");
       setEditingTagIdx(null);
       setEditingTagText("");
+
+      if (treeOverride && treeOverride.id === treeId) {
+        setTreeData({
+          id: treeOverride.id,
+          diameter: treeOverride.diameter,
+          height: treeOverride.height,
+          lat: treeOverride.lat,
+          lng: treeOverride.lng,
+          district: treeOverride.district || "",
+          damage_area: treeOverride.damage_area ?? 0,
+          cavity_depth: treeOverride.cavity_depth ?? 0,
+          ice_damage: treeOverride.ice_damage ?? false,
+          need_nutrient: treeOverride.need_nutrient ?? false,
+          risk: treeOverride.risk || "low",
+          age: treeOverride.age ?? 0,
+          inspection: treeOverride.inspection || "",
+          species: treeOverride.species || "미지정 수목",
+          altitude: treeOverride.altitude,
+          observedAtUtc: treeOverride.observedAtUtc,
+          observedAtLocal: treeOverride.observedAtLocal,
+          photoUrl: treeOverride.photoUrl,
+          photos: treeOverride.photos,
+        });
+        try {
+          const stored = localStorage.getItem(OVERRIDE_KEY(treeId));
+          setEditValues(stored ? JSON.parse(stored) : {});
+        } catch {
+          setEditValues({});
+        }
+        try {
+          const storedTags = localStorage.getItem(TAGS_KEY(treeId));
+          setCustomTags(storedTags ? JSON.parse(storedTags) : []);
+        } catch {
+          setCustomTags([]);
+        }
+        setLoading(false);
+        return;
+      }
+
       fetch('/data/trees.json')
         .then(response => response.json())
         .then((data: Record<string, TreeData>) => {
@@ -145,15 +191,15 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
     } else {
       setTreeData(null);
     }
-  }, [treeId, isOpen]);
+  }, [treeId, isOpen, treeOverride]);
 
   if (!treeData || !treeId) return null;
 
   // Merge edit overrides into tree data for risk calculations
   const treeFullData = {
     ...treeData,
-    height:       editValues.height       ?? treeData.height,
-    diameter:     editValues.diameter     ?? treeData.diameter,
+    height:       editValues.height       ?? treeData.height ?? 0,
+    diameter:     editValues.diameter     ?? treeData.diameter ?? 0,
     damage_area:  editValues.damage_area  ?? treeData.damage_area,
     cavity_depth: editValues.cavity_depth ?? treeData.cavity_depth,
     ice_damage:   editValues.ice_damage   ?? treeData.ice_damage,
@@ -168,11 +214,15 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
   // Get tree image based on tree id
   // Convert string id to int, calculate modulo 117, then add 1 to get 1-117 range
   const getTreeImagePath = () => {
+    if (treeData.photoUrl) return treeData.photoUrl;
+    if (treeData.photos?.[0]?.url) return treeData.photos[0].url;
+    if (treeOverride) return null;
     const treeIdInt = parseInt(treeId, 10) || 0;
     const imageIndex = (treeIdInt % 117) + 1; // Result is 1-117
     const paddedIndex = imageIndex.toString().padStart(3, '0'); // Format as 001, 002, etc.
     return `/data/tree_images/tree_${paddedIndex}.jpg`;
   };
+  const treeImagePath = getTreeImagePath();
 
   // Generate risk reasons based on multiple conditions
   const getRiskReasons = () => {
@@ -250,13 +300,16 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
             {/* Tree Image */}
             <Card className="overflow-hidden">
               <div className="aspect-square relative overflow-hidden">
-                {imageError ? (
+                {imageError || !treeImagePath ? (
                   <div className="aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                    <TreeDeciduous className="h-24 w-24 text-primary/40" />
+                    <div className="flex flex-col items-center gap-2 text-primary/50">
+                      <TreeDeciduous className="h-20 w-20" />
+                      <span className="text-xs">사진 없음</span>
+                    </div>
                   </div>
                 ) : (
                   <img
-                    src={getTreeImagePath()}
+                    src={treeImagePath}
                     alt={`Tree ${tree.id}`}
                     className="w-full h-full object-cover"
                     onError={() => setImageError(true)}
@@ -282,6 +335,26 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                   <p className="text-xs text-muted-foreground">GPS 좌표</p>
                   <p className="text-sm font-mono">{tree.gpsCoordinates || "37.5172, 127.0473"}</p>
                 </div>
+                {treeData.altitude != null && (
+                  <>
+                    <Separator />
+                    <div>
+                      <p className="text-xs text-muted-foreground">고도</p>
+                      <p className="text-sm font-mono">{treeData.altitude} m</p>
+                    </div>
+                  </>
+                )}
+                {(treeData.observedAtLocal || treeData.observedAtUtc) && (
+                  <>
+                    <Separator />
+                    <div>
+                      <p className="text-xs text-muted-foreground">관측시각</p>
+                      <p className="text-sm font-mono">
+                        {treeData.observedAtLocal || treeData.observedAtUtc}
+                      </p>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 
@@ -367,11 +440,15 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs text-muted-foreground">높이</p>
-                        <p className="text-lg font-semibold">{tree.height || 12.5} m</p>
+                        <p className="text-lg font-semibold">
+                          {tree.height != null ? `${tree.height} m` : "데이터 없음"}
+                        </p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">가슴높이 직경</p>
-                        <p className="text-lg font-semibold">{tree.dbh || 45} cm</p>
+                        <p className="text-lg font-semibold">
+                          {tree.dbh != null ? `${tree.dbh} cm` : "데이터 없음"}
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -907,17 +984,38 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder }:
                 <Card>
                   <CardContent className="p-4">
                     <div className="grid grid-cols-2 gap-4">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div
-                          key={i}
-                          className="aspect-square bg-gradient-to-br from-muted to-muted/50 rounded-lg flex items-center justify-center hover:opacity-75 transition-opacity cursor-pointer"
-                        >
-                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                      ))}
+                      {[0, 1, 2, 3].map((i) => {
+                        const photo = treeData.photos?.[i];
+                        return (
+                          <div
+                            key={i}
+                            className="aspect-square rounded-lg overflow-hidden border bg-muted/40 relative flex items-center justify-center"
+                          >
+                            {photo?.url ? (
+                              <>
+                                <img
+                                  src={photo.url}
+                                  alt={photo.label || `수목 사진 ${i + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                                {photo.label && (
+                                  <div className="absolute left-2 bottom-2 max-w-[calc(100%-1rem)] rounded-md bg-black/60 px-2 py-1 text-[11px] font-medium text-white">
+                                    {photo.label}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                                <ImageIcon className="h-8 w-8" />
+                                <span className="text-xs">사진 없음</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                     <p className="text-sm text-muted-foreground text-center mt-4">
-                      점검 및 유지보수 작업 사진
+                      수목사진 및 현장 피해 사진
                     </p>
                   </CardContent>
                 </Card>
