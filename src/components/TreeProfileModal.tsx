@@ -223,6 +223,9 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder, t
     return `/data/tree_images/tree_${paddedIndex}.jpg`;
   };
   const treeImagePath = getTreeImagePath();
+  const galleryPhotos = (treeData.photos || [])
+    .filter((photo) => photo?.url && photo.url !== treeImagePath)
+    .slice(0, 4);
 
   // Generate risk reasons based on multiple conditions
   const getRiskReasons = () => {
@@ -985,7 +988,7 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder, t
                   <CardContent className="p-4">
                     <div className="grid grid-cols-2 gap-4">
                       {[0, 1, 2, 3].map((i) => {
-                        const photo = treeData.photos?.[i];
+                        const photo = galleryPhotos[i];
                         return (
                           <div
                             key={i}
