@@ -184,7 +184,7 @@ export function loadBusinessProjectOptions(): BusinessProjectOption[] {
   }
 }
 
-export async function loadProjectMapData(projectId: string): Promise<ProjectMapData | null> {
+function loadStoredProjectMapData(projectId: string): ProjectMapData | null {
   if (isBrowser()) {
     try {
       const raw = window.localStorage.getItem(PROJECT_MAP_STORAGE_KEY);
@@ -196,10 +196,14 @@ export async function loadProjectMapData(projectId: string): Promise<ProjectMapD
         }
       }
     } catch {
-      // Fallback to URL/static demo data below.
+      return null;
     }
   }
 
+  return null;
+}
+
+async function loadUrlProjectMapData(projectId: string): Promise<ProjectMapData | null> {
   const url = PROJECT_MAP_DATA_URLS[projectId];
   if (url && typeof fetch !== "undefined") {
     try {
@@ -211,9 +215,19 @@ export async function loadProjectMapData(projectId: string): Promise<ProjectMapD
         }
       }
     } catch {
-      // Fallback to static demo data below.
+      return null;
     }
   }
+
+  return null;
+}
+
+export async function loadProjectMapData(projectId: string): Promise<ProjectMapData | null> {
+  const urlData = await loadUrlProjectMapData(projectId);
+  if (urlData) return urlData;
+
+  const storedData = loadStoredProjectMapData(projectId);
+  if (storedData) return storedData;
 
   return STATIC_PROJECT_MAP_DATA[projectId] ?? null;
 }
