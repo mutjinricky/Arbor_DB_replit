@@ -1140,6 +1140,8 @@ function MilestoneRow({ icon, label, date, color, bold }: { icon: string; label:
   );
 }
 
+type MarkType = "primary" | "secondary" | "observe" | "none";
+
 function ScheduleCell({ mark, color }: { mark: MarkType; color: string }) {
   if (mark === "primary") return (
     <td className="text-center py-3 px-1">

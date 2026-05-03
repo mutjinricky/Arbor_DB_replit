@@ -50,6 +50,8 @@ const FALLBACK_BUSINESS_PROJECTS: BusinessProjectOption[] = [
   { id: "BH-2024-002", name: "이천시 신둔면 가로수 전정 및 수형조절 사업" },
   { id: "BH-2024-003", name: "이천시 도립리 솔껍질깍지벌레 방제사업" },
   { id: "BH-2024-004", name: "황산공원 예찰" },
+  { id: "BH-2024-005", name: "원동마을 예찰" },
+  { id: "BH-2024-006", name: "군항마을 예찰" },
   { id: "BH-2023-001", name: "이천시 산수유마을 안전진단 사업" },
   { id: "BH-2023-002", name: "이천시 백사면 수세회복 사업" },
   { id: "BH-2023-003", name: "이천시 관고동 위험수목 제거사업" },
@@ -57,6 +59,8 @@ const FALLBACK_BUSINESS_PROJECTS: BusinessProjectOption[] = [
 
 const PROJECT_MAP_DATA_URLS: Record<string, string> = {
   "BH-2024-004": "/data/project_maps/hwangsan-park-observation.json",
+  "BH-2024-005": "/data/project_maps/wondong-village-observation.json",
+  "BH-2024-006": "/data/project_maps/gunhang-village-observation.json",
 };
 
 const STATIC_PROJECT_MAP_DATA: Record<string, ProjectMapData> = {

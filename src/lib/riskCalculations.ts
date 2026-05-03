@@ -191,7 +191,7 @@ export function calculatePestControl(
   const microVariance = ((id * 17 + 31) % 11) - 5;
 
   let minDays = Infinity;
-  let urgentPest = PESTS[0];
+  let urgentPest: (typeof PESTS)[number] = PESTS[0];
   let urgentCurrentDD = 0;
   let urgentTargetDD = 0;
 

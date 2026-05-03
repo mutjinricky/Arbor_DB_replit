@@ -45,7 +45,16 @@
             "observedAtLocal": "2026-04-28 11:59",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_003_issue_01.jpg"
+                },
+                {
+                    "label": "수피탈락",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_003_issue_02.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_003.jpg"
@@ -87,7 +96,12 @@
             "observedAtLocal": "2026-04-28 12:01",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_006_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_006.jpg"
@@ -101,7 +115,12 @@
             "observedAtLocal": "2026-04-28 12:02",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_007_issue_01.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_007.jpg"
@@ -115,7 +134,12 @@
             "observedAtLocal": "2026-04-28 12:03",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_008_issue_01.jpg"
+                }
+            ],
             "diameter": 22,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_008.jpg"
@@ -129,7 +153,12 @@
             "observedAtLocal": "2026-04-28 12:04",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_009_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_009.jpg"
@@ -199,7 +228,12 @@
             "observedAtLocal": "2026-04-28 12:06",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_014_issue_01.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_014.jpg"
@@ -269,7 +303,12 @@
             "observedAtLocal": "2026-04-28 12:10",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_019_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_019.jpg"
@@ -367,7 +406,12 @@
             "observedAtLocal": "2026-04-28 12:13",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_026_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_026.jpg"
@@ -395,7 +439,12 @@
             "observedAtLocal": "2026-04-28 12:14",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_028_issue_01.jpg"
+                }
+            ],
             "diameter": 48,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_028.jpg"
@@ -451,7 +500,12 @@
             "observedAtLocal": "2026-04-28 12:16",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_032_issue_01.jpg"
+                }
+            ],
             "diameter": 16,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_032.jpg"
@@ -479,7 +533,12 @@
             "observedAtLocal": "2026-04-28 12:17",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_034_issue_01.jpg"
+                }
+            ],
             "diameter": 14,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_034.jpg"
@@ -507,7 +566,12 @@
             "observedAtLocal": "2026-04-28 12:18",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_036_issue_01.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_036.jpg"
@@ -549,7 +613,12 @@
             "observedAtLocal": "2026-04-28 12:20",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_039_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_039.jpg"
@@ -563,7 +632,12 @@
             "observedAtLocal": "2026-04-28 12:20",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_040_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_040.jpg"
@@ -633,7 +707,12 @@
             "observedAtLocal": "2026-04-28 12:24",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_045_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_045.jpg"
@@ -661,7 +740,12 @@
             "observedAtLocal": "2026-04-28 12:25",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_047_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_047.jpg"
@@ -731,7 +815,12 @@
             "observedAtLocal": "2026-04-28 12:29",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_052_issue_01.jpg"
+                }
+            ],
             "diameter": 48,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_052.jpg"
@@ -745,7 +834,12 @@
             "observedAtLocal": "2026-04-28 12:29",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_053_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_053.jpg"
@@ -759,7 +853,16 @@
             "observedAtLocal": "2026-04-28 12:30",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_054_issue_01.jpg"
+                },
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_054_issue_02.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_054.jpg"
@@ -787,7 +890,12 @@
             "observedAtLocal": "2026-04-28 12:31",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_056_issue_01.jpg"
+                }
+            ],
             "diameter": 38,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_056.jpg"
@@ -801,7 +909,12 @@
             "observedAtLocal": "2026-04-28 12:32",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_057_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_057.jpg"
@@ -829,7 +942,12 @@
             "observedAtLocal": "2026-04-28 12:33",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_059_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_059.jpg"
@@ -843,7 +961,16 @@
             "observedAtLocal": "2026-04-28 12:33",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후부",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_060_issue_01.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_060_issue_02.jpg"
+                }
+            ],
             "diameter": 44,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_060.jpg"
@@ -871,7 +998,12 @@
             "observedAtLocal": "2026-04-28 12:35",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_062_issue_01.jpg"
+                }
+            ],
             "diameter": 40,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_062.jpg"
@@ -885,7 +1017,12 @@
             "observedAtLocal": "2026-04-28 12:35",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "가지치기 미흡",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_063_issue_01.jpg"
+                }
+            ],
             "diameter": 52,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_063.jpg"
@@ -913,7 +1050,12 @@
             "observedAtLocal": "2026-04-28 12:38",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "가지치기 미흡",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_065_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_065.jpg"
@@ -955,7 +1097,12 @@
             "observedAtLocal": "2026-04-28 12:39",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "가지치기 미흡",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_068_issue_01.jpg"
+                }
+            ],
             "diameter": 52,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_068.jpg"
@@ -983,7 +1130,12 @@
             "observedAtLocal": "2026-04-28 13:31",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_070_issue_01.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_070.jpg"
@@ -1025,7 +1177,20 @@
             "observedAtLocal": "2026-04-28 13:35",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_073_issue_01.jpg"
+                },
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_073_issue_02.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_073_issue_03.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_073.jpg"
@@ -1039,7 +1204,12 @@
             "observedAtLocal": "2026-04-28 13:36",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_074_issue_01.jpg"
+                }
+            ],
             "diameter": 52,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_074.jpg"
@@ -1053,7 +1223,12 @@
             "observedAtLocal": "2026-04-28 13:38",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_075_issue_01.jpg"
+                }
+            ],
             "diameter": 48,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_075.jpg"
@@ -1067,7 +1242,16 @@
             "observedAtLocal": "2026-04-28 13:39",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_076_issue_01.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_076_issue_02.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_076.jpg"
@@ -1095,7 +1279,12 @@
             "observedAtLocal": "2026-04-28 13:40",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "불완전결합",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_078_issue_01.jpg"
+                }
+            ],
             "diameter": 56,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_078.jpg"
@@ -1109,7 +1298,12 @@
             "observedAtLocal": "2026-04-28 13:41",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_079_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_079.jpg"
@@ -1123,7 +1317,16 @@
             "observedAtLocal": "2026-04-28 13:42",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_080_issue_01.jpg"
+                },
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_080_issue_02.jpg"
+                }
+            ],
             "diameter": 54,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_080.jpg"
@@ -1137,7 +1340,20 @@
             "observedAtLocal": "2026-04-28 13:43",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "가지치기 미흡",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_081_issue_01.jpg"
+                },
+                {
+                    "label": "고사지 1",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_081_issue_02.jpg"
+                },
+                {
+                    "label": "고사지 2",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_081_issue_03.jpg"
+                }
+            ],
             "diameter": 42,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_081.jpg"
@@ -1249,7 +1465,16 @@
             "observedAtLocal": "2026-04-28 13:49",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "가지치기 미흡",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_089_issue_01.jpg"
+                },
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_089_issue_02.jpg"
+                }
+            ],
             "diameter": 40,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_089.jpg"
@@ -1263,7 +1488,12 @@
             "observedAtLocal": "2026-04-28 13:50",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_090_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_090.jpg"
@@ -1277,7 +1507,16 @@
             "observedAtLocal": "2026-04-28 13:51",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_091_issue_01.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_091_issue_02.jpg"
+                }
+            ],
             "diameter": 52,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_091.jpg"
@@ -1291,7 +1530,12 @@
             "observedAtLocal": "2026-04-28 13:52",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_092_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_092.jpg"
@@ -1319,7 +1563,12 @@
             "observedAtLocal": "2026-04-28 13:53",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_094_issue_01.jpg"
+                }
+            ],
             "diameter": 38,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_094.jpg"
@@ -1347,7 +1596,12 @@
             "observedAtLocal": "2026-04-28 13:54",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_096_issue_01.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_096.jpg"
@@ -1375,7 +1629,12 @@
             "observedAtLocal": "2026-04-28 13:55",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_098_issue_01.jpg"
+                }
+            ],
             "diameter": 22,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_098.jpg"
@@ -1403,7 +1662,12 @@
             "observedAtLocal": "2026-04-28 13:56",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_100_issue_01.jpg"
+                }
+            ],
             "diameter": 14,
             "height": 2,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_100.jpg"
@@ -1417,7 +1681,12 @@
             "observedAtLocal": "2026-04-28 13:58",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_101_issue_01.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_101.jpg"
@@ -1459,7 +1728,12 @@
             "observedAtLocal": "2026-04-28 13:59",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_104_issue_01.jpg"
+                }
+            ],
             "diameter": 16,
             "height": 4,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_104.jpg"
@@ -1473,7 +1747,16 @@
             "observedAtLocal": "2026-04-28 13:59",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_105_issue_01.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_105_issue_02.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_105.jpg"
@@ -1487,7 +1770,12 @@
             "observedAtLocal": "2026-04-28 14:00",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_106_issue_01.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_106.jpg"
@@ -1529,7 +1817,12 @@
             "observedAtLocal": "2026-04-28 14:02",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_109_issue_01.jpg"
+                }
+            ],
             "diameter": 20,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_109.jpg"
@@ -1557,7 +1850,12 @@
             "observedAtLocal": "2026-04-28 14:03",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_111_issue_01.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_111.jpg"
@@ -1571,7 +1869,12 @@
             "observedAtLocal": "2026-04-28 14:03",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_112_issue_01.jpg"
+                }
+            ],
             "diameter": 20,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_112.jpg"
@@ -1669,7 +1972,12 @@
             "observedAtLocal": "2026-04-28 14:06",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_119_issue_01.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 4,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_119.jpg"
@@ -1683,7 +1991,16 @@
             "observedAtLocal": "2026-04-28 14:07",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_120_issue_01.jpg"
+                },
+                {
+                    "label": "천공성 해층",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_120_issue_02.jpg"
+                }
+            ],
             "diameter": 20,
             "height": 4,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_120.jpg"
@@ -1697,7 +2014,12 @@
             "observedAtLocal": "2026-04-28 14:08",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "수목 상처",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_121_issue_01.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_121.jpg"
@@ -1711,7 +2033,12 @@
             "observedAtLocal": "2026-04-28 14:49",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_122_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_122.jpg"
@@ -1725,7 +2052,16 @@
             "observedAtLocal": "2026-04-28 14:50",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "절개",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_123_issue_01.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_123_issue_02.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_123.jpg"
@@ -1753,7 +2089,12 @@
             "observedAtLocal": "2026-04-28 14:51",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_125_issue_01.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_125.jpg"
@@ -1767,7 +2108,12 @@
             "observedAtLocal": "2026-04-28 14:52",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_126_issue_01.jpg"
+                }
+            ],
             "diameter": 38,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_126.jpg"
@@ -1781,7 +2127,12 @@
             "observedAtLocal": "2026-04-28 14:52",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_127_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_127.jpg"
@@ -1809,7 +2160,12 @@
             "observedAtLocal": "2026-04-28 14:54",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_129_issue_01.jpg"
+                }
+            ],
             "diameter": 20,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_129.jpg"
@@ -1823,7 +2179,12 @@
             "observedAtLocal": "2026-04-28 14:54",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_130_issue_01.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_130.jpg"
@@ -1879,7 +2240,12 @@
             "observedAtLocal": "2026-04-28 14:57",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_134_issue_01.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_134.jpg"
@@ -1893,7 +2259,12 @@
             "observedAtLocal": "2026-04-28 14:57",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_135_issue_01.jpg"
+                }
+            ],
             "diameter": 20,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_135.jpg"
@@ -1907,7 +2278,12 @@
             "observedAtLocal": "2026-04-28 14:58",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_136_issue_01.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 4,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_136.jpg"
@@ -1935,7 +2311,12 @@
             "observedAtLocal": "2026-04-28 14:59",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_138_issue_01.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_138.jpg"
@@ -1963,7 +2344,12 @@
             "observedAtLocal": "2026-04-28 15:00",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_140_issue_01.jpg"
+                }
+            ],
             "diameter": 20,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_140.jpg"
@@ -2005,7 +2391,12 @@
             "observedAtLocal": "2026-04-28 15:02",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_143_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_143.jpg"
@@ -2019,7 +2410,12 @@
             "observedAtLocal": "2026-04-28 15:03",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_144_issue_01.jpg"
+                }
+            ],
             "diameter": 20,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_144.jpg"
@@ -2033,7 +2429,12 @@
             "observedAtLocal": "2026-04-28 15:15",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_145_issue_01.jpg"
+                }
+            ],
             "diameter": 20,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_145.jpg"
@@ -2103,7 +2504,12 @@
             "observedAtLocal": "2026-04-28 15:19",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_150_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_150.jpg"
@@ -2145,7 +2551,12 @@
             "observedAtLocal": "2026-04-28 15:56",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_153_issue_01.jpg"
+                }
+            ],
             "diameter": 40,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_153.jpg"
@@ -2159,7 +2570,12 @@
             "observedAtLocal": "2026-04-28 15:57",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_154_issue_01.jpg"
+                }
+            ],
             "diameter": 16,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_154.jpg"
@@ -2173,7 +2589,12 @@
             "observedAtLocal": "2026-04-28 15:57",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_155_issue_01.jpg"
+                }
+            ],
             "diameter": 38,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_155.jpg"
@@ -2201,7 +2622,12 @@
             "observedAtLocal": "2026-04-28 15:59",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_157_issue_01.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_157.jpg"
@@ -2215,7 +2641,12 @@
             "observedAtLocal": "2026-04-28 15:59",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_158_issue_01.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_158.jpg"
@@ -2257,7 +2688,12 @@
             "observedAtLocal": "2026-04-28 16:02",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_161_issue_01.jpg"
+                }
+            ],
             "diameter": 38,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_161.jpg"
@@ -2271,7 +2707,12 @@
             "observedAtLocal": "2026-04-28 16:06",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_162_issue_01.jpg"
+                }
+            ],
             "diameter": 38,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_162.jpg"
@@ -2341,7 +2782,12 @@
             "observedAtLocal": "2026-04-28 16:10",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_167_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_167.jpg"
@@ -2355,7 +2801,12 @@
             "observedAtLocal": "2026-04-28 16:10",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_168_issue_01.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_168.jpg"
@@ -2383,7 +2834,12 @@
             "observedAtLocal": "2026-04-28 16:11",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_170_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_170.jpg"
@@ -2397,7 +2853,12 @@
             "observedAtLocal": "2026-04-28 16:12",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_171_issue_01.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_171.jpg"
@@ -2411,7 +2872,12 @@
             "observedAtLocal": "2026-04-28 16:12",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_172_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_172.jpg"
@@ -2481,7 +2947,12 @@
             "observedAtLocal": "2026-04-28 16:16",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_177_issue_01.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_177.jpg"
@@ -2579,7 +3050,16 @@
             "observedAtLocal": "2026-04-28 16:19",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_184_issue_01.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_184_issue_02.jpg"
+                }
+            ],
             "diameter": 22,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_184.jpg"
@@ -2593,7 +3073,12 @@
             "observedAtLocal": "2026-04-28 16:20",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_185_issue_01.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_185.jpg"
@@ -2607,7 +3092,12 @@
             "observedAtLocal": "2026-04-28 16:20",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_186_issue_01.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_186.jpg"
@@ -2635,7 +3125,12 @@
             "observedAtLocal": "2026-04-28 16:21",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_188_issue_01.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_188.jpg"
@@ -2649,7 +3144,12 @@
             "observedAtLocal": "2026-04-28 16:22",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_189_issue_01.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_189.jpg"
@@ -2663,7 +3163,12 @@
             "observedAtLocal": "2026-04-28 16:22",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "절개",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_190_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_190.jpg"
@@ -2719,7 +3224,12 @@
             "observedAtLocal": "2026-04-28 16:24",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_194_issue_01.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_194.jpg"
@@ -2761,7 +3271,12 @@
             "observedAtLocal": "2026-04-28 16:25",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_197_issue_01.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_197.jpg"
@@ -2775,7 +3290,12 @@
             "observedAtLocal": "2026-04-28 16:26",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_198_issue_01.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_198.jpg"
@@ -2789,7 +3309,12 @@
             "observedAtLocal": "2026-04-28 16:27",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_199_issue_01.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_199.jpg"
@@ -2803,7 +3328,12 @@
             "observedAtLocal": "2026-04-28 16:27",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_200_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_200.jpg"
@@ -2817,7 +3347,16 @@
             "observedAtLocal": "2026-04-28 16:28",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_201_issue_01.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_201_issue_02.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_201.jpg"
@@ -2831,7 +3370,12 @@
             "observedAtLocal": "2026-04-28 16:29",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_202_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_202.jpg"
@@ -2845,7 +3389,12 @@
             "observedAtLocal": "2026-04-28 16:31",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_203_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_203.jpg"
@@ -2859,7 +3408,12 @@
             "observedAtLocal": "2026-04-28 16:31",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_204_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_204.jpg"
@@ -2873,7 +3427,12 @@
             "observedAtLocal": "2026-04-28 16:32",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_205_issue_01.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_205.jpg"
@@ -2887,7 +3446,12 @@
             "observedAtLocal": "2026-04-28 16:32",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_206_issue_01.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_206.jpg"
@@ -2901,7 +3465,12 @@
             "observedAtLocal": "2026-04-28 16:33",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_207_issue_01.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_207.jpg"
@@ -2915,7 +3484,12 @@
             "observedAtLocal": "2026-04-28 16:33",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_208_issue_01.jpg"
+                }
+            ],
             "diameter": 20,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_208.jpg"
@@ -2929,7 +3503,12 @@
             "observedAtLocal": "2026-04-28 16:34",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_209_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_209.jpg"
@@ -2943,7 +3522,16 @@
             "observedAtLocal": "2026-04-28 16:40",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_210_issue_01.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_210_issue_02.jpg"
+                }
+            ],
             "diameter": 18,
             "height": 3,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_210.jpg"
@@ -2957,7 +3545,16 @@
             "observedAtLocal": "2026-04-28 16:40",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_211_issue_01.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_211_issue_02.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_211.jpg"
@@ -2971,7 +3568,12 @@
             "observedAtLocal": "2026-04-28 18:19",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_212_issue_01.jpg"
+                }
+            ],
             "diameter": 44,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_212.jpg"
@@ -2985,7 +3587,12 @@
             "observedAtLocal": "2026-04-28 18:20",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_213_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_213.jpg"
@@ -2999,7 +3606,12 @@
             "observedAtLocal": "2026-04-28 18:20",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_214_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_214.jpg"
@@ -3013,7 +3625,12 @@
             "observedAtLocal": "2026-04-28 18:21",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_215_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_215.jpg"
@@ -3027,7 +3644,12 @@
             "observedAtLocal": "2026-04-28 18:22",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_216_issue_01.jpg"
+                }
+            ],
             "diameter": 40,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_216.jpg"
@@ -3041,7 +3663,12 @@
             "observedAtLocal": "2026-04-28 18:22",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_217_issue_01.jpg"
+                }
+            ],
             "diameter": 40,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_217.jpg"
@@ -3055,7 +3682,12 @@
             "observedAtLocal": "2026-04-28 18:23",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_218_issue_01.jpg"
+                }
+            ],
             "diameter": 38,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_218.jpg"
@@ -3069,7 +3701,16 @@
             "observedAtLocal": "2026-04-28 18:24",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_219_issue_01.jpg"
+                },
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_219_issue_02.jpg"
+                }
+            ],
             "diameter": 38,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_219.jpg"
@@ -3083,7 +3724,12 @@
             "observedAtLocal": "2026-04-28 18:25",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_220_issue_01.jpg"
+                }
+            ],
             "diameter": 46,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_220.jpg"
@@ -3097,7 +3743,12 @@
             "observedAtLocal": "2026-04-29 07:55",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_221_issue_01.jpg"
+                }
+            ],
             "diameter": 18,
             "height": 3,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_221.jpg"
@@ -3111,7 +3762,20 @@
             "observedAtLocal": "2026-04-29 07:56",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_222_issue_01.jpg"
+                },
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_222_issue_02.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_222_issue_03.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_222.jpg"
@@ -3125,7 +3789,12 @@
             "observedAtLocal": "2026-04-29 07:57",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_223_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_223.jpg"
@@ -3139,7 +3808,16 @@
             "observedAtLocal": "2026-04-29 07:58",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_224_issue_01.jpg"
+                },
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_224_issue_02.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_224.jpg"
@@ -3153,7 +3831,20 @@
             "observedAtLocal": "2026-04-29 07:59",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_225_issue_01.jpg"
+                },
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_225_issue_02.jpg"
+                },
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_225_issue_03.jpg"
+                }
+            ],
             "diameter": 40,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_225.jpg"
@@ -3167,7 +3858,16 @@
             "observedAtLocal": "2026-04-29 08:00",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_226_issue_01.jpg"
+                },
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_226_issue_02.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_226.jpg"
@@ -3209,7 +3909,12 @@
             "observedAtLocal": "2026-04-29 08:03",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_229_issue_01.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_229.jpg"
@@ -3223,7 +3928,12 @@
             "observedAtLocal": "2026-04-29 08:05",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_230_issue_01.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_230.jpg"
@@ -3265,7 +3975,12 @@
             "observedAtLocal": "2026-04-29 08:08",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_233_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_233.jpg"
@@ -3293,7 +4008,16 @@
             "observedAtLocal": "2026-04-29 08:15",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_235_issue_01.jpg"
+                },
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_235_issue_02.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_235.jpg"
@@ -3335,7 +4059,12 @@
             "observedAtLocal": "2026-04-29 08:17",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_238_issue_01.jpg"
+                }
+            ],
             "diameter": 46,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_238.jpg"
@@ -3349,7 +4078,12 @@
             "observedAtLocal": "2026-04-29 08:18",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_239_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_239.jpg"
@@ -3363,7 +4097,16 @@
             "observedAtLocal": "2026-04-29 08:19",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_240_issue_01.jpg"
+                },
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_240_issue_02.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_240.jpg"
@@ -3377,7 +4120,12 @@
             "observedAtLocal": "2026-04-29 08:19",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_241_issue_01.jpg"
+                }
+            ],
             "diameter": 44,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_241.jpg"
@@ -3419,7 +4167,12 @@
             "observedAtLocal": "2026-04-29 08:21",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_244_issue_01.jpg"
+                }
+            ],
             "diameter": 18,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_244.jpg"
@@ -3433,7 +4186,12 @@
             "observedAtLocal": "2026-04-29 08:22",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_245_issue_01.jpg"
+                }
+            ],
             "diameter": 18,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_245.jpg"
@@ -3461,7 +4219,12 @@
             "observedAtLocal": "2026-04-29 08:24",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "식엽성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_247_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_247.jpg"
@@ -3559,7 +4322,12 @@
             "observedAtLocal": "2026-04-29 08:30",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_254_issue_01.jpg"
+                }
+            ],
             "diameter": 50,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_254.jpg"
@@ -3643,7 +4411,12 @@
             "observedAtLocal": "2026-04-29 08:35",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_260_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_260.jpg"
@@ -3685,7 +4458,12 @@
             "observedAtLocal": "2026-04-29 08:38",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_263_issue_01.jpg"
+                }
+            ],
             "diameter": 34,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_263.jpg"
@@ -3699,7 +4477,12 @@
             "observedAtLocal": "2026-04-29 08:39",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_264_issue_01.jpg"
+                }
+            ],
             "diameter": 44,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_264.jpg"
@@ -3825,7 +4608,12 @@
             "observedAtLocal": "2026-04-29 08:45",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "뿌리융기",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_273_issue_01.jpg"
+                }
+            ],
             "diameter": 42,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_273.jpg"
@@ -3853,7 +4641,12 @@
             "observedAtLocal": "2026-04-29 08:47",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "새집 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_275_issue_01.jpg"
+                }
+            ],
             "diameter": 50,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_275.jpg"
@@ -3867,7 +4660,12 @@
             "observedAtLocal": "2026-04-29 08:48",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_276_issue_01.jpg"
+                }
+            ],
             "diameter": 46,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_276.jpg"
@@ -3881,7 +4679,12 @@
             "observedAtLocal": "2026-04-29 08:49",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_277_issue_01.jpg"
+                }
+            ],
             "diameter": 40,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_277.jpg"
@@ -3909,7 +4712,16 @@
             "observedAtLocal": "2026-04-29 08:51",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후부",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_279_issue_01.jpg"
+                },
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_279_issue_02.jpg"
+                }
+            ],
             "diameter": 44,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_279.jpg"
@@ -4007,7 +4819,12 @@
             "observedAtLocal": "2026-04-29 08:58",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_286_issue_01.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_286.jpg"
@@ -4077,7 +4894,12 @@
             "observedAtLocal": "2026-04-29 09:01",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_291_issue_01.jpg"
+                }
+            ],
             "diameter": 42,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_291.jpg"
@@ -4133,7 +4955,12 @@
             "observedAtLocal": "2026-04-29 09:04",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_295_issue_01.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_295.jpg"
@@ -4161,7 +4988,12 @@
             "observedAtLocal": "2026-04-29 09:05",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_297_issue_01.jpg"
+                }
+            ],
             "diameter": 42,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_297.jpg"
@@ -4287,7 +5119,12 @@
             "observedAtLocal": "2026-04-29 09:11",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_306_issue_01.jpg"
+                }
+            ],
             "diameter": 48,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_306.jpg"
@@ -4343,7 +5180,12 @@
             "observedAtLocal": "2026-04-29 10:30",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_310_issue_01.jpg"
+                }
+            ],
             "diameter": 20,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_310.jpg"
@@ -4357,7 +5199,12 @@
             "observedAtLocal": "2026-04-29 10:31",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_311_issue_01.jpg"
+                }
+            ],
             "diameter": 58,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_311.jpg"
@@ -4371,7 +5218,16 @@
             "observedAtLocal": "2026-04-29 10:32",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_312_issue_01.jpg"
+                },
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_312_issue_02.jpg"
+                }
+            ],
             "diameter": 22,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_312.jpg"
@@ -4385,7 +5241,12 @@
             "observedAtLocal": "2026-04-29 10:33",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_313_issue_01.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_313.jpg"
@@ -4399,7 +5260,16 @@
             "observedAtLocal": "2026-04-29 10:34",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_314_issue_01.jpg"
+                },
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_314_issue_02.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_314.jpg"
@@ -4455,7 +5325,12 @@
             "observedAtLocal": "2026-04-29 10:37",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_318_issue_01.jpg"
+                }
+            ],
             "diameter": 50,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_318.jpg"
@@ -4511,7 +5386,16 @@
             "observedAtLocal": "2026-04-29 10:41",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_322_issue_01.jpg"
+                },
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_322_issue_02.jpg"
+                }
+            ],
             "diameter": 24,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_322.jpg"
@@ -4581,7 +5465,16 @@
             "observedAtLocal": "2026-04-29 10:44",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_327_issue_01.jpg"
+                },
+                {
+                    "label": "불완전 결합",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_327_issue_02.jpg"
+                }
+            ],
             "diameter": 64,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_327.jpg"
@@ -4651,7 +5544,12 @@
             "observedAtLocal": "2026-04-29 10:48",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_332_issue_01.jpg"
+                }
+            ],
             "diameter": 26,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_332.jpg"
@@ -4749,7 +5647,16 @@
             "observedAtLocal": "2026-04-29 12:50",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_339_issue_01.jpg"
+                },
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_339_issue_02.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_339.jpg"
@@ -4791,7 +5698,12 @@
             "observedAtLocal": "2026-04-29 12:52",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_342_issue_01.jpg"
+                }
+            ],
             "diameter": 54,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_342.jpg"
@@ -4805,7 +5717,12 @@
             "observedAtLocal": "2026-04-29 12:53",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_343_issue_01.jpg"
+                }
+            ],
             "diameter": 46,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_343.jpg"
@@ -4819,7 +5736,12 @@
             "observedAtLocal": "2026-04-29 12:54",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_344_issue_01.jpg"
+                }
+            ],
             "diameter": 42,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_344.jpg"
@@ -4903,7 +5825,12 @@
             "observedAtLocal": "2026-04-29 13:00",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_350_issue_01.jpg"
+                }
+            ],
             "diameter": 32,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_350.jpg"
@@ -4973,7 +5900,12 @@
             "observedAtLocal": "2026-04-29 13:07",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_355_issue_01.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 6,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_355.jpg"
@@ -5001,7 +5933,12 @@
             "observedAtLocal": "2026-04-29 13:09",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_357_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_357.jpg"
@@ -5029,7 +5966,12 @@
             "observedAtLocal": "2026-04-29 13:10",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_359_issue_01.jpg"
+                }
+            ],
             "diameter": 48,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_359.jpg"
@@ -5085,7 +6027,12 @@
             "observedAtLocal": "2026-04-29 13:13",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_363_issue_01.jpg"
+                }
+            ],
             "diameter": 40,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_363.jpg"
@@ -5113,7 +6060,12 @@
             "observedAtLocal": "2026-04-29 13:15",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_365_issue_01.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_365.jpg"
@@ -5155,7 +6107,12 @@
             "observedAtLocal": "2026-04-29 13:20",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_368_issue_01.jpg"
+                }
+            ],
             "diameter": 44,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_368.jpg"
@@ -5253,7 +6210,12 @@
             "observedAtLocal": "2026-04-29 13:27",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_375_issue_01.jpg"
+                }
+            ],
             "diameter": 62,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_375.jpg"
@@ -5267,7 +6229,12 @@
             "observedAtLocal": "2026-04-29 13:29",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_376_issue_01.jpg"
+                }
+            ],
             "diameter": 58,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_376.jpg"
@@ -5365,7 +6332,12 @@
             "observedAtLocal": "2026-04-29 16:24",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_383_issue_01.jpg"
+                }
+            ],
             "diameter": 42,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_383.jpg"
@@ -5379,7 +6351,16 @@
             "observedAtLocal": "2026-04-29 16:25",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_384_issue_01.jpg"
+                },
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_384_issue_02.jpg"
+                }
+            ],
             "diameter": 56,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_384.jpg"
@@ -5393,7 +6374,12 @@
             "observedAtLocal": "2026-04-29 16:26",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_385_issue_01.jpg"
+                }
+            ],
             "diameter": 46,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_385.jpg"
@@ -5407,7 +6393,12 @@
             "observedAtLocal": "2026-04-29 16:27",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_386_issue_01.jpg"
+                }
+            ],
             "diameter": 52,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_386.jpg"
@@ -5421,7 +6412,12 @@
             "observedAtLocal": "2026-04-29 16:28",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_387_issue_01.jpg"
+                }
+            ],
             "diameter": 46,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_387.jpg"
@@ -5435,7 +6431,12 @@
             "observedAtLocal": "2026-04-29 16:29",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_388_issue_01.jpg"
+                }
+            ],
             "diameter": 38,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_388.jpg"
@@ -5449,7 +6450,12 @@
             "observedAtLocal": "2026-04-29 16:29",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_389_issue_01.jpg"
+                }
+            ],
             "diameter": 48,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_389.jpg"
@@ -5477,7 +6483,12 @@
             "observedAtLocal": "2026-04-29 16:30",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_391_issue_01.jpg"
+                }
+            ],
             "diameter": 50,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_391.jpg"
@@ -5491,7 +6502,12 @@
             "observedAtLocal": "2026-04-29 16:31",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_392_issue_01.jpg"
+                }
+            ],
             "diameter": 46,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_392.jpg"
@@ -5533,7 +6549,12 @@
             "observedAtLocal": "2026-04-29 16:49",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_395_issue_01.jpg"
+                }
+            ],
             "diameter": 48,
             "height": 11,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_395.jpg"
@@ -5561,7 +6582,12 @@
             "observedAtLocal": "2026-04-29 16:50",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_397_issue_01.jpg"
+                }
+            ],
             "diameter": 56,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_397.jpg"
@@ -5617,7 +6643,12 @@
             "observedAtLocal": "2026-04-29 16:54",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_401_issue_01.jpg"
+                }
+            ],
             "diameter": 44,
             "height": 11,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_401.jpg"
@@ -5631,7 +6662,12 @@
             "observedAtLocal": "2026-04-29 16:55",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_402_issue_01.jpg"
+                }
+            ],
             "diameter": 46,
             "height": 11,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_402.jpg"
@@ -5757,7 +6793,12 @@
             "observedAtLocal": "2026-04-29 17:02",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_411_issue_01.jpg"
+                }
+            ],
             "diameter": 50,
             "height": 13,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_411.jpg"
@@ -5799,7 +6840,16 @@
             "observedAtLocal": "2026-04-29 17:05",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_414_issue_01.jpg"
+                },
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_414_issue_02.jpg"
+                }
+            ],
             "diameter": 48,
             "height": 11,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_414.jpg"
@@ -5841,7 +6891,12 @@
             "observedAtLocal": "2026-04-29 17:07",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_417_issue_01.jpg"
+                }
+            ],
             "diameter": 44,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_417.jpg"
@@ -5855,7 +6910,12 @@
             "observedAtLocal": "2026-04-29 17:08",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_418_issue_01.jpg"
+                }
+            ],
             "diameter": 64,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_418.jpg"
@@ -5925,7 +6985,12 @@
             "observedAtLocal": "2026-04-29 17:13",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_423_issue_01.jpg"
+                }
+            ],
             "diameter": 56,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_423.jpg"
@@ -5953,7 +7018,12 @@
             "observedAtLocal": "2026-04-29 17:17",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "천공성 해충",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_425_issue_01.jpg"
+                }
+            ],
             "diameter": 46,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_425.jpg"
@@ -6009,7 +7079,16 @@
             "observedAtLocal": "2026-04-29 17:20",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_429_issue_01.jpg"
+                },
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_429_issue_02.jpg"
+                }
+            ],
             "diameter": 56,
             "height": 11,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_429.jpg"
@@ -6051,7 +7130,12 @@
             "observedAtLocal": "2026-04-29 17:22",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_432_issue_01.jpg"
+                }
+            ],
             "diameter": 54,
             "height": 12,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_432.jpg"
@@ -6219,7 +7303,12 @@
             "observedAtLocal": "2026-04-30 11:43",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_444_issue_01.jpg"
+                }
+            ],
             "diameter": 38,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_444.jpg"
@@ -6233,7 +7322,12 @@
             "observedAtLocal": "2026-04-30 11:43",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_445_issue_01.jpg"
+                }
+            ],
             "diameter": 54,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_445.jpg"
@@ -6247,7 +7341,12 @@
             "observedAtLocal": "2026-04-30 11:44",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_446_issue_01.jpg"
+                }
+            ],
             "diameter": 48,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_446.jpg"
@@ -6331,7 +7430,12 @@
             "observedAtLocal": "2026-04-30 11:49",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_452_issue_01.jpg"
+                }
+            ],
             "diameter": 56,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_452.jpg"
@@ -6429,7 +7533,12 @@
             "observedAtLocal": "2026-04-30 11:53",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_459_issue_01.jpg"
+                }
+            ],
             "diameter": 52,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_459.jpg"
@@ -6471,7 +7580,12 @@
             "observedAtLocal": "2026-04-30 11:55",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "부후",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_462_issue_01.jpg"
+                }
+            ],
             "diameter": 44,
             "height": 5,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_462.jpg"
@@ -6527,7 +7641,12 @@
             "observedAtLocal": "2026-04-30 11:57",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_466_issue_01.jpg"
+                }
+            ],
             "diameter": 48,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_466.jpg"
@@ -6583,7 +7702,12 @@
             "observedAtLocal": "2026-04-30 12:01",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_470_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_470.jpg"
@@ -6625,7 +7749,12 @@
             "observedAtLocal": "2026-04-30 12:03",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_473_issue_01.jpg"
+                }
+            ],
             "diameter": 56,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_473.jpg"
@@ -6653,7 +7782,12 @@
             "observedAtLocal": "2026-04-30 12:06",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_475_issue_01.jpg"
+                }
+            ],
             "diameter": 58,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_475.jpg"
@@ -6765,7 +7899,12 @@
             "observedAtLocal": "2026-04-30 12:16",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_483_issue_01.jpg"
+                }
+            ],
             "diameter": 28,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_483.jpg"
@@ -6793,7 +7932,12 @@
             "observedAtLocal": "2026-04-30 12:17",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_485_issue_01.jpg"
+                }
+            ],
             "diameter": 54,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_485.jpg"
@@ -6807,7 +7951,12 @@
             "observedAtLocal": "2026-04-30 12:18",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_486_issue_01.jpg"
+                }
+            ],
             "diameter": 52,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_486.jpg"
@@ -6835,7 +7984,12 @@
             "observedAtLocal": "2026-04-30 12:20",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_488_issue_01.jpg"
+                }
+            ],
             "diameter": 46,
             "height": 10,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_488.jpg"
@@ -6849,7 +8003,12 @@
             "observedAtLocal": "2026-04-30 12:21",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_489_issue_01.jpg"
+                }
+            ],
             "diameter": 30,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_489.jpg"
@@ -6863,7 +8022,12 @@
             "observedAtLocal": "2026-04-30 12:22",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_490_issue_01.jpg"
+                }
+            ],
             "diameter": 52,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_490.jpg"
@@ -6933,7 +8097,12 @@
             "observedAtLocal": "2026-04-30 12:26",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "자실체",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_495_issue_01.jpg"
+                }
+            ],
             "diameter": 46,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_495.jpg"
@@ -6961,7 +8130,12 @@
             "observedAtLocal": "2026-04-30 12:27",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_497_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_497.jpg"
@@ -6989,7 +8163,12 @@
             "observedAtLocal": "2026-04-30 12:28",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_499_issue_01.jpg"
+                }
+            ],
             "diameter": 48,
             "height": 9,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_499.jpg"
@@ -7059,7 +8238,12 @@
             "observedAtLocal": "2026-04-30 12:32",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지 (도로)",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_504_issue_01.jpg"
+                }
+            ],
             "diameter": 38,
             "height": 8,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_504.jpg"
@@ -7101,7 +8285,12 @@
             "observedAtLocal": "2026-04-30 12:33",
             "species": "벚나무",
             "district": "황산공원",
-            "photos": [],
+            "photos": [
+                {
+                    "label": "고사지",
+                    "url": "/data/tree_images/hwangsan_park_observation/issues/tree_507_issue_01.jpg"
+                }
+            ],
             "diameter": 36,
             "height": 7,
             "photoUrl": "/data/tree_images/hwangsan_park_observation/tree_507.jpg"

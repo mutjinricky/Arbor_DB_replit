@@ -315,6 +315,7 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder, t
                     src={treeImagePath}
                     alt={`Tree ${tree.id}`}
                     className="w-full h-full object-cover"
+                    decoding="async"
                     onError={() => setImageError(true)}
                   />
                 )}
@@ -782,7 +783,7 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder, t
                         <div
                           key={g}
                           className={cn("rounded py-1", soil.grade === g ? "ring-2" : "opacity-50")}
-                          style={{ backgroundColor: SOIL_COLORS[g] + "20", border: `1px solid ${SOIL_COLORS[g]}50`, ringColor: SOIL_COLORS[g] }}
+                          style={{ backgroundColor: SOIL_COLORS[g] + "20", border: `1px solid ${SOIL_COLORS[g]}50` }}
                         >
                           <p className="font-bold" style={{ color: SOIL_COLORS[g] }}>{g}</p>
                           <p className="text-muted-foreground">{g === "A" ? "≥90" : g === "B" ? "75~89" : g === "C" ? "60~74" : g === "D" ? "40~59" : "<40"}</p>
@@ -1000,6 +1001,8 @@ export function TreeProfileModal({ treeId, isOpen, onClose, onCreateWorkOrder, t
                                   src={photo.url}
                                   alt={photo.label || `수목 사진 ${i + 1}`}
                                   className="w-full h-full object-cover"
+                                  loading="lazy"
+                                  decoding="async"
                                 />
                                 {photo.label && (
                                   <div className="absolute left-2 bottom-2 max-w-[calc(100%-1rem)] rounded-md bg-black/60 px-2 py-1 text-[11px] font-medium text-white">
