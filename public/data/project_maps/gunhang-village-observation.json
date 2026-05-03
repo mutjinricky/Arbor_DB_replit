@@ -18,7 +18,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_001.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_001.jpg",
+            "diameter": 32,
+            "height": 7
         },
         {
             "id": "P002",
@@ -35,7 +37,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_002_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_002.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_002.jpg",
+            "diameter": 52,
+            "height": 6
         },
         {
             "id": "P003",
@@ -52,7 +56,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_003_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_003.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_003.jpg",
+            "diameter": 42,
+            "height": 6
         },
         {
             "id": "P004",
@@ -69,7 +75,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_004_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_004.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_004.jpg",
+            "diameter": 48,
+            "height": 6
         },
         {
             "id": "P005",
@@ -81,7 +89,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_005.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_005.jpg",
+            "diameter": 46,
+            "height": 7
         },
         {
             "id": "P006",
@@ -93,7 +103,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_006.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_006.jpg",
+            "diameter": 38,
+            "height": 5
         },
         {
             "id": "P007",
@@ -105,7 +117,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_007.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_007.jpg",
+            "diameter": 34,
+            "height": 6
         },
         {
             "id": "P008",
@@ -117,7 +131,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_008.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_008.jpg",
+            "diameter": 26,
+            "height": 6
         },
         {
             "id": "P009",
@@ -129,7 +145,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_009.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_009.jpg",
+            "diameter": 46,
+            "height": 6
         },
         {
             "id": "P010",
@@ -146,7 +164,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_010_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_010.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_010.jpg",
+            "diameter": 36,
+            "height": 5
         },
         {
             "id": "P011",
@@ -163,7 +183,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_011_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_011.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_011.jpg",
+            "diameter": 36,
+            "height": 5
         },
         {
             "id": "P012",
@@ -175,7 +197,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_012.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_012.jpg",
+            "diameter": 34,
+            "height": 5
         },
         {
             "id": "P013",
@@ -192,7 +216,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_013_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_013.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_013.jpg",
+            "diameter": 40,
+            "height": 5
         },
         {
             "id": "P014",
@@ -204,7 +230,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_014.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_014.jpg",
+            "diameter": 38,
+            "height": 6
         },
         {
             "id": "P015",
@@ -221,7 +249,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_015_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_015.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_015.jpg",
+            "diameter": 42,
+            "height": 5
         },
         {
             "id": "P016",
@@ -233,7 +263,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_016.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_016.jpg",
+            "diameter": 40,
+            "height": 6
         },
         {
             "id": "P017",
@@ -245,7 +277,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_017.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_017.jpg",
+            "diameter": 36,
+            "height": 5
         },
         {
             "id": "P018",
@@ -262,7 +296,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_018_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_018.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_018.jpg",
+            "diameter": 30,
+            "height": 3
         },
         {
             "id": "P019",
@@ -274,7 +310,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_019.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_019.jpg",
+            "diameter": 34,
+            "height": 5
         },
         {
             "id": "P020",
@@ -286,7 +324,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_020.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_020.jpg",
+            "diameter": 22,
+            "height": 5
         },
         {
             "id": "P021",
@@ -298,7 +338,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_021.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_021.jpg",
+            "diameter": 34,
+            "height": 5
         },
         {
             "id": "P022",
@@ -310,7 +352,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_022.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_022.jpg",
+            "diameter": 32,
+            "height": 6
         },
         {
             "id": "P023",
@@ -322,7 +366,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_023.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_023.jpg",
+            "diameter": 30,
+            "height": 7
         },
         {
             "id": "P024",
@@ -339,7 +385,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_024_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_024.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_024.jpg",
+            "diameter": 38,
+            "height": 6
         },
         {
             "id": "P025",
@@ -351,7 +399,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_025.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_025.jpg",
+            "diameter": 24,
+            "height": 4
         },
         {
             "id": "P026",
@@ -363,7 +413,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_026.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_026.jpg",
+            "diameter": 28,
+            "height": 5
         },
         {
             "id": "P027",
@@ -375,7 +427,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_027.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_027.jpg",
+            "diameter": 38,
+            "height": 6
         },
         {
             "id": "P028",
@@ -387,7 +441,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_028.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_028.jpg",
+            "diameter": 48,
+            "height": 6
         },
         {
             "id": "P029",
@@ -404,7 +460,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_029_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_029.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_029.jpg",
+            "diameter": 28,
+            "height": 6
         },
         {
             "id": "P030",
@@ -416,7 +474,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_030.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_030.jpg",
+            "diameter": 22,
+            "height": 5
         },
         {
             "id": "P031",
@@ -428,7 +488,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_031.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_031.jpg",
+            "diameter": 44,
+            "height": 7
         },
         {
             "id": "P032",
@@ -445,7 +507,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_032_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_032.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_032.jpg",
+            "diameter": 34,
+            "height": 7
         },
         {
             "id": "P033",
@@ -457,7 +521,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_033.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_033.jpg",
+            "diameter": 42,
+            "height": 7
         },
         {
             "id": "P034",
@@ -469,7 +535,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_034.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_034.jpg",
+            "diameter": 30,
+            "height": 8
         },
         {
             "id": "P035",
@@ -481,7 +549,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_035.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_035.jpg",
+            "diameter": 36,
+            "height": 7
         },
         {
             "id": "P036",
@@ -493,7 +563,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_036.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_036.jpg",
+            "diameter": 40,
+            "height": 7
         },
         {
             "id": "P037",
@@ -510,7 +582,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_037_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_037.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_037.jpg",
+            "diameter": 28,
+            "height": 6
         },
         {
             "id": "P038",
@@ -522,7 +596,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_038.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_038.jpg",
+            "diameter": 42,
+            "height": 8
         },
         {
             "id": "P039",
@@ -539,7 +615,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_039_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_039.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_039.jpg",
+            "diameter": 38,
+            "height": 4
         },
         {
             "id": "P040",
@@ -551,7 +629,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_040.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_040.jpg",
+            "diameter": 18,
+            "height": 4
         },
         {
             "id": "P041",
@@ -563,7 +643,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_041.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_041.jpg",
+            "diameter": 30,
+            "height": 4
         },
         {
             "id": "P042",
@@ -580,7 +662,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_042_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_042.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_042.jpg",
+            "diameter": 46,
+            "height": 7
         },
         {
             "id": "P043",
@@ -597,7 +681,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_043_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_043.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_043.jpg",
+            "diameter": 46,
+            "height": 7
         },
         {
             "id": "P044",
@@ -609,7 +695,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_044.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_044.jpg",
+            "diameter": 26,
+            "height": 5
         },
         {
             "id": "P045",
@@ -626,7 +714,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_045_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_045.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_045.jpg",
+            "diameter": 42,
+            "height": 5
         },
         {
             "id": "P046",
@@ -643,7 +733,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_046_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_046.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_046.jpg",
+            "diameter": 36,
+            "height": 6
         },
         {
             "id": "P047",
@@ -655,7 +747,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_047.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_047.jpg",
+            "diameter": 26,
+            "height": 5
         },
         {
             "id": "P048",
@@ -672,7 +766,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_048_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_048.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_048.jpg",
+            "diameter": 34,
+            "height": 6
         },
         {
             "id": "P049",
@@ -689,7 +785,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_049_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_049.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_049.jpg",
+            "diameter": 46,
+            "height": 8
         },
         {
             "id": "P050",
@@ -701,7 +799,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_050.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_050.jpg",
+            "diameter": 32,
+            "height": 7
         },
         {
             "id": "P051",
@@ -718,7 +818,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_051_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_051.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_051.jpg",
+            "diameter": 44,
+            "height": 7
         },
         {
             "id": "P052",
@@ -730,7 +832,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_052.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_052.jpg",
+            "diameter": 26,
+            "height": 6
         },
         {
             "id": "P053",
@@ -742,7 +846,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_053.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_053.jpg",
+            "diameter": 34,
+            "height": 6
         },
         {
             "id": "P054",
@@ -754,7 +860,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_054.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_054.jpg",
+            "diameter": 30,
+            "height": 6
         },
         {
             "id": "P055",
@@ -766,7 +874,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_055.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_055.jpg",
+            "diameter": 20,
+            "height": 6
         },
         {
             "id": "P056",
@@ -783,7 +893,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_056_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_056.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_056.jpg",
+            "diameter": 52,
+            "height": 7
         },
         {
             "id": "P057",
@@ -800,7 +912,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_057_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_057.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_057.jpg",
+            "diameter": 38,
+            "height": 7
         },
         {
             "id": "P058",
@@ -817,7 +931,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_058_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_058.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_058.jpg",
+            "diameter": 48,
+            "height": 7
         },
         {
             "id": "P059",
@@ -829,7 +945,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_059.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_059.jpg",
+            "diameter": 36,
+            "height": 7
         },
         {
             "id": "P060",
@@ -841,7 +959,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_060.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_060.jpg",
+            "diameter": 42,
+            "height": 7
         },
         {
             "id": "P061",
@@ -853,7 +973,9 @@
             "species": "미지정 수목",
             "district": "군항마을",
             "photos": [],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_061.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_061.jpg",
+            "diameter": 32,
+            "height": 7
         },
         {
             "id": "P062",
@@ -870,7 +992,9 @@
                     "url": "/data/tree_images/gunhang_village_observation/issues/tree_062_issue_01.jpg"
                 }
             ],
-            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_062.jpg"
+            "photoUrl": "/data/tree_images/gunhang_village_observation/tree_062.jpg",
+            "diameter": 32,
+            "height": 7
         }
     ]
 }
