@@ -3,11 +3,11 @@ import { Source, Layer } from 'react-map-gl';
 
 const circleRadius = [
   'interpolate', ['linear'], ['zoom'],
-  14, 5,
-  18, 7,
+  14, 3,
+  18, 5,
   19, 7,
-  23, 30,
-  25, 50,
+  23, 10,
+  25, 15,
 ];
 
 function buildColorMapping(property, colorMap, fallback) {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   Sprout, MapPin, CheckCircle2, Eye, AlertTriangle,
   Star, ChevronRight, Info, History,
@@ -318,6 +318,53 @@ export default function SoilManagement() {
   const actionCount = enrichedTrees.filter((t) => ["D", "E"].includes(t.soilGrade)).length;
   const topZone = zones[0]?.name ?? "—";
 
+  // ── map resize ─────────────────────────────────────────────────────────
+  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+  const [mapHeight, setMapHeight] = useState(360);
+  const dragging = useRef(false);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new ResizeObserver(() => {
+      const map = mapRef.current?.getMap?.() || mapRef.current;
+      map?.resize();
+    });
+
+    observer.observe(containerRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!dragging.current) return;
+
+      setMapHeight((prev) =>
+        Math.max(200, prev + e.movementY)
+      );
+    };
+
+    const handleMouseUp = () => {
+      dragging.current = false;
+      document.body.style.userSelect = ""; // 선택 방지 해제
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
+
+  const onMapMouseDown = () => {
+    dragging.current = true;
+    document.body.style.userSelect = "none"; // 드래그 중 텍스트 선택 방지
+  };
+
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -357,129 +404,143 @@ export default function SoilManagement() {
             </div>
           ))}
         </div>
+        
+        {/* ① 토양 등급 지도 */}
+        <Card className="border-0 shadow-md">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <span className="w-1.5 h-4 rounded-full bg-green-500 inline-block" />
+              토양 등급 지도
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div
+              ref={containerRef}
+              className="relative w-full h-[360px] overflow-hidden rounded-b-2xl group"
+              style={{ height : mapHeight }}
+            >
+              {MAPBOX_TOKEN ? (
+                <Map
+                  {...mapState}
+                  ref={mapRef}
+                  onMove={(e) => setMapState(e.viewState)}
+                  mapStyle="mapbox://styles/mapbox/streets-v12"
+                  mapboxAccessToken={MAPBOX_TOKEN}
+                  interactiveLayerIds={["trees-point"]}
+                  cursor={cursor}
+                  onClick={onTreeLayerClick}
+                  onMouseMove={onTreeLayerHover}
+                  onMouseLeave={onTreeLayerLeave}
+                  style={{ width: '100%', height: '100%' }}
+                >
+                  <NavigationControl position="top-right" />
+
+                  {/* ── 구역 폴리곤 레이어 ── */}
+                  <Source id="zones" type="geojson" data="/data/zones.geojson">
+                    <Layer
+                      id="zones-fill"
+                      type="fill"
+                      paint={{
+                        "fill-color": ["get", "color"],
+                        "fill-opacity": 0.18,
+                      }}
+                    />
+                    <Layer
+                      id="zones-stroke"
+                      type="line"
+                      paint={{
+                        "line-color": ["get", "color"],
+                        "line-width": 2,
+                        "line-opacity": 0.7,
+                      }}
+                    />
+                  </Source>
+
+                  {enrichedGeoJson && (
+                    <TreeLayer
+                      treesData={enrichedGeoJson}
+                      mapMode="soil"
+                      filteredIds={gradeFilteredIds}
+                      selectedTreeIds={selectedTreeId ? [selectedTreeId] : []}
+                    />
+                  )}
+                </Map>
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/30">
+                  <MapPin className="h-12 w-12 text-muted-foreground mb-3" />
+                  <p className="text-sm text-muted-foreground">VITE_MAPBOX_TOKEN을 설정해주세요</p>
+                </div>
+              )}
+
+              {/* ── 하단 리사이즈 시각 표시 (Handle) ── */}
+              <div
+                onMouseDown={onMapMouseDown}
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-4 flex items-center justify-center cursor-ns-resize"
+              >
+                <div className="w-12 h-1.5 bg-slate-300 rounded-full group-hover:bg-slate-400" />
+              </div>
+
+              {/* 범례 (우하단 고정) */}
+              <div className="absolute bottom-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur rounded-xl border shadow-md px-3 py-2 z-10 space-y-2">
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground mb-1.5">토양 등급</p>
+                  {(["A", "B", "C", "D", "E"] as SoilGrade[]).map((g) => (
+                    <div key={g} className="flex items-center gap-2 mb-0.5">
+                      <div className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-black"
+                        style={{ backgroundColor: SOIL_COLORS[g] }}>{g}</div>
+                      <span className="text-[10px] text-muted-foreground">{SOIL_LABELS[g].split(" ")[0]}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="pt-1.5 border-t">
+                  <p className="text-[10px] font-bold text-muted-foreground mb-1.5">식재 위치</p>
+                  {[
+                    { type: "도로",   color: "#64748B" },
+                    { type: "마을",   color: "#22C55E" },
+                    { type: "축제장", color: "#A855F7" },
+                    { type: "전답",   color: "#EAB308" },
+                    { type: "농가",   color: "#F97316" },
+                  ].map(({ type, color }) => (
+                    <div key={type} className="flex items-center gap-2 mb-0.5">
+                      <div className="w-3 h-3 rounded-sm border"
+                        style={{ backgroundColor: color + "40", borderColor: color }} />
+                      <span className="text-[10px] text-muted-foreground">{type}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── hover 툴팁 (TreeInventory 토양 모드와 동일) ── */}
+              {hoveredTree && (
+                <div
+                  className="absolute z-20 bg-card border border-border rounded-lg shadow-xl p-3 pointer-events-none min-w-[180px]"
+                  style={{
+                    left: `${hoveredTree.position.x}%`,
+                    top:  `${hoveredTree.position.y}%`,
+                    transform: "translate(-50%, -120%)",
+                  }}
+                >
+                  <p className="font-semibold text-sm mb-1">
+                    {hoveredTree.species} – Tree ID: {hoveredTree.id}
+                  </p>
+                  <Badge
+                    className="mt-1 text-xs text-white"
+                    style={{ backgroundColor: SOIL_COLORS[hoveredTree.soilGrade] }}
+                  >
+                    토양 {hoveredTree.soilGrade}등급 – {SOIL_LABELS[hoveredTree.soilGrade]}
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
 
         {/* ── 2단 레이아웃 ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-5 items-start">
 
           {/* ══ 좌측 컬럼 ══════════════════════════════════════════════ */}
           <div className="space-y-5">
-
-            {/* ① 토양 등급 지도 */}
-            <Card className="border-0 shadow-md">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <span className="w-1.5 h-4 rounded-full bg-green-500 inline-block" />
-                  토양 등급 지도
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="relative w-full h-[360px] overflow-hidden rounded-b-2xl">
-                  {MAPBOX_TOKEN ? (
-                    <Map
-                      {...mapState}
-                      onMove={(e) => setMapState(e.viewState)}
-                      mapStyle="mapbox://styles/mapbox/streets-v12"
-                      mapboxAccessToken={MAPBOX_TOKEN}
-                      interactiveLayerIds={["trees-point"]}
-                      cursor={cursor}
-                      onClick={onTreeLayerClick}
-                      onMouseMove={onTreeLayerHover}
-                      onMouseLeave={onTreeLayerLeave}
-                    >
-                      <NavigationControl position="top-right" />
-
-                      {/* ── 구역 폴리곤 레이어 ── */}
-                      <Source id="zones" type="geojson" data="/data/zones.geojson">
-                        <Layer
-                          id="zones-fill"
-                          type="fill"
-                          paint={{
-                            "fill-color": ["get", "color"],
-                            "fill-opacity": 0.18,
-                          }}
-                        />
-                        <Layer
-                          id="zones-stroke"
-                          type="line"
-                          paint={{
-                            "line-color": ["get", "color"],
-                            "line-width": 2,
-                            "line-opacity": 0.7,
-                          }}
-                        />
-                      </Source>
-
-                      {enrichedGeoJson && (
-                        <TreeLayer
-                          treesData={enrichedGeoJson}
-                          mapMode="soil"
-                          filteredIds={gradeFilteredIds}
-                          selectedTreeIds={selectedTreeId ? [selectedTreeId] : []}
-                        />
-                      )}
-                    </Map>
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/30">
-                      <MapPin className="h-12 w-12 text-muted-foreground mb-3" />
-                      <p className="text-sm text-muted-foreground">VITE_MAPBOX_TOKEN을 설정해주세요</p>
-                    </div>
-                  )}
-
-                  {/* 범례 (우하단 고정) */}
-                  <div className="absolute bottom-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur rounded-xl border shadow-md px-3 py-2 z-10 space-y-2">
-                    <div>
-                      <p className="text-[10px] font-bold text-muted-foreground mb-1.5">토양 등급</p>
-                      {(["A", "B", "C", "D", "E"] as SoilGrade[]).map((g) => (
-                        <div key={g} className="flex items-center gap-2 mb-0.5">
-                          <div className="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-black"
-                            style={{ backgroundColor: SOIL_COLORS[g] }}>{g}</div>
-                          <span className="text-[10px] text-muted-foreground">{SOIL_LABELS[g].split(" ")[0]}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="pt-1.5 border-t">
-                      <p className="text-[10px] font-bold text-muted-foreground mb-1.5">식재 위치</p>
-                      {[
-                        { type: "도로",   color: "#64748B" },
-                        { type: "마을",   color: "#22C55E" },
-                        { type: "축제장", color: "#A855F7" },
-                        { type: "전답",   color: "#EAB308" },
-                        { type: "농가",   color: "#F97316" },
-                      ].map(({ type, color }) => (
-                        <div key={type} className="flex items-center gap-2 mb-0.5">
-                          <div className="w-3 h-3 rounded-sm border"
-                            style={{ backgroundColor: color + "40", borderColor: color }} />
-                          <span className="text-[10px] text-muted-foreground">{type}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* ── hover 툴팁 (TreeInventory 토양 모드와 동일) ── */}
-                  {hoveredTree && (
-                    <div
-                      className="absolute z-20 bg-card border border-border rounded-lg shadow-xl p-3 pointer-events-none min-w-[180px]"
-                      style={{
-                        left: `${hoveredTree.position.x}%`,
-                        top:  `${hoveredTree.position.y}%`,
-                        transform: "translate(-50%, -120%)",
-                      }}
-                    >
-                      <p className="font-semibold text-sm mb-1">
-                        {hoveredTree.species} – Tree ID: {hoveredTree.id}
-                      </p>
-                      <Badge
-                        className="mt-1 text-xs text-white"
-                        style={{ backgroundColor: SOIL_COLORS[hoveredTree.soilGrade] }}
-                      >
-                        토양 {hoveredTree.soilGrade}등급 – {SOIL_LABELS[hoveredTree.soilGrade]}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
             {/* ② 필터탭 + 점검대상구역 — 2열 동일높이 */}
             <div className="grid grid-cols-[auto_1fr] gap-5 items-stretch">
 
