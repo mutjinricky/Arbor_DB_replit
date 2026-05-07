@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { TreePine, ChevronDown } from "lucide-react";
+import { TreePine, ChevronDown, LogOut } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 const SUB_MENU_ITEMS = [
@@ -20,6 +23,17 @@ export function TopNav() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
   const isSubActive = SUB_URLS.some((u) => location.pathname === u);
+  const {
+    user,
+    profile,
+    role,
+    isSystemAdmin,
+    currentOrganizationRole,
+    organizationOptions,
+    currentOrganization,
+    setCurrentOrganization,
+    signOut,
+  } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -124,8 +138,44 @@ export function TopNav() {
         </div>
 
         <div className="text-right">
-          <p className="text-sm font-medium">김철수 주무관</p>
-          <p className="text-xs text-muted-foreground">이천시</p>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div>
+                <p className="text-sm font-medium">{profile?.full_name || user.email}</p>
+                <div className="flex items-center justify-end gap-2">
+                  {isSystemAdmin ? (
+                    <Badge>system_admin</Badge>
+                  ) : (
+                    <Badge variant="outline">{currentOrganizationRole ?? role ?? "user"}</Badge>
+                  )}
+                </div>
+              </div>
+
+              {isSystemAdmin && organizationOptions.length > 0 ? (
+                <select
+                  value={currentOrganization?.id ?? ""}
+                  onChange={(event) => void setCurrentOrganization(event.target.value)}
+                  className="flex h-9 rounded-md border bg-background px-3 py-1 text-sm"
+                >
+                  {organizationOptions.map((organization) => (
+                    <option key={organization.id} value={organization.id}>
+                      {organization.name}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
+
+              <Button variant="outline" size="sm" onClick={() => void signOut()}>
+                <LogOut className="h-4 w-4" />
+                로그아웃
+              </Button>
+            </div>
+          ) : (
+            <div>
+              <p className="text-sm font-medium">로그인이 필요합니다</p>
+              <p className="text-xs text-muted-foreground">Supabase 인증</p>
+            </div>
+          )}
         </div>
       </div>
     </header>
